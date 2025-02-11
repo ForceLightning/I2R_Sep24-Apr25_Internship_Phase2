@@ -1,0 +1,3 @@
+[submodule "thirdparty/TransUNet"]
+	path = thirdparty/TransUNet
+	url = https://github.com/ForceLightning/TransUNet.git

@@ -1,0 +1,29 @@
+{
+    "include": [
+        "src"
+    ],
+    "exclude": [
+        "**/__pycache__",
+        "**/build",
+        "**/checkpoints",
+        "**/data",
+        "**/temp",
+        "**/docs",
+        "**/.vscode",
+        "**/thirdparty"
+    ],
+
+    "typeCheckingMode": "standard",
+    "reportUnusedImport": true,
+    "reportDuplicateImport": true,
+    "reportUnusedVariable": true,
+    "reportUnknownParameterType": false,
+    "reportUnboundVariable": true,
+    "reportUnnecessaryIsInstance": true,
+    "reportUnnecessaryCast": true,
+    "venv": ".venv",
+    "stubPath": "./typings/",
+    "pythonVersion": "3.12",
+    "useLibraryCodeForTypes": true,
+    "enableExperimentalFeatures": true,
+}

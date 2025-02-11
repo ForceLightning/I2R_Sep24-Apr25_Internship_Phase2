@@ -1,0 +1,40 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Pyright type stubs
+typings
+
+# Data dir
+data
+
+# Model checkpoints
+checkpoints
+
+# Prototyping
+*.ipynb
+
+# Loose pickle or checkpoint files
+*.ckpt
+*.pickle
+*.out
+
+# Non-default configs
+configs
+
+# Shell scripts to train multiple models
+*.sh
+
+# Custom .ignore for nvim support
+.ignore
+
+# Documentation
+docs/source/apidoc
+docs/build/**

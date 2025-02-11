@@ -1,0 +1,50 @@
+[project]
+name = "i2r-sep24-apr25-internship-phase2"
+version = "0.1.0"
+description = "Internship project phase 2"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "torch",
+    "torchvision",
+    "torch-scatter==2.1.2+pt25cu124; os_name != 'darwin'",
+    "lightning[pytorch-extra]",
+    "jsonargparse[argcomplete,typing-extensions,omegaconf,signatures]",
+    "tqdm",
+    "rich",
+    "pillow",
+    "numpy",
+    "segmentation-models-pytorch",
+    "warmup-scheduler",
+    "torchsummary",
+    "tensorboard",
+    "deepspeed",
+    "scipy",
+]
+
+[project.optional-dependencies]
+docs = [
+    "sphinx",
+    "sphinx-autodoc2",
+    "sphinx-rtd-theme",
+]
+prototyping = [
+    "matplotlib",
+    "seaborn",
+]
+
+[tool.uv]
+find-links = ["https://data.pyg.org/whl/torch-2.5.1+cu124.html"]
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cu124" },
+]
+torchvision = [
+    { index = "pytorch-cu124" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu124"
+url = "https://download.pytorch.org/whl/cu124"
+explicit = true
