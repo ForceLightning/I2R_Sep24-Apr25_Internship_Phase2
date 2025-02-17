@@ -1,3 +1,6 @@
 [submodule "thirdparty/TransUNet"]
 	path = thirdparty/TransUNet
 	url = https://github.com/ForceLightning/TransUNet.git
+[submodule "thirdparty/gloria"]
+	path = thirdparty/gloria
+	url = https://github.com/ForceLightning/gloria.git
