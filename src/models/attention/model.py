@@ -40,6 +40,7 @@ class AttentionLayer(nn.Module):
         value_embed_dim: int | None = None,
         need_weights: bool = False,
         reduce: REDUCE_TYPES = "sum",
+        one_instance: bool = False,
     ) -> None:
         """Initialise the attention mechanism.
 
@@ -57,6 +58,8 @@ class AttentionLayer(nn.Module):
                 same as the embedding dimension.
             need_weights: Whether to return the attention weights. (Not functional).
             reduce: How to reduce the attention outputs.
+            one_instance: Whether to only use 1 attention module to compute cross-
+                attention embeddings.
 
         """
         super().__init__()
@@ -67,20 +70,30 @@ class AttentionLayer(nn.Module):
         self.need_weights = need_weights
         self.num_frames = num_frames
         self.reduce: REDUCE_TYPES = reduce
+        self.one_instance = one_instance
 
-        # Create a MultiheadAttention module for each frame in the sequence.
-        attentions = []
-        for _ in range(self.num_frames):
-            mha = nn.MultiheadAttention(
+        if self.one_instance:
+            self.attentions = nn.MultiheadAttention(
                 self.embed_dim,
                 self.num_heads,
                 kdim=self.kdim,
                 vdim=self.vdim,
                 batch_first=False,
             )
-            attentions.append(mha)
+        else:
+            # Create a MultiheadAttention module for each frame in the sequence.
+            attentions = []
+            for _ in range(self.num_frames):
+                mha = nn.MultiheadAttention(
+                    self.embed_dim,
+                    self.num_heads,
+                    kdim=self.kdim,
+                    vdim=self.vdim,
+                    batch_first=False,
+                )
+                attentions.append(mha)
 
-        self.attentions = nn.ModuleList(attentions)
+            self.attentions = nn.ModuleList(attentions)
 
     @override
     def forward(self, q: Tensor, ks: Tensor, vs: Tensor) -> Tensor:
@@ -112,9 +125,17 @@ class AttentionLayer(nn.Module):
             # K: (H * W, B, C) or (H * W, C)
             # V: (H * W, B, C) or (H * W, C)
             # INFO: Maybe we should return the weights? Not sure.
-            out, _weights = self.attentions[i](
-                q_vec, k_vec[i], v_vec[i], need_weights=self.need_weights
-            )
+            out: Tensor
+            _weights: Tensor
+            if self.one_instance:
+                out, _weights = self.attentions(
+                    q_vec, k_vec[i], v_vec[i], need_weights=self.need_weights
+                )
+            else:
+                assert isinstance(self.attentions, nn.ModuleList)
+                out, _weights = self.attentions[i](
+                    q_vec, k_vec[i], v_vec[i], need_weights=self.need_weights
+                )
             attn_outputs.append(out)
 
         # NOTE: Maybe don't sum this here, if we want to do weighted averages.
@@ -184,6 +205,7 @@ class SpatialAttentionBlock(nn.Module):
         num_frames: int,
         reduce: REDUCE_TYPES,
         reduce_dim: int = 0,
+        one_instance: bool = False,
         _attention_only: bool = False,
     ):
         """Initialise the residual block.
@@ -195,11 +217,14 @@ class SpatialAttentionBlock(nn.Module):
             num_frames: Number of frames per input.
             reduce: The reduction method to apply to the concatenated embeddings.
             reduce_dim: The dimension to reduce the concatenated embeddings.
+            one_instance: Whether to only use 1 attention module to compute cross-
+                attention embeddings.
 
         """
         super().__init__()
         self.temporal_conv = temporal_conv
         self.attention = attention
+        self.one_instance = one_instance
         self._attention_only = _attention_only
         self._reduce = reduce
         match reduce:

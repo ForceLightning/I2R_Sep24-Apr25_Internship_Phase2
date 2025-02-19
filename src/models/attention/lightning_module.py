@@ -88,6 +88,7 @@ class ResidualAttentionLightningModule(CommonModelMixin):
         temporal_conv_type: TemporalConvolutionalType = TemporalConvolutionalType.ORIGINAL,
         metric_mode: MetricMode = MetricMode.INCLUDE_EMPTY_CLASS,
         metric_div_zero: float = 1.0,
+        single_attention_instance: bool = False,
     ):
         """Initialise the Attention mechanism-based U-Net.
 
@@ -125,6 +126,8 @@ class ResidualAttentionLightningModule(CommonModelMixin):
             temporal_conv_type: What kind of temporal convolutional layers to use.
             metric_mode: Handling for empty classes in samples.
             metric_div_zero: Handling for divide by zero operations.
+            single_attention_instance: Whether to only use 1 attention module to
+                compute cross-attention embeddings.
 
         """
         super().__init__()
@@ -165,6 +168,7 @@ class ResidualAttentionLightningModule(CommonModelMixin):
         self.dl_classification_mode = dl_classification_mode
         self.eval_classification_mode = eval_classification_mode
         self.classes = classes
+        self.single_attention_instance = single_attention_instance
 
         # Trace memory usage
         if self.dump_memory_snapshot:
@@ -187,6 +191,7 @@ class ResidualAttentionLightningModule(CommonModelMixin):
                     activation=unet_activation,
                     temporal_conv_type=temporal_conv_type,
                     reduce=attention_reduction,
+                    single_attention_instance=single_attention_instance,
                     _attention_only=attention_only,
                 )
             case ModelType.UNET_PLUS_PLUS:
@@ -202,6 +207,7 @@ class ResidualAttentionLightningModule(CommonModelMixin):
                     activation=unet_activation,
                     temporal_conv_type=temporal_conv_type,
                     reduce=attention_reduction,
+                    single_attention_instance=single_attention_instance,
                     _attention_only=attention_only,
                 )
             case _:

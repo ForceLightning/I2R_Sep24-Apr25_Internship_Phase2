@@ -190,9 +190,10 @@ class URRResidualAttentionUnet(ResidualAttentionUnet):
         reduce: REDUCE_TYPES = "prod",
         urr_source: URRSource = URRSource.O3,
         uncertainty_mode: UncertaintyMode = UncertaintyMode.URR,
+        single_attention_instance: bool = False,
         _attention_only: bool = False,
     ):
-        super().__init__()
+        super(ResidualAttentionUnet, self).__init__()
         self.num_frames = num_frames
         self.flat_conv = flat_conv
         self.activation = activation
@@ -206,6 +207,7 @@ class URRResidualAttentionUnet(ResidualAttentionUnet):
         self.classes = classes
         self.urr_source = urr_source
         self.uncertainty_mode = uncertainty_mode
+        self.single_attention_instance = single_attention_instance
 
         # Define encoder, decoder, segmentation head, and classification head.
         #
@@ -265,7 +267,7 @@ class URRResidualAttentionUnet(ResidualAttentionUnet):
             center=encoder_name.startswith("vgg"),
             attention_type=decoder_attention_type,
         )
-        segmentation_head = SegmentationHead(
+        self.segmentation_head = SegmentationHead(
             in_channels=decoder_channels[-1],
             out_channels=(
                 classes * 2 if self.uncertainty_mode == UncertaintyMode.URR else classes
@@ -279,7 +281,7 @@ class URRResidualAttentionUnet(ResidualAttentionUnet):
             region_refiner = RegionRefiner(7, 16, 32, self.classes)
 
         self.decoder = URRDecoder(
-            decoder, segmentation_head, region_refiner, classes, uncertainty_mode
+            decoder, self.segmentation_head, region_refiner, classes, uncertainty_mode
         )
 
         if aux_params is not None:
@@ -402,6 +404,7 @@ class URRResidualAttentionUnetPlusPlus(URRResidualAttentionUnet):
         reduce: REDUCE_TYPES = "prod",
         urr_source: URRSource = URRSource.O3,
         uncertainty_mode: UncertaintyMode = UncertaintyMode.URR,
+        single_attention_instance: bool = False,
         _attention_only: bool = False,
     ):
         super(URRResidualAttentionUnet, self).__init__()
@@ -418,6 +421,7 @@ class URRResidualAttentionUnetPlusPlus(URRResidualAttentionUnet):
         self.classes = classes
         self.urr_source = urr_source
         self.uncertainty_mode = uncertainty_mode
+        self.single_attention_instance = single_attention_instance
 
         # Define encoder, decoder, segmentation head, and classification head.
         #
@@ -478,7 +482,7 @@ class URRResidualAttentionUnetPlusPlus(URRResidualAttentionUnet):
             center=encoder_name.startswith("vgg"),
             attention_type=decoder_attention_type,
         )
-        segmentation_head = SegmentationHead(
+        self.segmentation_head = SegmentationHead(
             in_channels=decoder_channels[-1],
             out_channels=classes * 2,
             activation=activation,
@@ -489,7 +493,7 @@ class URRResidualAttentionUnetPlusPlus(URRResidualAttentionUnet):
             region_refiner = RegionRefiner(7, 16, 32, self.classes)
 
         self.decoder = URRDecoder(
-            decoder, segmentation_head, region_refiner, classes, uncertainty_mode
+            decoder, self.segmentation_head, region_refiner, classes, uncertainty_mode
         )
 
         if aux_params is not None:

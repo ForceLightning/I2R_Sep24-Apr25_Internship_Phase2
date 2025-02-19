@@ -54,6 +54,7 @@ class ResidualAttentionUnet(SegmentationModel):
         res_conv_activation: str | None = None,
         temporal_conv_type: TemporalConvolutionalType = TemporalConvolutionalType.TEMPORAL_3D,
         reduce: REDUCE_TYPES = "prod",
+        single_attention_instance: bool = False,
         _attention_only: bool = False,
     ):
         """Initialise the U-Net.
@@ -78,6 +79,8 @@ class ResidualAttentionUnet(SegmentationModel):
                 convolutions.
             temporal_conv_type: What kind of temporal convolutional layers to use.
             reduce: How to reduce the post-attention features and the original features.
+            single_attention_instance: Whether to only use 1 attention module to
+                compute cross-attention embeddings.
             _attention_only: Whether to return only the attention output.
 
         """
@@ -93,6 +96,7 @@ class ResidualAttentionUnet(SegmentationModel):
         self.residual_mode = residual_mode
         self._attention_only = _attention_only
         self.classes = classes
+        self.single_attention_instance = single_attention_instance
 
         # Define encoder, decoder, segmentation head, and classification head.
         #
@@ -237,7 +241,12 @@ class ResidualAttentionUnet(SegmentationModel):
             # NOTE: This is to help with reproducibility during ablation studies.
             with torch.random.fork_rng(devices=("cpu", "cuda:0")):
                 attention = AttentionLayer(
-                    c, num_heads=1, num_frames=self.num_frames, need_weights=False
+                    c,
+                    num_heads=1,
+                    num_frames=self.num_frames,
+                    reduce=self.reduce,
+                    need_weights=False,
+                    one_instance=self.single_attention_instance,
                 )
 
                 res_block = SpatialAttentionBlock(
@@ -246,6 +255,7 @@ class ResidualAttentionUnet(SegmentationModel):
                     num_frames=self.num_frames,
                     reduce=self.reduce,
                     _attention_only=self._attention_only,
+                    one_instance=self.single_attention_instance,
                 )
                 res_layers.append(res_block)
 
@@ -363,6 +373,7 @@ class ResidualAttentionUnetPlusPlus(ResidualAttentionUnet):
         res_conv_activation: str | None = None,
         temporal_conv_type: TemporalConvolutionalType = TemporalConvolutionalType.TEMPORAL_3D,
         reduce: REDUCE_TYPES = "prod",
+        single_attention_instance: bool = False,
         _attention_only: bool = False,
     ):
         """Initialise the U-Net++.
@@ -387,10 +398,12 @@ class ResidualAttentionUnetPlusPlus(ResidualAttentionUnet):
                 convolutions.
             temporal_conv_type: What kind of temporal convolutional layers to use.
             reduce: How to reduce the post-attention features and the original features.
+            single_attention_instance: Whether to only use 1 attention module to
+                compute cross-attention embeddings.
             _attention_only: Whether to return only the attention output.
 
         """
-        super().__init__()
+        super(ResidualAttentionUnet, self).__init__()
         self.num_frames = num_frames
         self.flat_conv = flat_conv
         self.activation = activation
@@ -402,6 +415,7 @@ class ResidualAttentionUnetPlusPlus(ResidualAttentionUnet):
         self.residual_mode = residual_mode
         self._attention_only = _attention_only
         self.classes = classes
+        self.single_attention_instance = self.single_attention_instance
 
         # Define encoder, decoder, segmentation head, and classification head.
         #

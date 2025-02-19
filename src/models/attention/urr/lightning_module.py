@@ -90,6 +90,7 @@ class URRResidualAttentionLightningModule(ResidualAttentionLightningModule):
         uncertainty_mode: UncertaintyMode = UncertaintyMode.URR,
         metric_mode: MetricMode = MetricMode.INCLUDE_EMPTY_CLASS,
         metric_div_zero: float = 1.0,
+        single_attention_instance: bool = False,
     ):
         super(ResidualAttentionLightningModule, self).__init__()
         self.save_hyperparameters(ignore=["metric", "loss"])
@@ -134,6 +135,7 @@ class URRResidualAttentionLightningModule(ResidualAttentionLightningModule):
         """URR low level features source."""
         self.uncertainty_mode = uncertainty_mode
         """Whether to include uncertain-regions refinement or to just use confidence loss."""
+        self.single_attention_instance = single_attention_instance
 
         # Trace memory usage
         if self.dump_memory_snapshot:
@@ -158,6 +160,7 @@ class URRResidualAttentionLightningModule(ResidualAttentionLightningModule):
                     reduce=attention_reduction,
                     _attention_only=attention_only,
                     urr_source=urr_source,
+                    single_attention_instance=single_attention_instance,
                 )
             case ModelType.UNET_PLUS_PLUS:
                 self.model = URRResidualAttentionUnetPlusPlus(  # pyright: ignore[reportAttributeAccessIssue]
@@ -174,6 +177,7 @@ class URRResidualAttentionLightningModule(ResidualAttentionLightningModule):
                     reduce=attention_reduction,
                     _attention_only=attention_only,
                     urr_source=urr_source,
+                    single_attention_instance=single_attention_instance,
                 )
             case _:
                 raise NotImplementedError(f"{self.model_type} is not yet implemented!")
