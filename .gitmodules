@@ -4,3 +4,12 @@
 [submodule "thirdparty/gloria"]
 	path = thirdparty/gloria
 	url = https://github.com/ForceLightning/gloria.git
+[submodule "thirdparty/MedCLIP"]
+	path = thirdparty/MedCLIP
+	url = git@github.com:ForceLightning/MedCLIP.git
+[submodule "thirdparty/AFB_URR"]
+	path = thirdparty/AFB_URR
+	url = git@github.com:ForceLightning/AFB-URR.git
+[submodule "thirdparty/vivim"]
+	path = thirdparty/vivim
+	url = git@github.com:ForceLightning/Vivim.git
