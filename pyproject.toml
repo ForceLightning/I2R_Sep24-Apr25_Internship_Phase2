@@ -9,7 +9,7 @@ dependencies = [
     "torchvision",
     "torch-scatter==2.1.2+pt25cu124; os_name != 'darwin'",
     "lightning[pytorch-extra]",
-    "jsonargparse[argcomplete,typing-extensions,omegaconf,signatures]",
+    "jsonargparse[argcomplete,typing-extensions,omegaconf,signatures]<4.36.0",
     "tqdm",
     "rich",
     "pillow",
@@ -21,7 +21,10 @@ dependencies = [
     "deepspeed",
     "scipy",
     "transformers",
-    "medclip>=0.0.3",
+    "tokenizers>=0.21.0",
+    "medclip",
+    "ipython>=8.32.0",
+    "ipykernel>=6.29.5",
 ]
 
 [project.optional-dependencies]
@@ -45,6 +48,7 @@ torch = [
 torchvision = [
     { index = "pytorch-cu124" },
 ]
+medclip = { path = "thirdparty/MedCLIP", editable = true }
 
 [[tool.uv.index]]
 name = "pytorch-cu124"

@@ -21,7 +21,7 @@
     "reportUnboundVariable": true,
     "reportUnnecessaryIsInstance": true,
     "reportUnnecessaryCast": true,
-    "venv": ".venv",
+    "venv": "./.venv/",
     "stubPath": "./typings/",
     "pythonVersion": "3.12",
     "useLibraryCodeForTypes": true,
