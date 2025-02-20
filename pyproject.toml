@@ -7,7 +7,6 @@ requires-python = ">=3.12"
 dependencies = [
     "torch",
     "torchvision",
-    "torch-scatter==2.1.2+pt25cu124; os_name != 'darwin'",
     "lightning[pytorch-extra]",
     "jsonargparse[argcomplete,typing-extensions,omegaconf,signatures]<4.36.0",
     "tqdm",
@@ -25,6 +24,7 @@ dependencies = [
     "medclip",
     "ipython>=8.32.0",
     "ipykernel>=6.29.5",
+    "einops>=0.8.1",
 ]
 
 [project.optional-dependencies]
