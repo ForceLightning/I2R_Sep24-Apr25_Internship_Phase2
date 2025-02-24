@@ -25,6 +25,8 @@ dependencies = [
     "ipython>=8.32.0",
     "ipykernel>=6.29.5",
     "einops>=0.8.1",
+    "opencv-contrib-python-headless",
+    "torch-scatter==2.1.2+pt25cu124 ; os_name != 'darwin'",
 ]
 
 [project.optional-dependencies]

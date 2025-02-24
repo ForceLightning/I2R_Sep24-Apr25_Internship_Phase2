@@ -711,6 +711,7 @@ dependencies = [
     { name = "lightning", extra = ["pytorch-extra"] },
     { name = "medclip" },
     { name = "numpy" },
+    { name = "opencv-contrib-python-headless" },
     { name = "pillow" },
     { name = "rich" },
     { name = "scipy" },
@@ -719,6 +720,7 @@ dependencies = [
     { name = "tokenizers" },
     { name = "torch", version = "2.5.1", source = { registry = "https://download.pytorch.org/whl/cu124" }, marker = "platform_machine == 'aarch64' and sys_platform == 'linux'" },
     { name = "torch", version = "2.5.1+cu124", source = { registry = "https://download.pytorch.org/whl/cu124" }, marker = "platform_machine != 'aarch64' or sys_platform != 'linux'" },
+    { name = "torch-scatter", marker = "os_name != 'darwin'" },
     { name = "torchsummary" },
     { name = "torchvision", version = "0.20.1", source = { registry = "https://download.pytorch.org/whl/cu124" }, marker = "platform_machine == 'aarch64' and sys_platform == 'linux'" },
     { name = "torchvision", version = "0.20.1+cu124", source = { registry = "https://download.pytorch.org/whl/cu124" }, marker = "platform_machine != 'aarch64' or sys_platform != 'linux'" },
@@ -749,6 +751,7 @@ requires-dist = [
     { name = "matplotlib", marker = "extra == 'prototyping'" },
     { name = "medclip", editable = "thirdparty/MedCLIP" },
     { name = "numpy" },
+    { name = "opencv-contrib-python-headless", path = "../opencv-python/opencv_contrib_python_headless-4.10.0.84-cp312-cp312-linux_x86_64.whl" },
     { name = "pillow" },
     { name = "rich" },
     { name = "scipy" },
@@ -760,6 +763,7 @@ requires-dist = [
     { name = "tensorboard" },
     { name = "tokenizers", specifier = ">=0.21.0" },
     { name = "torch", index = "https://download.pytorch.org/whl/cu124" },
+    { name = "torch-scatter", marker = "os_name != 'darwin'", specifier = "==2.1.2+pt25cu124" },
     { name = "torchsummary" },
     { name = "torchvision", index = "https://download.pytorch.org/whl/cu124" },
     { name = "tqdm" },
@@ -1490,6 +1494,31 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/09/48/6388f1bb9da707110532cb70ec4d2822858ddfb44f1cdf1233c20a80ea4b/omegaconf-2.3.0.tar.gz", hash = "sha256:d5d4b6d29955cc50ad50c46dc269bcd92c6e00f5f90d23ab5fee7bfca4ba4cc7", size = 3298120 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e3/94/1843518e420fa3ed6919835845df698c7e27e183cb997394e4a670973a65/omegaconf-2.3.0-py3-none-any.whl", hash = "sha256:7b4df175cdb08ba400f45cae3bdcae7ba8365db4d165fc65fd04b050ab63b46b", size = 79500 },
+]
+
+[[package]]
+name = "opencv-contrib-python-headless"
+version = "4.10.0.84"
+source = { path = "../opencv-python/opencv_contrib_python_headless-4.10.0.84-cp312-cp312-linux_x86_64.whl" }
+dependencies = [
+    { name = "numpy" },
+]
+wheels = [
+    { filename = "opencv_contrib_python_headless-4.10.0.84-cp312-cp312-linux_x86_64.whl", hash = "sha256:8ebf1ee8dd484ca3a94b487554a580f0915333e3f1e2b88d77f6620b0a193184" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "numpy", marker = "python_full_version < '3.7'", specifier = ">=1.13.3" },
+    { name = "numpy", marker = "python_full_version >= '3.7'", specifier = ">=1.17.0" },
+    { name = "numpy", marker = "python_full_version >= '3.8'", specifier = ">=1.17.3" },
+    { name = "numpy", marker = "python_full_version >= '3.9'", specifier = ">=1.19.3" },
+    { name = "numpy", marker = "python_full_version >= '3.10'", specifier = ">=1.21.2" },
+    { name = "numpy", marker = "python_full_version >= '3.11'", specifier = ">=1.23.5" },
+    { name = "numpy", marker = "python_full_version >= '3.12'", specifier = ">=1.26.0" },
+    { name = "numpy", marker = "python_full_version >= '3.10' and sys_platform == 'darwin'", specifier = ">=1.21.4" },
+    { name = "numpy", marker = "python_full_version < '3.10' and platform_machine == 'arm64' and sys_platform == 'darwin'", specifier = ">=1.21.0" },
+    { name = "numpy", marker = "python_full_version >= '3.6' and platform_machine == 'aarch64' and sys_platform == 'linux'", specifier = ">=1.19.3" },
 ]
 
 [[package]]
@@ -2490,6 +2519,15 @@ wheels = [
     { url = "https://download.pytorch.org/whl/cu124/torch-2.5.1%2Bcu124-cp312-cp312-linux_x86_64.whl", hash = "sha256:bf6484bfe5bc4f92a4a1a1bf553041505e19a911f717065330eb061afe0e14d7" },
     { url = "https://download.pytorch.org/whl/cu124/torch-2.5.1%2Bcu124-cp312-cp312-win_amd64.whl", hash = "sha256:3c3f705fb125edbd77f9579fa11a138c56af8968a10fc95834cdd9fdf4f1f1a6" },
     { url = "https://download.pytorch.org/whl/cu124/torch-2.5.1%2Bcu124-cp313-cp313-linux_x86_64.whl", hash = "sha256:e9bebf91ede89267577911da4b0709ac6113a0cff6a1c2202c046b1ec2a51601" },
+]
+
+[[package]]
+name = "torch-scatter"
+version = "2.1.2+pt25cu124"
+source = { registry = "https://data.pyg.org/whl/torch-2.5.1+cu124.html" }
+wheels = [
+    { url = "https://data.pyg.org/whl/torch-2.5.0%2Bcu124/torch_scatter-2.1.2%2Bpt25cu124-cp312-cp312-linux_x86_64.whl" },
+    { url = "https://data.pyg.org/whl/torch-2.5.0%2Bcu124/torch_scatter-2.1.2%2Bpt25cu124-cp312-cp312-win_amd64.whl" },
 ]
 
 [[package]]
