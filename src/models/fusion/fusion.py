@@ -18,6 +18,7 @@ from torch import Tensor, nn
 from transformers import AutoModel, ConvNextBackbone, ConvNextConfig
 
 # First party imports
+from models.attention.utils import REDUCE_TYPES
 from utils.types import ResidualMode
 
 # Local folders
@@ -43,7 +44,7 @@ class BERTModule(nn.Module):
             nn.Linear(project_dim, project_dim),
         )
 
-        for param in self.model.paramters():
+        for param in self.model.parameters():
             param.requires_grad = False
 
     def forward(
@@ -80,6 +81,7 @@ class VisionModule(nn.Module):
         num_frames: int = 5,
         in_channels: int = 1,
         residual_mode: ResidualMode = ResidualMode.SUBTRACT_NEXT_FRAME,
+        reduce: REDUCE_TYPES = "sum",
     ):
         super().__init__()
         self.num_frames = num_frames
@@ -88,6 +90,7 @@ class VisionModule(nn.Module):
         self.encoder_name = encoder_name
         self.encoder_channels: Sequence[int]
         self.encoder_depth = encoder_depth
+        self.reduce = reduce
 
         if "tscse" in encoder_name:
             self.spatial_encoder = tscse_get_encoder(
@@ -114,7 +117,9 @@ class VisionModule(nn.Module):
                 if self.reduce == "cat"
                 else self.spatial_encoder.out_channels
             )
+        # Handle ConvNeXTv2
         elif "convnext" in encoder_name:
+            # TODO: Adjust in_channels after initialisation.
             spatial_config = ConvNextConfig.from_pretrained(
                 encoder_name,
                 num_channels=in_channels,
@@ -171,11 +176,11 @@ class VisionModule(nn.Module):
             )
 
     def check_input_shape(self, x):
-        if isinstance(self.encoder, TSCSENetEncoder):
+        if isinstance(self.spatial_encoder, TSCSENetEncoder):
             self._check_input_shape_tscse(x)
         else:
             h, w = x.shape[-2:]
-            output_stride = self.encoder.output_stride
+            output_stride = self.spatial_encoder.output_stride
             if h % output_stride != 0 or w % output_stride != 0:
                 new_h = (
                     (h // output_stride + 1) * output_stride
@@ -194,7 +199,7 @@ class VisionModule(nn.Module):
 
     def _check_input_shape_tscse(self, x):
         h, w = x.shape[-2:]
-        output_stride = self.encoder.output_stride
+        output_stride = self.spatial_encoder.output_stride
         if isinstance(output_stride, tuple):
             hs, ws = output_stride[1:]
         else:
@@ -275,7 +280,7 @@ class VisionModule(nn.Module):
 
 class PositionalEncoding(nn.Module):
     def __init__(
-        self, d_model: int, dropout: float = 0.0, max_len: int = 5000, **kwargs
+        self, d_model: int, dropout: float = 0.0, max_len: int = 12544, **kwargs
     ) -> None:
         super().__init__(**kwargs)
 
@@ -287,7 +292,7 @@ class PositionalEncoding(nn.Module):
         )
         pe[:, 0::2] = torch.sin(position * div_term)
         pe[:, 1::2] = torch.cos(position * div_term)
-        pe = pe.unsqueeze(0)
+        pe = pe.unsqueeze(0)  # (1, L, d_model)
         self.register_buffer("pe", pe)
 
     def forward(self, x: Tensor) -> Tensor:
@@ -301,6 +306,7 @@ class PositionalEncoding(nn.Module):
 class FusionLayer(nn.Module):
     def __init__(
         self,
+        spatial_out_channels: int,
         in_channels: int,
         output_text_len: int,
         input_text_len: int = 24,
@@ -309,7 +315,11 @@ class FusionLayer(nn.Module):
     ) -> None:
         super().__init__(**kwargs)
 
+        self.spatial_out_channels = spatial_out_channels
         self.in_channels = in_channels
+        self.output_text_len = output_text_len
+        self.input_text_len = input_text_len
+        self.embed_dim = embed_dim
 
         self.self_attn_norm = nn.LayerNorm(in_channels)
         self.cross_attn_norm = nn.LayerNorm(in_channels)
@@ -327,6 +337,7 @@ class FusionLayer(nn.Module):
             nn.Linear(embed_dim, in_channels),
             nn.LeakyReLU(),
         )
+        self.vis_project = nn.Linear(spatial_out_channels, in_channels)
 
         self.vis_pos = PositionalEncoding(in_channels)
         self.txt_pos = PositionalEncoding(in_channels, max_len=output_text_len)
@@ -340,9 +351,10 @@ class FusionLayer(nn.Module):
         txt = self.text_project(txt)
 
         # Self-attention
+        x = self.vis_project(x)
         vis2 = self.norm1(x)
         q = k = self.vis_pos(vis2)
-        vis2 = self.self_attn(q, k, value=vis2)
+        vis2 = self.self_attn(q, k, value=vis2)[0]
         vis2 = self.self_attn_norm(vis2)
         vis = x + vis2
 

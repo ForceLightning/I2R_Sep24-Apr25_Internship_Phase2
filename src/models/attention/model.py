@@ -236,7 +236,7 @@ class SpatialAttentionBlock(nn.Module):
                 self.reduce = WeightedAverage(num_frames + 1, True)
 
     def forward(
-        self, st_embeddings: Tensor, res_embeddings: Tensor, return_o1: bool = False
+        self, zs: Tensor, zr: Tensor, return_o1: bool = False
     ) -> Tensor | tuple[Tensor, Tensor]:
         """Forward pass of the residual block.
 
@@ -248,15 +248,13 @@ class SpatialAttentionBlock(nn.Module):
         """
         # Output is of shape (B, C, H, W)
         if isinstance(self.temporal_conv, OneD):
-            compress_output = compress_2(st_embeddings, self.temporal_conv)
+            compress_output = compress_2(zs, self.temporal_conv)
         elif isinstance(self.temporal_conv, DilatedOneD):
-            compress_output = compress_dilated(st_embeddings, self.temporal_conv)
+            compress_output = compress_dilated(zs, self.temporal_conv)
         else:
-            compress_output = self.temporal_conv(st_embeddings)
+            compress_output = self.temporal_conv(zs)
 
-        attention_output: Tensor = self.attention(
-            q=compress_output, ks=res_embeddings, vs=res_embeddings
-        )
+        attention_output: Tensor = self.attention(q=compress_output, ks=zr, vs=zr)
 
         # NOTE: This is for debugging purposes only.
         if self._attention_only:

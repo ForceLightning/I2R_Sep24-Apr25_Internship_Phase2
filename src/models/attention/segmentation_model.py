@@ -320,9 +320,7 @@ class ResidualAttentionUnet(SegmentationModel):
                 i - 1
             ]  # pyright: ignore[reportAssignmentType] False positive
 
-            skip_output = res_block(
-                st_embeddings=img_outputs, res_embeddings=res_outputs
-            )
+            skip_output = res_block(img_outputs, res_outputs)
 
             if self.reduce == "cat":
                 d, b, c, h, w = skip_output.shape

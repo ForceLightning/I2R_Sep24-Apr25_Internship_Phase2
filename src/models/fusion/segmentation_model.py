@@ -17,6 +17,9 @@ from segmentation_models_pytorch.base import (
 import torch
 from torch import Tensor, nn
 
+# Huggingface imports
+from transformers import AutoTokenizer
+
 # First party imports
 from models.attention.model import AttentionLayer, SpatialAttentionBlock
 from models.attention.urr.model import RegionRefiner
@@ -66,9 +69,9 @@ class FusionAttentionUnet(SegmentationModel):
     ) -> None:
         super().__init__()
 
-        assert len(decoder_channels) == len(
-            vision_module.spatial_encoder.num_features
-        ), f"depth of decoder ({len(decoder_channels)}) should match depth of vision encoder: ({len(vision_module.encoder_channels)})"
+        assert len(decoder_channels) + 1 == len(
+            vision_module.encoder_channels
+        ), f"depth of decoder ({len(decoder_channels)}) + 1 should match depth of vision encoder: ({len(vision_module.encoder_channels)})"
 
         self.vision_module = vision_module
         self.text_module = text_module
@@ -85,6 +88,14 @@ class FusionAttentionUnet(SegmentationModel):
         self.uncertainty_mode = uncertainty_mode
         self.single_attention_instance = single_attention_instance
         self._attention_only = _attention_only
+        self.flat_conv = flat_conv
+
+        self.spatial_dim = [7, 14, 28, 56, 112][: self.vision_module.encoder_depth][
+            ::-1
+        ]
+        self.feature_dim = [768, 384, 192, 96, 48][::-1][
+            : self.vision_module.encoder_depth
+        ][::-1]
 
         unet_decoder = UnetDecoderURR(
             encoder_channels=self.vision_module.encoder_channels,
@@ -104,24 +115,18 @@ class FusionAttentionUnet(SegmentationModel):
             kernel_size=3,
         )
 
-        self.spatial_dim = [7, 14, 28, 56, 112][: self.vision_module.encoder_depth][
-            ::-1
-        ]
-        self.feature_dim = [768, 384, 192, 96, 48][: self.vision_module.encoder_depth][
-            ::-1
-        ]
-
-        self.fusion_modules = nn.ModuleList(
-            [
-                FusionLayer(
-                    self.feature_dim[i],
-                    self.feature_dim[i + 1],
-                    self.spatial_dim[i],
-                    decoder_channels[i],
-                )
-                for i in range(len(self.vision_module.encoder_channels))
-            ]
-        )
+        with torch.random.fork_rng(devices=("cpu", "cuda:0")):
+            self.fusion_modules = nn.ModuleList(
+                [
+                    FusionLayer(
+                        self.vision_module.encoder_channels[i + 1],
+                        # self.feature_dim[i],
+                        self.vision_module.encoder_channels[i + 1],
+                        [24, 12, 9, 3][i],
+                    )
+                    for i in range(self.vision_module.encoder_depth - 1)
+                ]
+            )
 
         with torch.random.fork_rng(devices=("cpu", "cuda:0")):
             region_refiner = RegionRefiner(7, 16, 32, self.classes)
@@ -136,7 +141,8 @@ class FusionAttentionUnet(SegmentationModel):
 
         if aux_params is not None:
             self.classification_head = ClassificationHead(
-                in_channels=self.spatial_encoder.out_channels[-1], **aux_params
+                in_channels=self.vision_module.out_channels[-1],
+                **aux_params,
             )
         else:
             self.classification_head = None
@@ -154,7 +160,7 @@ class FusionAttentionUnet(SegmentationModel):
         for i, out_channels in enumerate(self.skip_conn_channels):
             # (1): Create the 1D temporal convolutional layer for the spatial encoder.
             oned: OneD | DilatedOneD | Temporal3DConv
-            c = self.vision_module.encoder_channels[i]
+            c = self.vision_module.encoder_channels[i + 1]
             h = w = self.spatial_dim[::-1][i]
 
             if (
@@ -219,43 +225,47 @@ class FusionAttentionUnet(SegmentationModel):
 
     @override
     def forward(  # pyright: ignore[reportIncompatibleMethodOverride]
-        self, xs: Tensor, xr: Tensor, xt: Tensor
+        self, xs: Tensor, xr: Tensor, xt: Tensor, xt_a_mask: Tensor
     ):
         zs: Tensor
         zr: Tensor
         zt: Tensor
 
         zs, zr = self.vision_module(xs, xr)
-        zt = self.text_module(xt)
-
-        h = w = zs.shape[-1]
+        text_output = self.text_module(xt, xt_a_mask)
+        zt = text_output["feature"][-1]
 
         residual_outputs: list[Tensor | list[str]] = [["EMPTY"]]
         o1_outputs: list[Tensor] = []
 
-        for i in range(1, self.vision_module.encoder_depth + 1):
+        for i in range(self.vision_module.encoder_depth):
             res_block: SpatialAttentionBlock = self.res_layers[
-                i - 1
+                i
             ]  # pyright: ignore[reportAssignmentType] false positive
 
-            skip_output, o1_output = res_block(
-                st_embeddings=zs[i], res_embeddings=zr[i], return_o1=True
-            )
+            skip_output: Tensor
+            o1_output: Tensor
+            skip_output, o1_output = res_block(zs[i], zr[i], True)
 
             o1_outputs.append(o1_output)
 
             if self.reduce == "cat":
                 skip_output = rearrange(skip_output, "d b c h w -> b (d c) h w")
 
-            fusion_layer: FusionLayer = self.fusion_modules[
-                i - 1
-            ]  # pyright: ignore[reportAssignmentType] false positive
+            if i < self.vision_module.encoder_depth - 1:
+                fusion_layer: FusionLayer = self.fusion_modules[
+                    i
+                ]  # pyright: ignore[reportAssignmentType] false positive
 
-            if skip_output.shape == 4:
-                skip_output = rearrange(skip_output, "b c h w -> b (h w) c")
+                h = w = skip_output.shape[-1]
+                if skip_output.ndim == 4:
+                    skip_output = rearrange(skip_output, "b c h w -> b (h w) c")
 
-            sa_ca_output = fusion_layer(skip_output, zt)
-            sa_ca_output = rearrange(sa_ca_output, "b (h w) c -> b c h w", h=h, w=w)
+                sa_ca_output = fusion_layer(skip_output, zt)
+                sa_ca_output = rearrange(sa_ca_output, "b (h w) c -> b c h w", h=h, w=w)
+            else:
+                # Center
+                sa_ca_output = skip_output
 
             residual_outputs.append(sa_ca_output)
 
@@ -275,3 +285,46 @@ class FusionAttentionUnet(SegmentationModel):
                 )
 
         return score, initial_uncertainty, uncertainty, conf_loss
+
+
+# DEBUG: Check if the model can run.
+if __name__ == "__main__":
+    tokenizer = AutoTokenizer.from_pretrained(
+        "microsoft/BiomedVLP-CXR-BERT-specialized", trust_remote_code=True
+    )
+    caption = "test"
+
+    token_output = tokenizer.encode_plus(
+        caption,
+        padding="max_length",
+        max_length=24,
+        truncation=True,
+        return_attention_mask=True,
+        return_tensors="pt",
+    )
+
+    token, mask = token_output["input_ids"], token_output["attention_mask"]
+
+    image = torch.rand((1, 10, 1, 224, 224), dtype=torch.float32).cuda()
+    res_image = torch.rand((1, 10, 1, 224, 224), dtype=torch.float32).cuda()
+
+    text_module = BERTModule()
+    vision_module = VisionModule()
+
+    model = FusionAttentionUnet(
+        vision_module,
+        text_module,
+        classes=4,
+    ).cuda()
+
+    proba, initial_uncertainty, uncertainty, conf_loss = model(
+        image, res_image, token.cuda(), mask.cuda()
+    )
+
+    print(
+        proba.shape,
+        initial_uncertainty.shape,
+        uncertainty.shape,
+        conf_loss.shape,
+        sep="\n\n",
+    )
