@@ -9,6 +9,7 @@ from typing import Mapping, Sequence, override
 # Third-Party
 from einops import rearrange
 from segmentation_models_pytorch.encoders import get_encoder as smp_get_encoder
+from segmentation_models_pytorch.encoders._utils import patch_first_conv
 
 # PyTorch
 import torch
@@ -119,19 +120,12 @@ class VisionModule(nn.Module):
             )
         # Handle ConvNeXTv2
         elif "convnext" in encoder_name:
-            # TODO: Adjust in_channels after initialisation.
             spatial_config = ConvNextConfig.from_pretrained(
                 encoder_name,
-                num_channels=in_channels,
                 out_features=["stem", "stage1", "stage2", "stage3", "stage4"],
             )
             residual_config = ConvNextConfig.from_pretrained(
                 encoder_name,
-                num_channels=(
-                    in_channels
-                    if residual_mode == ResidualMode.SUBTRACT_NEXT_FRAME
-                    else 2
-                ),
                 out_features=["stem", "stage1", "stage2", "stage3", "stage4"],
             )
 
@@ -139,14 +133,29 @@ class VisionModule(nn.Module):
                 encoder_name, config=spatial_config
             )
 
-            assert (
-                len(self.spatial_encoder.num_features) == encoder_depth
-            ), f"Encoder's `num_features` ({len(self.spatial_encoder.num_features)}) should be equal to the encoder depth ({encoder_depth})"
+            assert len(self.spatial_encoder.num_features) == encoder_depth + 1, (
+                f"Encoder's `num_features` ({len(self.spatial_encoder.num_features)})"
+                + f" should be equal to the encoder depth ({encoder_depth}) + 1"
+            )
 
             with torch.random.fork_rng(devices=("cpu", "cuda:0")):
                 self.residual_encoder = ConvNextBackbone.from_pretrained(
                     encoder_name, config=residual_config
                 )
+
+            if in_channels != spatial_config.num_channels:
+                patch_first_conv(
+                    model=self.spatial_encoder,
+                    new_in_channels=in_channels,
+                    pretrained=True,
+                )
+                patch_first_conv(
+                    model=self.residual_encoder,
+                    new_in_channels=in_channels,
+                    pretrained=True,
+                )
+                self.spatial_encoder.embeddings.num_channels = in_channels
+                self.residual_encoder.embeddings.num_channels = in_channels
 
             self.encoder_channels = self.spatial_encoder.num_features
         else:
@@ -230,8 +239,8 @@ class VisionModule(nn.Module):
             zs = self.spatial_encoder(xs_reshaped)
             zr = self.residual_encoder(xr_reshaped)
 
-            zs = [rearrange(z, "b c f h w -> b f c h w") for z in zs]
-            zr = [rearrange(z, "b c f h w -> b f c h w") for z in zr]
+            zs = [rearrange(z, "b c f h w -> b f c h w") for z in zs][1:]
+            zr = [rearrange(z, "b c f h w -> b f c h w") for z in zr][1:]
 
             return zs, zr
 
@@ -240,17 +249,13 @@ class VisionModule(nn.Module):
             xs_reshaped = rearrange(xs, "b f c h w -> (b f) c h w")
             xr_reshaped = rearrange(xr, "b f c h w -> (b f) c h w")
 
-            xs_output = self.spatial_encoder(xs_reshaped).feature_maps
-            xr_output = self.residual_encoder(xr_reshaped).feature_maps
+            xs_output: list[Tensor] = self.spatial_encoder(xs_reshaped).feature_maps
+            xr_output: list[Tensor] = self.residual_encoder(xr_reshaped).feature_maps
 
-            xs_features = [
-                rearrange(z, "(b f) c h w -> b f c h w", b=b) for z in xs_output
-            ]
-            xr_features = [
-                rearrange(z, "(b f) c h w -> b f c h w", b=b) for z in xr_output
-            ]
+            zs = [rearrange(z, "(b f) c h w -> b f c h w", b=b) for z in xs_output][1:]
+            zr = [rearrange(z, "(b f) c h w -> b f c h w", b=b) for z in xr_output][1:]
 
-            return xs_features, xr_features
+            return zs, zr
 
         # Otherwise, follow previous work.
         else:

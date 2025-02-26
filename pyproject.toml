@@ -56,3 +56,8 @@ medclip = { path = "thirdparty/MedCLIP", editable = true }
 name = "pytorch-cu124"
 url = "https://download.pytorch.org/whl/cu124"
 explicit = true
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4",
+]

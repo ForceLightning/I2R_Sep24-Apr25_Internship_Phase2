@@ -129,7 +129,9 @@ class FusionAttentionUnet(SegmentationModel):
             )
 
         with torch.random.fork_rng(devices=("cpu", "cuda:0")):
-            region_refiner = RegionRefiner(7, 16, 32, self.classes)
+            region_refiner = RegionRefiner(
+                7, 16, 32, self.classes, self.vision_module.encoder_channels[1] * 2
+            )
 
         self.decoder = URRDecoder(
             unet_decoder,
