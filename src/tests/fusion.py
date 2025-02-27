@@ -13,7 +13,7 @@ from torch import Tensor
 from transformers import AutoTokenizer, BertTokenizer
 
 # First party imports
-from models.fusion.fusion import BERTModule, VisionModule
+from models.fusion.model import BERTModule, VisionModule
 from models.fusion.segmentation_model import FusionAttentionUnet
 
 DEVICE = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")

@@ -35,7 +35,7 @@ from models.two_plus_one import (
 from utils.types import ResidualMode
 
 # Local folders
-from .fusion import BERTModule, FusionLayer, VisionModule
+from .model import BERTModule, FusionLayer, VisionModule
 
 
 class FusionAttentionUnet(SegmentationModel):
@@ -229,6 +229,7 @@ class FusionAttentionUnet(SegmentationModel):
     def forward(  # pyright: ignore[reportIncompatibleMethodOverride]
         self, xs: Tensor, xr: Tensor, xt: Tensor, xt_a_mask: Tensor
     ):
+        # TODO: Add argument for LGE image
         zs: Tensor
         zr: Tensor
         zt: Tensor
