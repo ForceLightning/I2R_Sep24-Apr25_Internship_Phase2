@@ -12,6 +12,7 @@ from segmentation_models_pytorch.base import (
     SegmentationHead,
     SegmentationModel,
 )
+from segmentation_models_pytorch.decoders.unet.model import UnetDecoder
 
 # PyTorch
 import torch
@@ -22,9 +23,6 @@ from transformers import AutoTokenizer
 
 # First party imports
 from models.attention.model import AttentionLayer, SpatialAttentionBlock
-from models.attention.urr.model import RegionRefiner
-from models.attention.urr.segmentation_model import UnetDecoderURR, URRDecoder
-from models.attention.urr.utils import UncertaintyMode, URRSource
 from models.attention.utils import REDUCE_TYPES
 from models.two_plus_one import (
     DilatedOneD,
@@ -35,10 +33,10 @@ from models.two_plus_one import (
 from utils.types import ResidualMode
 
 # Local folders
-from .model import BERTModule, FusionLayer, VisionModule
+from .model import BERTModule, FourStreamVisionModule, FusionLayer
 
 
-class FusionAttentionUnet(SegmentationModel):
+class FourStreamAttentionUnet(SegmentationModel):
     """U-Net with textual and visual feature fusion."""
 
     _default_decoder_channels = [256, 128, 64, 32, 16]
@@ -46,7 +44,7 @@ class FusionAttentionUnet(SegmentationModel):
 
     def __init__(
         self,
-        vision_module: VisionModule,
+        vision_module: FourStreamVisionModule,
         text_module: BERTModule,
         residual_mode: ResidualMode = ResidualMode.SUBTRACT_NEXT_FRAME,
         decoder_use_batchnorm: bool = True,
@@ -62,8 +60,6 @@ class FusionAttentionUnet(SegmentationModel):
         res_conv_activation: str | None = None,
         temporal_conv_type: TemporalConvolutionalType = TemporalConvolutionalType.TEMPORAL_3D,
         reduce: REDUCE_TYPES = "sum",
-        urr_source: URRSource = URRSource.O3,
-        uncertainty_mode: UncertaintyMode = UncertaintyMode.URR,
         single_attention_instance: bool = False,
         _attention_only: bool = False,
     ) -> None:
@@ -84,8 +80,6 @@ class FusionAttentionUnet(SegmentationModel):
         self.reduce: REDUCE_TYPES = reduce
         self.skip_conn_channels = skip_conn_channels
         self.num_frames = num_frames
-        self.urr_source = urr_source
-        self.uncertainty_mode = uncertainty_mode
         self.single_attention_instance = single_attention_instance
         self._attention_only = _attention_only
         self.flat_conv = flat_conv
@@ -97,48 +91,40 @@ class FusionAttentionUnet(SegmentationModel):
             : self.vision_module.encoder_depth
         ][::-1]
 
-        unet_decoder = UnetDecoderURR(
-            encoder_channels=self.vision_module.encoder_channels,
-            decoder_channels=decoder_channels,
-            n_blocks=self.vision_module.encoder_depth,
-            use_batchnorm=decoder_use_batchnorm,
-            center=self.vision_module.encoder_name.startswith("vgg"),
-            attention_type=decoder_attention_type,
-        )
-
         self.segmentation_head = SegmentationHead(
             in_channels=decoder_channels[-1],
-            out_channels=(
-                classes * 2 if self.uncertainty_mode == UncertaintyMode.URR else classes
-            ),
+            out_channels=classes,
             activation=activation,
             kernel_size=3,
         )
 
         with torch.random.fork_rng(devices=("cpu", "cuda:0")):
-            self.fusion_modules = nn.ModuleList(
+            self.cine_txt_fusion_mods = nn.ModuleList(
                 [
                     FusionLayer(
                         self.vision_module.encoder_channels[i + 1],
-                        # self.feature_dim[i],
                         self.vision_module.encoder_channels[i + 1],
                         [24, 12, 9, 3][i],
                     )
                     for i in range(self.vision_module.encoder_depth - 1)
                 ]
             )
-
-        with torch.random.fork_rng(devices=("cpu", "cuda:0")):
-            region_refiner = RegionRefiner(
-                7, 16, 32, self.classes, self.vision_module.encoder_channels[1] * 2
+            self.lge_txt_fusion_mods = nn.ModuleList(
+                FusionLayer(
+                    self.vision_module.encoder_channels[i + 1],
+                    self.vision_module.encoder_channels[i + 1],
+                    [24, 12, 9, 3][i],
+                )
+                for i in range(self.vision_module.encoder_depth - 1)
             )
 
-        self.decoder = URRDecoder(
-            unet_decoder,
-            self.segmentation_head,
-            region_refiner,
-            classes,
-            uncertainty_mode,
+        self.decoder = UnetDecoder(
+            encoder_channels=[c * 2 for c in self.vision_module.encoder_channels],
+            decoder_channels=decoder_channels,
+            n_blocks=self.vision_module.encoder_depth,
+            use_batchnorm=decoder_use_batchnorm,
+            center=self.vision_module.encoder_name.startswith("vgg"),
+            attention_type=decoder_attention_type,
         )
 
         if aux_params is not None:
@@ -227,14 +213,13 @@ class FusionAttentionUnet(SegmentationModel):
 
     @override
     def forward(  # pyright: ignore[reportIncompatibleMethodOverride]
-        self, xs: Tensor, xr: Tensor, xt: Tensor, xt_a_mask: Tensor
-    ):
-        # TODO: Add argument for LGE image
+        self, xs: Tensor, xr: Tensor, xt: Tensor, xt_a_mask: Tensor, xl: Tensor
+    ) -> Tensor:
         zs: Tensor
         zr: Tensor
         zt: Tensor
 
-        zs, zr = self.vision_module(xs, xr)
+        zs, zr, zl = self.vision_module(xs, xr, xl)
         text_output = self.text_module(xt, xt_a_mask)
         zt = text_output["feature"][-1]
 
@@ -242,6 +227,7 @@ class FusionAttentionUnet(SegmentationModel):
         o1_outputs: list[Tensor] = []
 
         for i in range(self.vision_module.encoder_depth):
+            # (1) Cine Stream
             res_block: SpatialAttentionBlock = self.res_layers[
                 i
             ]  # pyright: ignore[reportAssignmentType] false positive
@@ -256,7 +242,7 @@ class FusionAttentionUnet(SegmentationModel):
                 skip_output = rearrange(skip_output, "d b c h w -> b (d c) h w")
 
             if i < self.vision_module.encoder_depth - 1:
-                fusion_layer: FusionLayer = self.fusion_modules[
+                cine_txt_fusion_layer: FusionLayer = self.cine_txt_fusion_mods[
                     i
                 ]  # pyright: ignore[reportAssignmentType] false positive
 
@@ -264,30 +250,34 @@ class FusionAttentionUnet(SegmentationModel):
                 if skip_output.ndim == 4:
                     skip_output = rearrange(skip_output, "b c h w -> b (h w) c")
 
-                sa_ca_output = fusion_layer(skip_output, zt)
+                sa_ca_output = cine_txt_fusion_layer(skip_output, zt)
                 sa_ca_output = rearrange(sa_ca_output, "b (h w) c -> b c h w", h=h, w=w)
+
+                # (2) LGE Stream
+                lge_txt_fusion_layer: FusionLayer = self.lge_txt_fusion_mods[
+                    i
+                ]  # pyright: ignore[reportAssignmentType] false positive
+                lge_output = zl[i]
+
+                if lge_output.ndim == 4:
+                    lge_output = rearrange(lge_output, "b c h w -> b (h w) c")
+
+                print(skip_output.shape, lge_output.shape)
+                lge_ca_output = lge_txt_fusion_layer(lge_output, zt)
+                lge_ca_output = rearrange(
+                    lge_ca_output, "b (h w) c -> b c h w", h=h, w=w
+                )
+
             else:
                 # Center
                 sa_ca_output = skip_output
+                lge_ca_output = zl[i]
 
-            residual_outputs.append(sa_ca_output)
+            residual_outputs.append(torch.cat([sa_ca_output, lge_ca_output], dim=1))
 
-        score: Tensor
-        initial_uncertainty: Tensor | None
-        uncertainty: Tensor
-        conf_loss: Tensor
-
-        match self.urr_source:
-            case URRSource.O1:
-                score, initial_uncertainty, uncertainty, conf_loss = self.decoder(
-                    residual_outputs, o1_outputs[0]
-                )
-            case URRSource.O3:
-                score, initial_uncertainty, uncertainty, conf_loss = self.decoder(
-                    residual_outputs
-                )
-
-        return score, initial_uncertainty, uncertainty, conf_loss
+        decoder_output = self.decoder(*residual_outputs)
+        masks = self.segmentation_head(decoder_output)
+        return masks
 
 
 # DEBUG: Check if the model can run.
@@ -312,9 +302,9 @@ if __name__ == "__main__":
     res_image = torch.rand((1, 10, 1, 224, 224), dtype=torch.float32).cuda()
 
     text_module = BERTModule()
-    vision_module = VisionModule()
+    vision_module = FourStreamVisionModule()
 
-    model = FusionAttentionUnet(
+    model = FourStreamAttentionUnet(
         vision_module,
         text_module,
         classes=4,

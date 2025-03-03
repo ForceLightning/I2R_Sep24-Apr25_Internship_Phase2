@@ -48,8 +48,8 @@ from utils.types import (
 )
 
 # Local folders
-from .model import BERTModule, VisionModule
-from .segmentation_model import FusionAttentionUnet
+from .model import BERTModule, FourStreamVisionModule
+from .segmentation_model import FourStreamAttentionUnet
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +147,7 @@ class URRFusionAttentionLightningModule(CommonModelMixin):
                 enabled="all", context="all", stacks="python"
             )
 
-        vision_module = VisionModule(
+        vision_module = FourStreamVisionModule(
             encoder_name,
             encoder_depth,
             encoder_weights,
@@ -162,16 +162,20 @@ class URRFusionAttentionLightningModule(CommonModelMixin):
             case ModelType.UNET:
                 if "convnext" in encoder_name:
                     decoder_num_channels = (
-                        FusionAttentionUnet._default_decoder_channels[:4]
+                        FourStreamAttentionUnet._default_decoder_channels[:4]
                     )
                     skip_conn_channels = (
-                        FusionAttentionUnet._default_skip_conn_channels[:4]
+                        FourStreamAttentionUnet._default_skip_conn_channels[:4]
                     )
                 else:
-                    decoder_num_channels = FusionAttentionUnet._default_decoder_channels
-                    skip_conn_channels = FusionAttentionUnet._default_skip_conn_channels
-                self.model: FusionAttentionUnet = (  # pyright: ignore
-                    FusionAttentionUnet(
+                    decoder_num_channels = (
+                        FourStreamAttentionUnet._default_decoder_channels
+                    )
+                    skip_conn_channels = (
+                        FourStreamAttentionUnet._default_skip_conn_channels
+                    )
+                self.model: FourStreamAttentionUnet = (  # pyright: ignore
+                    FourStreamAttentionUnet(
                         vision_module,
                         text_module,
                         residual_mode,

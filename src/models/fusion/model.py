@@ -14,6 +14,7 @@ from segmentation_models_pytorch.encoders._utils import patch_first_conv
 # PyTorch
 import torch
 from torch import Tensor, nn
+from torch.nn import functional as F
 
 # Huggingface imports
 from transformers import AutoModel, ConvNextBackbone, ConvNextConfig
@@ -73,7 +74,7 @@ class BERTModule(nn.Module):
         return {"feature": output["hidden_states"], "project": embed}
 
 
-class VisionModule(nn.Module):
+class ThreeStreamVisionModule(nn.Module):
     def __init__(
         self,
         encoder_name: str = "resnet50",
@@ -94,8 +95,8 @@ class VisionModule(nn.Module):
         self.reduce = reduce
 
         if "tscse" in encoder_name:
-            self.spatial_encoder = tscse_get_encoder(
-                encoder_name,
+            self.spatial_encoder = smp_get_encoder(
+                encoder_name.replace("tscse", "se"),
                 num_frames=num_frames,
                 in_channels=in_channels,
                 depth=encoder_depth,
@@ -185,7 +186,7 @@ class VisionModule(nn.Module):
             )
 
     def check_input_shape(self, x):
-        if isinstance(self.spatial_encoder, TSCSENetEncoder):
+        if isinstance(self.residual_encoder, TSCSENetEncoder):
             self._check_input_shape_tscse(x)
         else:
             h, w = x.shape[-2:]
@@ -228,31 +229,27 @@ class VisionModule(nn.Module):
     ) -> tuple[Sequence[Tensor], Sequence[Tensor]]:
         b = xs.shape[0]
         # tscSE takes (B, C, F, H, W) input and outputs the same.
-        if isinstance(self.spatial_encoder, TSCSENetEncoder):
+        if isinstance(self.residual_encoder, TSCSENetEncoder):
             for imgs, r_imgs in zip(xs, xr, strict=False):
                 self.check_input_shape(imgs)
                 self.check_input_shape(r_imgs)
 
-            xs_reshaped = rearrange(xs, "b f c h w -> b c f h w")
             xr_reshaped = rearrange(xr, "b f c h w -> b c f h w")
 
-            zs = self.spatial_encoder(xs_reshaped)
+            zs = self.spatial_encoder(xs)
             zr = self.residual_encoder(xr_reshaped)
 
-            zs = [rearrange(z, "b c f h w -> b f c h w") for z in zs][1:]
             zr = [rearrange(z, "b c f h w -> b f c h w") for z in zr][1:]
 
             return zs, zr
 
         # NOTE: ConvNext models have 4 stages.
         elif isinstance(self.spatial_encoder, ConvNextBackbone):
-            xs_reshaped = rearrange(xs, "b f c h w -> (b f) c h w")
             xr_reshaped = rearrange(xr, "b f c h w -> (b f) c h w")
 
-            xs_output: list[Tensor] = self.spatial_encoder(xs_reshaped).feature_maps
+            zs = self.spatial_encoder(xs).feature_maps
             xr_output: list[Tensor] = self.residual_encoder(xr_reshaped).feature_maps
 
-            zs = [rearrange(z, "(b f) c h w -> b f c h w", b=b) for z in xs_output][1:]
             zr = [rearrange(z, "(b f) c h w -> b f c h w", b=b) for z in xr_output][1:]
 
             return zs, zr
@@ -281,6 +278,290 @@ class VisionModule(nn.Module):
                 zr_outputs.append(zr_output)
 
             return zs_outputs, zr_outputs
+
+
+class FourStreamVisionModule(nn.Module):
+    def __init__(
+        self,
+        encoder_name: str = "resnet50",
+        encoder_depth: int = 5,
+        encoder_weights: str | None = "imagenet",
+        num_frames: int = 5,
+        in_channels: int = 1,
+        residual_mode: ResidualMode = ResidualMode.SUBTRACT_NEXT_FRAME,
+        reduce: REDUCE_TYPES = "sum",
+    ):
+        super().__init__()
+        self.num_frames = num_frames
+        self.in_channels = in_channels
+        self.residual_mode = residual_mode
+        self.encoder_name = encoder_name
+        self.encoder_channels: Sequence[int]
+        self.encoder_depth = encoder_depth
+        self.reduce = reduce
+
+        if "tscse" in encoder_name:
+            self.spatial_encoder = tscse_get_encoder(
+                encoder_name,
+                num_frames=num_frames,
+                in_channels=in_channels,
+                depth=encoder_depth,
+            )
+
+            # NOTE: This is to help with reproducibility during ablation studies.
+            with torch.random.fork_rng(devices=("cpu", "cuda:0")):
+                self.residual_encoder = tscse_get_encoder(
+                    encoder_name,
+                    num_frames=num_frames,
+                    in_channels=(
+                        in_channels
+                        if residual_mode == ResidualMode.SUBTRACT_NEXT_FRAME
+                        else 2
+                    ),
+                    depth=encoder_depth,
+                )
+                self.lge_encoder = smp_get_encoder(
+                    encoder_name.replace("tscse", "se"),
+                    num_frames=1,
+                    in_channels=in_channels,
+                    depth=encoder_depth,
+                )
+            self.encoder_channels = (
+                [x * 2 for x in self.spatial_encoder.out_channels]
+                if self.reduce == "cat"
+                else self.spatial_encoder.out_channels
+            )
+        # Handle ConvNeXTv2
+        elif "convnext" in encoder_name:
+            spatial_config = ConvNextConfig.from_pretrained(
+                encoder_name,
+                out_features=["stem", "stage1", "stage2", "stage3", "stage4"],
+            )
+            residual_config = ConvNextConfig.from_pretrained(
+                encoder_name,
+                out_features=["stem", "stage1", "stage2", "stage3", "stage4"],
+            )
+            lge_config = ConvNextConfig.from_pretrained(
+                encoder_name,
+                out_features=["stem", "stage1", "stage2", "stage3", "stage4"],
+            )
+
+            self.spatial_encoder = ConvNextBackbone.from_pretrained(
+                encoder_name, config=spatial_config
+            )
+
+            assert len(self.spatial_encoder.num_features) == encoder_depth + 1, (
+                f"Encoder's `num_features` ({len(self.spatial_encoder.num_features)})"
+                + f" should be equal to the encoder depth ({encoder_depth}) + 1"
+            )
+
+            with torch.random.fork_rng(devices=("cpu", "cuda:0")):
+                self.residual_encoder = ConvNextBackbone.from_pretrained(
+                    encoder_name, config=residual_config
+                )
+                self.lge_encoder = ConvNextBackbone.from_pretrained(
+                    encoder_name, config=lge_config
+                )
+
+            if in_channels != spatial_config.num_channels:
+                patch_first_conv(
+                    model=self.spatial_encoder,
+                    new_in_channels=in_channels,
+                    pretrained=True,
+                )
+                patch_first_conv(
+                    model=self.residual_encoder,
+                    new_in_channels=in_channels,
+                    pretrained=True,
+                )
+                patch_first_conv(
+                    model=self.lge_encoder, new_in_channels=in_channels, pretrained=True
+                )
+                self.spatial_encoder.embeddings.num_channels = in_channels
+                self.residual_encoder.embeddings.num_channels = in_channels
+                self.lge_encoder.embeddings.num_channels = in_channels
+
+            self.encoder_channels = self.spatial_encoder.num_features
+        else:
+            self.spatial_encoder = smp_get_encoder(
+                encoder_name,
+                in_channels=in_channels,
+                depth=encoder_depth,
+                weights=encoder_weights,
+            )
+
+            # NOTE: This is to help with reproducibility during ablation studies.
+            with torch.random.fork_rng(devices=("cpu", "cuda:0")):
+                self.residual_encoder = smp_get_encoder(
+                    encoder_name,
+                    in_channels=(
+                        in_channels
+                        if residual_mode == ResidualMode.SUBTRACT_NEXT_FRAME
+                        else 2
+                    ),
+                    depth=encoder_depth,
+                    weights=encoder_weights,
+                )
+                self.lge_encoder = smp_get_encoder(
+                    encoder_name,
+                    in_channels=in_channels,
+                    depth=encoder_depth,
+                    weights=encoder_weights,
+                )
+            self.encoder_channels = (
+                [x * 2 for x in self.spatial_encoder.out_channels]
+                if self.reduce == "cat"
+                else self.spatial_encoder.out_channels
+            )
+
+    def check_input_shape(self, x):
+        if isinstance(self.spatial_encoder, TSCSENetEncoder):
+            self._check_input_shape_tscse(x)
+        else:
+            h, w = x.shape[-2:]
+            output_stride = self.spatial_encoder.output_stride
+            if h % output_stride != 0 or w % output_stride != 0:
+                new_h = (
+                    (h // output_stride + 1) * output_stride
+                    if h % output_stride != 0
+                    else h
+                )
+                new_w = (
+                    (w // output_stride + 1) * output_stride
+                    if w % output_stride != 0
+                    else w
+                )
+                raise RuntimeError(
+                    f"Wrong input shape height={h}, width={w}. Expected image height and width "
+                    f"divisible by {output_stride}. Consider pad your images to shape ({new_h}, {new_w})."
+                )
+
+    def _check_input_shape_tscse(self, x):
+        h, w = x.shape[-2:]
+        output_stride = self.spatial_encoder.output_stride
+        if isinstance(output_stride, tuple):
+            hs, ws = output_stride[1:]
+        else:
+            hs = ws = output_stride
+
+        if h % hs != 0 or w % ws != 0:
+            new_h = (h // hs + 1) * hs if h % hs != 0 else h
+            new_w = (w // ws + 1) * ws if w % ws != 0 else w
+            raise RuntimeError(
+                f"Wrong input shape height={h}, width={w}. Expected image height and width "
+                f"divisible by {(hs, ws)}. Consider pad your images to shape ({new_h}, {new_w})."
+            )
+
+    @override
+    def forward(
+        self, xs: Tensor, xr: Tensor, xl: Tensor
+    ) -> tuple[Sequence[Tensor], Sequence[Tensor], Sequence[Tensor]]:
+        b = xs.shape[0]
+        # tscSE takes (B, C, F, H, W) input and outputs the same.
+        if isinstance(self.spatial_encoder, TSCSENetEncoder):
+            for imgs, r_imgs, lge_imgs in zip(xs, xr, xl, strict=False):
+                self.check_input_shape(imgs)
+                self.check_input_shape(r_imgs)
+                self.check_input_shape(lge_imgs)
+
+            xs_reshaped = rearrange(xs, "b f c h w -> b c f h w")
+            xr_reshaped = rearrange(xr, "b f c h w -> b c f h w")
+
+            zs = self.spatial_encoder(xs_reshaped)
+            zr = self.residual_encoder(xr_reshaped)
+            zl = self.lge_encoder(xl)[1:]
+
+            zs = [rearrange(z, "b c f h w -> b f c h w") for z in zs][1:]
+            zr = [rearrange(z, "b c f h w -> b f c h w") for z in zr][1:]
+
+            return zs, zr, zl
+
+        # NOTE: ConvNext models have 4 stages.
+        elif isinstance(self.spatial_encoder, ConvNextBackbone):
+            xs_reshaped = rearrange(xs, "b f c h w -> (b f) c h w")
+            xr_reshaped = rearrange(xr, "b f c h w -> (b f) c h w")
+
+            xs_output = self.spatial_encoder(xs_reshaped).feature_maps
+            xr_output = self.residual_encoder(xr_reshaped).feature_maps
+            zl = self.lge_encoder(xl).feature_maps[1:]
+
+            zs = [rearrange(z, "(b f) c h w -> b f c h w", b=b) for z in xs_output][1:]
+            zr = [rearrange(z, "(b f) c h w -> b f c h w", b=b) for z in xr_output][1:]
+
+            return zs, zr, zl
+
+        # Otherwise, follow previous work.
+        else:
+            xs_reshaped = rearrange(xs, "b f c h w -> (b f) c h w")
+            xr_reshaped = rearrange(xr, "b f c h w -> (b f) c h w")
+
+            xs_output = self.spatial_encoder(xs_reshaped)
+            xr_output = self.residual_encoder(xr_reshaped)
+            zl = self.lge_encoder(xl)[1:]
+
+            zs = [rearrange(z, "(b f) c h w -> b f c h w", b=b) for z in xs_output][1:]
+            zr = [rearrange(z, "(b f) c h w -> b f c h w", b=b) for z in xr_output][1:]
+
+            return zs, zr, zl
+
+
+# TODO: Include a way to have the motion data drive the transformation of the
+# spatial image(s).
+class SpatialTransformer(nn.Module):
+    def __init__(self, in_channels: int, input_is_3d: bool = False) -> None:
+        super().__init__()
+        # Spatial transformer localisation-network.
+        if input_is_3d:
+            self.localisation = nn.Sequential(
+                nn.Conv3d(in_channels, 8, kernel_size=(7, 7, 1)),
+                nn.MaxPool3d((2, 2, 1), stride=(2, 2, 1)),
+                nn.ReLU(True),
+                nn.Conv3d(8, 10, kernel_size=(5, 5, 1)),
+                nn.MaxPool3d((2, 2, 1), stride=(2, 2, 1)),
+                nn.ReLU(True),
+            )
+        else:
+            self.localisation = nn.Sequential(
+                nn.Conv2d(in_channels, 8, kernel_size=7),
+                nn.MaxPool2d(2, stride=2),
+                nn.ReLU(True),
+                nn.Conv2d(8, 10, kernel_size=5),
+                nn.MaxPool2d(2, stride=2),
+                nn.ReLU(True),
+            )
+
+        # Regressor for the 3 * 2 affine matrix
+        # NOTE: We need to know the output shape of the image embeddings in advance.
+        self.fc_loc = nn.Sequential(
+            nn.Linear(10 * 3 * 3, 32), nn.ReLU(True), nn.Linear(32, 3 * 2)
+        )
+
+        # Initialise the weights/bias with the identity transformation
+        self.fc_loc[2].weight.data.zero_()
+        self.fc_loc[2].bias.data.copy_(
+            torch.tensor([1, 0, 0, 0, 1, 0], dtype=torch.float)
+        )
+
+    def forward(self, x: Tensor) -> Tensor:
+        """Forward pass for the spatial transformer.
+
+        Args:
+            x: Image tensor of shape: (N, C, H, W)
+
+        Return:
+            Tensor: Image tensor of shape (N, C, H, W)
+
+        """
+        # Transform the input
+        xs = self.localisation(x)
+        xs = xs.view(-1, 10 * 3 * 3)
+        theta = self.fc_loc(xs)
+        theta = theta.view(-1, 2, 3)
+
+        grid = F.affine_grid(theta, list(x.size()))
+        x = F.grid_sample(x, grid)
+
+        return x
 
 
 class PositionalEncoding(nn.Module):
