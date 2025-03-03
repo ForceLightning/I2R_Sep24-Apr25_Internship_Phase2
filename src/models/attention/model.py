@@ -200,7 +200,7 @@ class SpatialAttentionBlock(nn.Module):
 
     def __init__(
         self,
-        temporal_conv: OneD | DilatedOneD | Temporal3DConv,
+        temporal_conv: OneD | DilatedOneD | Temporal3DConv | None,
         attention: AttentionLayer,
         num_frames: int,
         reduce: REDUCE_TYPES,
@@ -251,8 +251,10 @@ class SpatialAttentionBlock(nn.Module):
             compress_output = compress_2(st_embeddings, self.temporal_conv)
         elif isinstance(self.temporal_conv, DilatedOneD):
             compress_output = compress_dilated(st_embeddings, self.temporal_conv)
-        else:
+        elif isinstance(self.temporal_conv, Temporal3DConv):
             compress_output = self.temporal_conv(st_embeddings)
+        else:
+            compress_output = st_embeddings
 
         attention_output: Tensor = self.attention(
             q=compress_output, ks=res_embeddings, vs=res_embeddings

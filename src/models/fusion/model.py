@@ -236,10 +236,10 @@ class ThreeStreamVisionModule(nn.Module):
 
             xr_reshaped = rearrange(xr, "b f c h w -> b c f h w")
 
-            zs = self.spatial_encoder(xs)
-            zr = self.residual_encoder(xr_reshaped)
+            zs = self.spatial_encoder(xs)[1:]
+            zr = self.residual_encoder(xr_reshaped)[1:]
 
-            zr = [rearrange(z, "b c f h w -> b f c h w") for z in zr][1:]
+            zr = [rearrange(z, "b c f h w -> b f c h w") for z in zr]
 
             return zs, zr
 
@@ -247,37 +247,23 @@ class ThreeStreamVisionModule(nn.Module):
         elif isinstance(self.spatial_encoder, ConvNextBackbone):
             xr_reshaped = rearrange(xr, "b f c h w -> (b f) c h w")
 
-            zs = self.spatial_encoder(xs).feature_maps
-            xr_output: list[Tensor] = self.residual_encoder(xr_reshaped).feature_maps
-
-            zr = [rearrange(z, "(b f) c h w -> b f c h w", b=b) for z in xr_output][1:]
+            zs = self.spatial_encoder(xs).feature_maps[1:]
+            xr_output: list[Tensor] = self.residual_encoder(xr_reshaped).feature_maps[
+                1:
+            ]
+            zr = [rearrange(z, "(b f) c h w -> b f c h w", b=b) for z in xr_output]
 
             return zs, zr
 
         # Otherwise, follow previous work.
         else:
-            zs: list[Tensor] = []
-            zr: list[Tensor] = []
-            for imgs, r_imgs in zip(xs, xr, strict=False):
-                self.check_input_shape(imgs)
-                self.check_input_shape(r_imgs)
+            xr_reshaped = rearrange(xr, "b f c h w -> (b f) c h w")
 
-                img_features = self.spatial_encoder(imgs)
-                zs.append(img_features)
-                res_features = self.residual_encoder(r_imgs)
-                zr.append(res_features)
+            zs = self.spatial_encoder(xs)[1:]
+            xr_output = self.residual_encoder(xr_reshaped)[1:]
+            zr = [rearrange(z, "(b f) c h w -> b f c h w", b=b) for z in xr_output]
 
-            zs_outputs: list[Tensor] = []
-            zr_outputs: list[Tensor] = []
-
-            for i in range(1, 6):
-                zs_output = torch.stack([output[i] for output in zs])
-                zr_output = torch.stack([output[i] for output in zr])
-
-                zs_outputs.append(zs_output)
-                zr_outputs.append(zr_output)
-
-            return zs_outputs, zr_outputs
+            return zs, zr
 
 
 class FourStreamVisionModule(nn.Module):
@@ -467,12 +453,12 @@ class FourStreamVisionModule(nn.Module):
             xs_reshaped = rearrange(xs, "b f c h w -> b c f h w")
             xr_reshaped = rearrange(xr, "b f c h w -> b c f h w")
 
-            zs = self.spatial_encoder(xs_reshaped)
-            zr = self.residual_encoder(xr_reshaped)
+            zs = self.spatial_encoder(xs_reshaped)[1:]
+            zr = self.residual_encoder(xr_reshaped)[1:]
             zl = self.lge_encoder(xl)[1:]
 
-            zs = [rearrange(z, "b c f h w -> b f c h w") for z in zs][1:]
-            zr = [rearrange(z, "b c f h w -> b f c h w") for z in zr][1:]
+            zs = [rearrange(z, "b c f h w -> b f c h w") for z in zs]
+            zr = [rearrange(z, "b c f h w -> b f c h w") for z in zr]
 
             return zs, zr, zl
 
@@ -481,12 +467,12 @@ class FourStreamVisionModule(nn.Module):
             xs_reshaped = rearrange(xs, "b f c h w -> (b f) c h w")
             xr_reshaped = rearrange(xr, "b f c h w -> (b f) c h w")
 
-            xs_output = self.spatial_encoder(xs_reshaped).feature_maps
-            xr_output = self.residual_encoder(xr_reshaped).feature_maps
+            xs_output = self.spatial_encoder(xs_reshaped).feature_maps[1:]
+            xr_output = self.residual_encoder(xr_reshaped).feature_maps[1:]
             zl = self.lge_encoder(xl).feature_maps[1:]
 
-            zs = [rearrange(z, "(b f) c h w -> b f c h w", b=b) for z in xs_output][1:]
-            zr = [rearrange(z, "(b f) c h w -> b f c h w", b=b) for z in xr_output][1:]
+            zs = [rearrange(z, "(b f) c h w -> b f c h w", b=b) for z in xs_output]
+            zr = [rearrange(z, "(b f) c h w -> b f c h w", b=b) for z in xr_output]
 
             return zs, zr, zl
 
@@ -495,12 +481,12 @@ class FourStreamVisionModule(nn.Module):
             xs_reshaped = rearrange(xs, "b f c h w -> (b f) c h w")
             xr_reshaped = rearrange(xr, "b f c h w -> (b f) c h w")
 
-            xs_output = self.spatial_encoder(xs_reshaped)
-            xr_output = self.residual_encoder(xr_reshaped)
+            xs_output = self.spatial_encoder(xs_reshaped)[1:]
+            xr_output = self.residual_encoder(xr_reshaped)[1:]
             zl = self.lge_encoder(xl)[1:]
 
-            zs = [rearrange(z, "(b f) c h w -> b f c h w", b=b) for z in xs_output][1:]
-            zr = [rearrange(z, "(b f) c h w -> b f c h w", b=b) for z in xr_output][1:]
+            zs = [rearrange(z, "(b f) c h w -> b f c h w", b=b) for z in xs_output]
+            zr = [rearrange(z, "(b f) c h w -> b f c h w", b=b) for z in xr_output]
 
             return zs, zr, zl
 
