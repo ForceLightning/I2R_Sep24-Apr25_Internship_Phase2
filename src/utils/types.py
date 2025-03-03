@@ -42,88 +42,63 @@ INV_NORM_GREYSCALE_DEFAULT = InverseNormalize(mean=[0.449], std=[0.226])
 
 
 class ClassificationMode(Enum):
-    """The classification mode for the model.
-
-    Attributes:
-        MULTICLASS_MODE: The model is trained to predict a single class for each pixel.
-        MULTILABEL_MODE: The model is trained to predict multiple classes for each pixel.
-        BINARY_CLASS_3_MODE: The model is trained to predict a single class for a binary
-            classification task for each pixel.
-
-    """
+    """The classification mode for the model."""
 
     MULTICLASS_MODE = auto()
+    """The model is trained to predict a single class for each pixel."""
     MULTILABEL_MODE = auto()
+    """The model is trained to predict multiple classes for each pixel."""
     BINARY_CLASS_3_MODE = auto()
+    """The model is trained to predict a single class for a binary
+        classification task for each pixel."""
 
 
 class ResidualMode(Enum):
-    """The residual frame calculation mode for the model.
-
-    Attributes:
-        SUBTRACT_NEXT_FRAME: Subtracts the next frame from the current frame.
-        OPTICAL_FLOW_CPU: Calculates the optical flow using the CPU.
-        OPTICAL_FLOW_GPU: Calculates the optical flow using the GPU.
-
-    """
+    """The residual frame calculation mode for the model."""
 
     SUBTRACT_NEXT_FRAME = auto()
+    """Subtracts the next frame from the current frame."""
     OPTICAL_FLOW_CPU = auto()
+    """Calculates the optical flow using the CPU."""
     OPTICAL_FLOW_GPU = auto()
+    """Calculates the optical flow using the GPU."""
 
 
 class LoadingMode(Enum):
-    """Determines the image loading mode for the dataset.
-
-    Attributes:
-        RGB: The images are loaded in RGB mode.
-        GREYSCALE: The images are loaded in greyscale mode.
-
-    """
+    """Determines the image loading mode for the dataset."""
 
     RGB = auto()
+    """The images are loaded in RGB mode."""
     GREYSCALE = auto()
+    """The images are loaded in greyscale mode."""
 
 
 class ModelType(Enum):
-    """Model architecture types.
-
-    Attributes:
-        UNET: U-Net architecture.
-        UNET_PLUS_PLUS: UNet++ architecture.
-        TRANS_UNET: TransUNet architecture.
-
-    """
+    """Model architecture types."""
 
     UNET = auto()
+    """U-Net architecture."""
     UNET_PLUS_PLUS = auto()
+    """UNet++ architecture."""
     TRANS_UNET = auto()
+    """TransUNet architecture."""
 
 
 class MetricMode(Enum):
-    """Metric calculation mode.
-
-    Attributes:
-        INCLUDE_EMPTY_CLASS: Includes samples with no instances of class.
-        IGNORE_EMPTY_CLASS: Ignores samples with no instances of class for metrics for
-            that class.
-
-    """
+    """Metric calculation mode."""
 
     INCLUDE_EMPTY_CLASS = auto()
+    """Includes samples with no instances of class."""
     IGNORE_EMPTY_CLASS = auto()
+    """Ignores samples with no instances of class for metrics for that class."""
 
 
 class DummyPredictMode(Enum):
-    """Dummy prediction mode.
-
-    Attributes:
-        NONE: No-op.
-        GROUND_TRUTH: Outputs the ground truth masks.
-        BLANK: Outputs only the images.
-
-    """
+    """Dummy prediction mode."""
 
     NONE = auto()
+    """No-op."""
     GROUND_TRUTH = auto()
+    """Outputs the ground truth masks."""
     BLANK = auto()
+    """Outputs only the images."""

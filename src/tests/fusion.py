@@ -13,33 +13,37 @@ from torch import Tensor
 from transformers import AutoTokenizer, BertTokenizer
 
 # First party imports
-from models.fusion.model import BERTModule, VisionModule
-from models.fusion.segmentation_model import FusionAttentionUnet
+from models.fusion.model import BERTModule, FourStreamVisionModule
+from models.fusion.segmentation_model import FourStreamAttentionUnet
 
 DEVICE = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
 
 
-class TestSegmentationModel:
+class TestFourStreamSegmentationModel:
     batch_size: int = 2
     tokenizer: BertTokenizer = AutoTokenizer.from_pretrained(
-        "microsoft/BiomedVLP-CXR-BERT-specialized", trust_remote_code=True
+        "microsoft/BiomedVLP-CXR-BERT-general", trust_remote_code=True
     )
     classes: int = 4
     num_frames: int = 10
     caption = "a quick brown fox jumps over the lazy dog."
-    image = torch.rand((batch_size, 10, 1, 224, 224), dtype=torch.float32).cuda()
+    image = torch.rand(
+        (batch_size, num_frames, 1, 224, 224), dtype=torch.float32
+    ).cuda()
     res_image = image - torch.roll(image, -1, 1)
+    lge_image = torch.rand((batch_size, 1, 224, 224), dtype=torch.float32).cuda()
 
     @torch.no_grad()
     def _test_with_batch(
         self,
-        model: FusionAttentionUnet,
+        model: FourStreamAttentionUnet,
         xs: Tensor,
         xr: Tensor,
         xt: Tensor,
         xta: Tensor,
+        xl: Tensor,
     ):
-        _ = model(xs, xr, xt, xta)
+        _ = model(xs, xr, xt, xta, xl)
 
     def test_resnet50_smp(self):
         """Tests the ResNet-50 implementation from Segmentation Models PyTorch"""
@@ -63,19 +67,15 @@ class TestSegmentationModel:
         mask = repeat(mask, "1 l -> b l", b=self.batch_size)
 
         text_module = BERTModule()
-        vision_module = VisionModule(
+        vision_module = FourStreamVisionModule(
             encoder_name="resnet50", num_frames=self.num_frames
         )
-        model = FusionAttentionUnet(
+        model = FourStreamAttentionUnet(
             vision_module, text_module, classes=self.classes, num_frames=self.num_frames
         ).cuda()
 
         self._test_with_batch(
-            model,
-            self.image,
-            self.res_image,
-            token.cuda(),
-            mask.cuda(),
+            model, self.image, self.res_image, token.cuda(), mask.cuda(), self.lge_image
         )
 
     def test_convnextv2(self):
@@ -100,12 +100,12 @@ class TestSegmentationModel:
         mask = repeat(mask, "1 l -> b l", b=self.batch_size)
 
         text_module = BERTModule()
-        vision_module = VisionModule(
+        vision_module = FourStreamVisionModule(
             encoder_name="facebook/convnext-tiny-224",
             encoder_depth=4,
             num_frames=self.num_frames,
         )
-        model = FusionAttentionUnet(
+        model = FourStreamAttentionUnet(
             vision_module,
             text_module,
             classes=self.classes,
@@ -115,11 +115,7 @@ class TestSegmentationModel:
         ).cuda()
 
         self._test_with_batch(
-            model,
-            self.image,
-            self.res_image,
-            token.cuda(),
-            mask.cuda(),
+            model, self.image, self.res_image, token.cuda(), mask.cuda(), self.lge_image
         )
 
     def test_tscsenet(self):
@@ -144,10 +140,10 @@ class TestSegmentationModel:
         mask = repeat(mask, "1 l -> b l", b=self.batch_size)
 
         text_module = BERTModule()
-        vision_module = VisionModule(
+        vision_module = FourStreamVisionModule(
             encoder_name="tscse_resnet50", num_frames=self.num_frames
         )
-        model = FusionAttentionUnet(
+        model = FourStreamAttentionUnet(
             vision_module,
             text_module,
             classes=self.classes,
@@ -155,9 +151,5 @@ class TestSegmentationModel:
         ).cuda()
 
         self._test_with_batch(
-            model,
-            self.image,
-            self.res_image,
-            token.cuda(),
-            mask.cuda(),
+            model, self.image, self.res_image, token.cuda(), mask.cuda(), self.lge_image
         )

@@ -32,6 +32,7 @@ dependencies = [
 [project.optional-dependencies]
 docs = [
     "sphinx",
+    "sphinx-autodoc-typehints>=3.0.1",
     "sphinx-autodoc2",
     "sphinx-rtd-theme",
 ]
@@ -51,6 +52,7 @@ torchvision = [
     { index = "pytorch-cu124" },
 ]
 medclip = { path = "thirdparty/MedCLIP", editable = true }
+opencv-contrib-python-headless = { path = "../opencv-python/opencv_contrib_python_headless-4.10.0.84-cp312-cp312-linux_x86_64.whl" }
 
 [[tool.uv.index]]
 name = "pytorch-cu124"

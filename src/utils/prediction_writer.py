@@ -437,7 +437,7 @@ def _draw_masks(
         drawn_classes: Indices for which masks to use for drawing.
 
     Return:
-        Image: The image with the masks drawn on it.
+        The image with the masks drawn on it.
 
     """
     if loading_mode == LoadingMode.GREYSCALE:

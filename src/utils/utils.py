@@ -259,7 +259,7 @@ def get_transforms(
         augment: Whether to augment the images and masks together.
 
     Returns:
-        tuple: The image, mask, combined, and final resize transformations
+        The image, mask, combined, and final resize transformations
 
     """
     # Sets the image transforms
@@ -300,15 +300,18 @@ def get_transforms(
     return transforms_img, transforms_mask, transforms_together
 
 
-def get_accumulate_grad_batches(devices: int, batch_size: int):
+def get_accumulate_grad_batches(devices: int, batch_size: int) -> int:
     """Get the number of batches to accumulate the gradients.
 
     Args:
         devices: Number of devices for training.
         batch_size: The batch size for training.
 
-    Returns:
-        int: The number of batches to accumulate the gradients
+    Return:
+        The number of batches to accumulate the gradients
+
+    Raises:
+        AssertionError: If effective batch size of 8 not divisible by batch size * devices
 
     """
     devices = int(devices)
@@ -323,14 +326,14 @@ def get_accumulate_grad_batches(devices: int, batch_size: int):
         return 8 // batch_size
 
 
-def get_model_type(enum_str: str):
+def get_model_type(enum_str: str) -> ModelType:
     """Get enum from input string.
 
     Args:
         enum_str: String to match with enum.
 
     Return:
-        ModelType: Resultant enum variant.
+        Resultant enum variant.
 
     Raises:
         KeyError: If the variant requested is not found.

@@ -21,7 +21,7 @@ from segmentation_models_pytorch.losses import DiceLoss, FocalLoss
 # PyTorch
 import torch
 from lightning.pytorch.loggers.tensorboard import TensorBoardLogger
-from torch import nn
+from torch import Tensor, nn
 from torch.nn import functional as F
 from torch.nn.common_types import _size_3_t
 from torch.optim.lr_scheduler import LRScheduler
@@ -107,7 +107,7 @@ class TSCSEModule(nn.Module):
         )
 
     @override
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         cSE = self.cSE(x).sigmoid()
         sSE = self.sSE(x).sigmoid()
         tSE = self.tSE(x).sigmoid()
@@ -120,7 +120,7 @@ class Bottleneck(nn.Module, abc.ABC):
     expansion: int
 
     @override
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         residual = x
 
         out = self.layers(x)
@@ -505,13 +505,13 @@ class TSCSENet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def features(self, x: torch.Tensor) -> torch.Tensor:
+    def features(self, x: Tensor) -> Tensor:
         """Extract features from the input tensor.
 
         Args:
             x: Input tensor.
 
-        Returns:
+        Return:
             Features extracted from the input tensor.
 
         """
@@ -523,13 +523,13 @@ class TSCSENet(nn.Module):
 
         return x
 
-    def logits(self, x: torch.Tensor) -> torch.Tensor:
+    def logits(self, x: Tensor) -> Tensor:
         """Compute the logits from the input tensor.
 
         Args:
             x: Input tensor.
 
-        Returns:
+        Return:
             Logits computed from the input tensor.
 
         """
@@ -541,7 +541,7 @@ class TSCSENet(nn.Module):
         return x
 
     @override
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         x = self.features(x)
         x = self.logits(x)
 
@@ -647,8 +647,8 @@ class TSCSENetEncoder(TSCSENet, Encoder3DMixin):
 
     @override
     def forward(  # pyright: ignore[reportIncompatibleMethodOverride]
-        self, x: torch.Tensor
-    ) -> list[torch.Tensor]:
+        self, x: Tensor
+    ) -> list[Tensor]:
         stages = self.get_stages()
 
         features = []
@@ -690,7 +690,7 @@ class TSCSENetEncoder(TSCSENet, Encoder3DMixin):
             module.in_channels = new_in_channels
             if not pretrained:
                 module.weight = nn.Parameter(
-                    torch.Tensor(
+                    Tensor(
                         module.out_channels,
                         new_in_channels // module.groups,
                         *module.kernel_size,
@@ -701,7 +701,7 @@ class TSCSENetEncoder(TSCSENet, Encoder3DMixin):
                 new_weight = weight.sum(1, keepdim=True)
                 module.weight = nn.Parameter(new_weight)
             else:
-                new_weight = torch.Tensor(
+                new_weight = Tensor(
                     module.out_channels,
                     new_in_channels // module.groups,
                     *module.kernel_size,
@@ -785,7 +785,7 @@ def load_base_to_tscse(old: nn.Module, new: TSCSENetEncoder) -> TSCSENetEncoder:
         old: Base model (senet, se_resnet).
         new: tscSE encoder to load weights into.
 
-    Returns:
+    Return:
         TSCSENetEncoder: New tscSE encoder.
 
     """
@@ -972,7 +972,7 @@ class TSCSEUnet(SegmentationModel):
         )
 
         self.name = f"u-{encoder_name}"
-        self.compress: Callable[..., torch.Tensor]
+        self.compress: Callable[..., Tensor]
         self.initialize()
 
     @override
@@ -1034,22 +1034,22 @@ class TSCSEUnet(SegmentationModel):
             )
 
     @override
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         """Forward pass of the model.
 
         Args:
             x: 5D tensor of shape (batch_size, num_frames, channels, height, width).
 
         Return:
-            torch.Tensor: 4D tensor of shape (batch_size, classes, height, width).
+            Tensor: 4D tensor of shape (batch_size, classes, height, width).
 
         """
         # The first layer of the skip connection gets ignored, but in order for the
         # indexing later on to work, the feature output needs an empty first output.
-        compressed_features: list[torch.Tensor | list[str]] = [["EMPTY"]]
+        compressed_features: list[Tensor | list[str]] = [["EMPTY"]]
 
         # Go through each frame of the image and add the output features to a list.
-        features_list: list[torch.Tensor] = []
+        features_list: list[Tensor] = []
 
         assert x.numel() != 0, f"Input tensor is empty: {x}"
 
@@ -1092,7 +1092,7 @@ class TSCSEUnet(SegmentationModel):
             x: 4D torch tensor with shape (batch_size, channels, height, width)
 
         Return:
-            torch.Tensor: 4D torch tensor with shape (batch_size, classes, height,
+            Tensor: 4D torch tensor with shape (batch_size, classes, height,
             width).
 
         """
@@ -1206,7 +1206,7 @@ class TSCSEUnetLightning(CommonModelMixin):
         if isinstance(loss, str):
             match loss:
                 case "cross_entropy":
-                    class_weights = torch.Tensor(
+                    class_weights = Tensor(
                         [
                             0.000019931143,
                             0.001904109430,
@@ -1218,7 +1218,7 @@ class TSCSEUnetLightning(CommonModelMixin):
                 case "focal":
                     self.loss = FocalLoss("multiclass", normalized=True)
                 case "weighted_dice":
-                    class_weights = torch.Tensor(
+                    class_weights = Tensor(
                         [
                             0.000019931143,
                             0.001904109430,
@@ -1316,7 +1316,7 @@ class TSCSEUnetLightning(CommonModelMixin):
             )
 
     @override
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         with torch.autocast(device_type=self.device.type):
             return self.model(x)  # pyright: ignore[reportCallIssue]
 
@@ -1326,8 +1326,8 @@ class TSCSEUnetLightning(CommonModelMixin):
 
     @override
     def training_step(
-        self, batch: tuple[torch.Tensor, torch.Tensor, str], batch_idx: int
-    ) -> torch.Tensor:
+        self, batch: tuple[Tensor, Tensor, str], batch_idx: int
+    ) -> Tensor:
         """Forward pass for the model with dataloader batches.
 
         Args:
@@ -1348,7 +1348,7 @@ class TSCSEUnetLightning(CommonModelMixin):
 
         with torch.autocast(device_type=self.device.type):
             # B x C x H x W
-            masks_proba: torch.Tensor = self.model(
+            masks_proba: Tensor = self.model(
                 images_input
             )  # pyright: ignore[reportCallIssue] False positive
 
@@ -1401,19 +1401,17 @@ class TSCSEUnetLightning(CommonModelMixin):
         return loss_all
 
     @override
-    def validation_step(
-        self, batch: tuple[torch.Tensor, torch.Tensor, str], batch_idx: int
-    ):
+    def validation_step(self, batch: tuple[Tensor, Tensor, str], batch_idx: int):
         self._shared_eval(batch, batch_idx, "val")
 
     @override
-    def test_step(self, batch: tuple[torch.Tensor, torch.Tensor, str], batch_idx: int):
+    def test_step(self, batch: tuple[Tensor, Tensor, str], batch_idx: int):
         self._shared_eval(batch, batch_idx, "test")
 
     @torch.no_grad()
     def _shared_eval(
         self,
-        batch: tuple[torch.Tensor, torch.Tensor, str],
+        batch: tuple[Tensor, Tensor, str],
         batch_idx: int,
         prefix: Literal["val", "test"],
     ):
@@ -1430,7 +1428,7 @@ class TSCSEUnetLightning(CommonModelMixin):
         bs = images.shape[0] if len(images.shape) > 3 else 1
         images_input = images.to(self.device.type, dtype=torch.float32)
         masks = masks.to(self.device.type).long()
-        masks_proba: torch.Tensor = self.model(
+        masks_proba: Tensor = self.model(
             images_input
         )  # pyright: ignore[reportCallIssue]
 
@@ -1493,9 +1491,9 @@ class TSCSEUnetLightning(CommonModelMixin):
     def _shared_image_logging(
         self,
         batch_idx: int,
-        images: torch.Tensor,
-        masks_one_hot: torch.Tensor,
-        masks_preds: torch.Tensor,
+        images: Tensor,
+        masks_one_hot: Tensor,
+        masks_preds: Tensor,
         prefix: Literal["train", "val", "test"],
         every_interval: int = 10,
     ):
@@ -1509,7 +1507,7 @@ class TSCSEUnetLightning(CommonModelMixin):
             prefix: The runtime mode (train, val, test).
             every_interval: The interval to log images.
 
-        Returns:
+        Return:
             None.
 
         Raises:
@@ -1591,10 +1589,10 @@ class TSCSEUnetLightning(CommonModelMixin):
     @torch.no_grad()
     def predict_step(
         self,
-        batch: tuple[torch.Tensor, torch.Tensor, str | list[str]],
+        batch: tuple[Tensor, Tensor, str | list[str]],
         batch_idx: int,
         dataloader_idx: int = 0,
-    ):
+    ) -> tuple[Tensor, Tensor, str | list[str]]:
         """Forward pass for the model for one minibatch of a test epoch.
 
         Args:
@@ -1603,8 +1601,7 @@ class TSCSEUnetLightning(CommonModelMixin):
             dataloader_idx: Index of the dataloader.
 
         Return:
-            tuple[torch.tensor, torch.tensor, str]: Mask predictions, original images,
-                and filename.
+            Mask predictions, original images, and filename.
 
         """
         self.eval()
@@ -1612,7 +1609,7 @@ class TSCSEUnetLightning(CommonModelMixin):
         images_input = images.to(self.device.type)
         masks = masks.to(self.device.type).long()
 
-        masks_proba: torch.Tensor = self.model(
+        masks_proba: Tensor = self.model(
             images_input
         )  # pyright: ignore[reportCallIssue]
 

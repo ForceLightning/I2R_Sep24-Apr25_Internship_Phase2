@@ -16,7 +16,7 @@ def size_2_t_to_size_3_t(old: _size_2_t, new_dim_val: int = 0) -> tuple[int, int
         new_dim_val: Value to add to first dim of new spec.
 
     Return:
-        tuple[int, int, int]: New 3D spec.
+        New 3D spec.
 
     """
     val = (new_dim_val, *old) if isinstance(old, tuple) else (new_dim_val, old, old)
@@ -29,8 +29,8 @@ def conv2d_to_3d(old: nn.Conv2d) -> nn.Conv3d:
     Args:
         old: Conv2D layer.
 
-    Returns:
-        Conv3D: Conv3D layer with weights from old layer.
+    Return:
+        Conv3D layer with weights from old layer.
 
     """
     kernel_size = size_2_t_to_size_3_t(
@@ -64,15 +64,15 @@ def conv2d_to_3d(old: nn.Conv2d) -> nn.Conv3d:
 
 
 def pool2d_to_pool3d(
-    old: Union[nn.AvgPool2d, nn.AdaptiveAvgPool2d, nn.MaxPool2d, nn.AdaptiveMaxPool2d]
+    old: Union[nn.AvgPool2d, nn.AdaptiveAvgPool2d, nn.MaxPool2d, nn.AdaptiveMaxPool2d],
 ) -> Union[nn.AvgPool3d, nn.AdaptiveAvgPool3d, nn.MaxPool3d, nn.AdaptiveMaxPool3d]:
     """Convert Pool2D layers to Pool3D layers.
 
     Args:
         old: Pool2D layer.
 
-    Returns:
-        Pool3D: Pool3D layer with weights from old layer.
+    Return:
+        Pool3D layer with weights from old layer.
 
     """
     kernel_size = size_2_t_to_size_3_t(old.kernel_size, 1)
@@ -109,8 +109,8 @@ def unpool2d_to_unpool3d(old: nn.MaxUnpool2d) -> nn.MaxUnpool3d:
     Args:
         old: Unpool2D layer.
 
-    Returns:
-        Unpool3D: Unpool3D layer with weights from old layer.
+    Return:
+        Unpool3D layer with weights from old layer.
 
     """
     kernel_size = size_2_t_to_size_3_t(old.kernel_size, 1)
@@ -127,8 +127,8 @@ def batchnorm2d_to_batchnorm3d(old: nn.BatchNorm2d) -> nn.BatchNorm3d:
     Args:
         old: BatchNorm2D layer.
 
-    Returns:
-        BatchNorm3D: BatchNorm3D layer with weights from old layer.
+    Return:
+        BatchNorm3D layer with weights from old layer.
 
     """
     new = nn.BatchNorm3d(

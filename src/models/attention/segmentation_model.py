@@ -14,7 +14,7 @@ from segmentation_models_pytorch.encoders import get_encoder as smp_get_encoder
 
 # PyTorch
 import torch
-from torch import nn
+from torch import Tensor, nn
 
 # First party imports
 from utils.types import ResidualMode
@@ -269,18 +269,21 @@ class ResidualAttentionUnet(SegmentationModel):
 
     @override
     def forward(  # pyright: ignore[reportIncompatibleMethodOverride]
-        self, regular_frames: torch.Tensor, residual_frames: torch.Tensor
-    ) -> torch.Tensor:
+        self, regular_frames: Tensor, residual_frames: Tensor
+    ) -> Tensor:
         """Forward pass of the model.
 
         Args:
             regular_frames: Regular frames from the sequence.
             residual_frames: Residual frames from the sequence.
 
+        Return:
+            Predicted mask logits.
+
         """
         # Output features by batch and then by encoder layer.
-        img_features_list: list[torch.Tensor] = []
-        res_features_list: list[torch.Tensor] = []
+        img_features_list: list[Tensor] = []
+        res_features_list: list[Tensor] = []
 
         if isinstance(self.encoder, TSCSENetEncoder):
             for imgs, r_imgs in zip(regular_frames, residual_frames, strict=False):
@@ -304,7 +307,7 @@ class ResidualAttentionUnet(SegmentationModel):
                 res_features = self.residual_encoder(r_imgs)
                 res_features_list.append(res_features)
 
-        residual_outputs: list[torch.Tensor | list[str]] = [["EMPTY"]]
+        residual_outputs: list[Tensor | list[str]] = [["EMPTY"]]
 
         for i in range(1, 6):
             if isinstance(self.encoder, TSCSENetEncoder):
@@ -320,7 +323,9 @@ class ResidualAttentionUnet(SegmentationModel):
                 i - 1
             ]  # pyright: ignore[reportAssignmentType] False positive
 
-            skip_output = res_block(img_outputs, res_outputs)
+            skip_output = res_block(
+                st_embeddings=img_outputs, res_embeddings=res_outputs
+            )
 
             if self.reduce == "cat":
                 d, b, c, h, w = skip_output.shape
@@ -336,8 +341,8 @@ class ResidualAttentionUnet(SegmentationModel):
     @override
     @torch.no_grad()
     def predict(  # pyright: ignore[reportIncompatibleMethodOverride]
-        self, regular_frames: torch.Tensor, residual_frames: torch.Tensor
-    ) -> torch.Tensor:
+        self, regular_frames: Tensor, residual_frames: Tensor
+    ) -> Tensor:
         if self.training:
             self.eval()
 
