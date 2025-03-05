@@ -5,7 +5,7 @@ description = "Internship project phase 2"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "torch",
+    "torch==2.6.0",
     "torchvision",
     "lightning[pytorch-extra]",
     "jsonargparse[argcomplete,typing-extensions,omegaconf,signatures]<4.36.0",
@@ -21,15 +21,13 @@ dependencies = [
     "scipy",
     "transformers",
     "tokenizers>=0.21.0",
-    "medclip",
     "ipython>=8.32.0",
     "ipykernel>=6.29.5",
     "einops>=0.8.1",
-    "opencv-contrib-python-headless",
     "torch-scatter==2.1.2+pt25cu124 ; os_name != 'darwin'",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 docs = [
     "sphinx",
     "sphinx-autodoc-typehints>=3.0.1",
@@ -39,6 +37,12 @@ docs = [
 prototyping = [
     "matplotlib",
     "seaborn",
+]
+opencv-custom-build = [
+    "opencv-contrib-python-headless",
+]
+dev = [
+    "pytest>=8.3.4",
 ]
 
 [tool.uv]
@@ -51,15 +55,8 @@ torch = [
 torchvision = [
     { index = "pytorch-cu124" },
 ]
-medclip = { path = "thirdparty/MedCLIP", editable = true }
-opencv-contrib-python-headless = { path = "../opencv-python/opencv_contrib_python_headless-4.10.0.84-cp312-cp312-linux_x86_64.whl" }
 
 [[tool.uv.index]]
 name = "pytorch-cu124"
 url = "https://download.pytorch.org/whl/cu124"
 explicit = true
-
-[dependency-groups]
-dev = [
-    "pytest>=8.3.4",
-]
