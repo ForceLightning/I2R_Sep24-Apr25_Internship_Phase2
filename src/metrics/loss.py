@@ -324,7 +324,7 @@ if __name__ == "__main__":
     # Third-Party
     import segmentation_models_pytorch as smp
 
-    class_weights = torch.Tensor(
+    class_weights = Tensor(
         [
             0.05,
             0.1,
@@ -332,7 +332,7 @@ if __name__ == "__main__":
             0.7,
         ],
     )
-    equal_class_weights = torch.Tensor([0.25, 0.25, 0.25, 0.25])
+    equal_class_weights = Tensor([0.25, 0.25, 0.25, 0.25])
     wdl = WeightedDiceLoss(
         4, "multiclass", class_weights, from_logits=True, reduction="none"
     )

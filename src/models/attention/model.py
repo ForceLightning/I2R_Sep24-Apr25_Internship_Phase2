@@ -95,6 +95,8 @@ class AttentionLayer(nn.Module):
 
             self.attentions = nn.ModuleList(attentions)
 
+        self.layer_norm = nn.LayerNorm(self.embed_dim)
+
     @override
     def forward(self, q: Tensor, ks: Tensor, vs: Tensor) -> Tensor:
         # Get the dimensions of the input tensors.
@@ -136,6 +138,8 @@ class AttentionLayer(nn.Module):
                 out, _weights = self.attentions[i](
                     q_vec, k_vec[i], v_vec[i], need_weights=self.need_weights
                 )
+
+            out = self.layer_norm(out)
             attn_outputs.append(out)
 
         # NOTE: Maybe don't sum this here, if we want to do weighted averages.

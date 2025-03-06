@@ -24,7 +24,7 @@ from segmentation_models_pytorch.losses import DiceLoss, FocalLoss
 # PyTorch
 import torch
 from lightning.pytorch.loggers.tensorboard import TensorBoardLogger
-from torch import nn
+from torch import Tensor, nn
 from torch.nn import functional as F
 from torch.optim.lr_scheduler import LRScheduler
 from torch.optim.optimizer import Optimizer
@@ -162,8 +162,8 @@ class TwoStreamUnet(SegmentationModel):
 
     @override
     def forward(  # pyright: ignore[reportIncompatibleMethodOverride]
-        self, lge: torch.Tensor, cine: torch.Tensor
-    ) -> torch.Tensor:
+        self, lge: Tensor, cine: Tensor
+    ) -> Tensor:
         """Forward pass for the Two Stream U-Net model.
 
         Args:
@@ -178,9 +178,9 @@ class TwoStreamUnet(SegmentationModel):
         added_features.append(["EMPTY"])
 
         # Go through each frame of the image and add the output features to a list.
-        lge_features: Sequence[torch.Tensor] = self.lge_encoder(lge)
+        lge_features: Sequence[Tensor] = self.lge_encoder(lge)
 
-        cine_features: Sequence[torch.Tensor] = self.cine_encoder(cine)
+        cine_features: Sequence[Tensor] = self.cine_encoder(cine)
 
         # Goes through each layer and gets the LGE and Cine output from that layer then
         # adds them element-wise.
@@ -297,7 +297,7 @@ class TwoStreamUnetLightning(CommonModelMixin):
         if isinstance(loss, str):
             match loss:
                 case "cross_entropy":
-                    class_weights = torch.Tensor(
+                    class_weights = Tensor(
                         [
                             0.000019931143,
                             0.001904109430,
@@ -309,7 +309,7 @@ class TwoStreamUnetLightning(CommonModelMixin):
                 case "focal":
                     self.loss = FocalLoss("multiclass", normalized=True)
                 case "weighted_dice":
-                    class_weights = torch.Tensor(
+                    class_weights = Tensor(
                         [
                             0.000019931143,
                             0.001904109430,
@@ -398,9 +398,9 @@ class TwoStreamUnetLightning(CommonModelMixin):
     @override
     def training_step(
         self,
-        batch: tuple[torch.Tensor, torch.Tensor, torch.Tensor, str],
+        batch: tuple[Tensor, Tensor, Tensor, str],
         batch_idx: int,
-    ) -> torch.Tensor:
+    ) -> Tensor:
         """Forward pass for the model with dataloader batches.
 
         Args:
@@ -422,7 +422,7 @@ class TwoStreamUnetLightning(CommonModelMixin):
 
         with torch.autocast(device_type=self.device.type):
             # B x C x H x W
-            masks_proba: torch.Tensor = self.model(
+            masks_proba: Tensor = self.model(
                 lges, cines
             )  # pyright: ignore[reportCallIssue]
 
@@ -477,7 +477,7 @@ class TwoStreamUnetLightning(CommonModelMixin):
     @override
     def validation_step(
         self,
-        batch: tuple[torch.Tensor, torch.Tensor, torch.Tensor, str],
+        batch: tuple[Tensor, Tensor, Tensor, str],
         batch_idx: int,
     ):
         self._shared_eval(batch, batch_idx, "val")
@@ -485,7 +485,7 @@ class TwoStreamUnetLightning(CommonModelMixin):
     @override
     def test_step(
         self,
-        batch: tuple[torch.Tensor, torch.Tensor, torch.Tensor, str],
+        batch: tuple[Tensor, Tensor, Tensor, str],
         batch_idx: int,
     ):
         self._shared_eval(batch, batch_idx, "test")
@@ -493,7 +493,7 @@ class TwoStreamUnetLightning(CommonModelMixin):
     @torch.no_grad()
     def _shared_eval(
         self,
-        batch: tuple[torch.Tensor, torch.Tensor, torch.Tensor, str],
+        batch: tuple[Tensor, Tensor, Tensor, str],
         batch_idx: int,
         prefix: Literal["train", "val", "test"],
     ):
@@ -504,7 +504,7 @@ class TwoStreamUnetLightning(CommonModelMixin):
         masks = masks.to(device=self.device).long()
 
         # B x C x H x W
-        masks_proba: torch.Tensor = self.model(
+        masks_proba: Tensor = self.model(
             lges, cines
         )  # pyright: ignore[reportCallIssue]
 
@@ -517,7 +517,7 @@ class TwoStreamUnetLightning(CommonModelMixin):
                 masks_proba.size() == masks.size()
             ), f"Output of shape {masks_proba.shape} != target shape: {masks.shape}"
 
-        loss_seg: torch.Tensor
+        loss_seg: Tensor
         # HACK: This ensures that the dimensions to the loss function are correct.
         if isinstance(self.loss, nn.CrossEntropyLoss) or isinstance(
             self.loss, FocalLoss
@@ -568,9 +568,9 @@ class TwoStreamUnetLightning(CommonModelMixin):
     def _shared_image_logging(
         self,
         batch_idx: int,
-        images: torch.Tensor,
-        masks_one_hot: torch.Tensor,
-        masks_preds: torch.Tensor,
+        images: Tensor,
+        masks_one_hot: Tensor,
+        masks_preds: Tensor,
         prefix: Literal["train", "val", "test"],
         every_interval: int = 10,
     ):
@@ -662,7 +662,7 @@ class TwoStreamUnetLightning(CommonModelMixin):
     @torch.no_grad()
     def predict_step(
         self,
-        batch: tuple[torch.Tensor, torch.Tensor, torch.Tensor, str | list[str]],
+        batch: tuple[Tensor, Tensor, Tensor, str | list[str]],
         batch_idx: int,
         dataloader_idx: int = 0,
     ):
@@ -672,7 +672,7 @@ class TwoStreamUnetLightning(CommonModelMixin):
         cines_input = cines.to(self.device.type)
         masks = masks.to(self.device.type).long()
 
-        masks_proba: torch.Tensor = self.model(
+        masks_proba: Tensor = self.model(
             lges_input, cines_input
         )  # pyright: ignore[reportCallIssue]
 

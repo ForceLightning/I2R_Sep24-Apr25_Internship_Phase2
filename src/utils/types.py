@@ -6,6 +6,7 @@ from typing import Sequence, override
 
 # PyTorch
 import torch
+from torch import Tensor
 from torchvision.transforms import v2
 
 
@@ -31,7 +32,7 @@ class InverseNormalize(v2.Normalize):
         super().__init__(mean=mean_inv.tolist(), std=std_inv.tolist())
 
     @override
-    def __call__(self, tensor: torch.Tensor) -> torch.Tensor:
+    def __call__(self, tensor: Tensor) -> Tensor:
         return super().__call__(tensor.clone())
 
 

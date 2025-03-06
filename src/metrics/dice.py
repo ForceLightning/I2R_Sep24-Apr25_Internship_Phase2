@@ -18,12 +18,12 @@ from utils.types import MetricMode
 class GeneralizedDiceScoreVariant(GeneralizedDiceScore):
     """Generalized Dice score metric with additional options."""
 
-    class_occurrences: torch.Tensor
-    score_running: torch.Tensor
-    macro_avg_metric: torch.Tensor
-    per_class_metric: torch.Tensor
-    weighted_avg_metric: torch.Tensor
-    class_weights: torch.Tensor
+    class_occurrences: Tensor
+    score_running: Tensor
+    macro_avg_metric: Tensor
+    per_class_metric: Tensor
+    weighted_avg_metric: Tensor
+    class_weights: Tensor
 
     def __init__(
         self,
@@ -112,7 +112,7 @@ class GeneralizedDiceScoreVariant(GeneralizedDiceScore):
             )
 
     @override
-    def compute(self) -> torch.Tensor:
+    def compute(self) -> Tensor:
         if not self.weighted_average:
             return super().compute()
 
@@ -175,7 +175,7 @@ class GeneralizedDiceScoreVariant(GeneralizedDiceScore):
             case "per_class":
                 return self.per_class_metric
 
-    def _compute_macro_avg(self) -> torch.Tensor:
+    def _compute_macro_avg(self) -> Tensor:
         score = self.score_running * self.class_weights
         score = score[1:] if not self.include_background else score
         score = score[
@@ -200,7 +200,7 @@ class GeneralizedDiceScoreVariant(GeneralizedDiceScore):
 
         return score
 
-    def _compute_per_class(self) -> torch.Tensor:
+    def _compute_per_class(self) -> Tensor:
         score = self.score_running * self.class_weights
         ret = _safe_divide(score, self.samples, self.zero_division)
 

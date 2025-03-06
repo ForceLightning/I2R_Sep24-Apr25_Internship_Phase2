@@ -8,6 +8,7 @@ from typing import Literal
 import lightning as L
 import torch
 from lightning.pytorch.loggers import TensorBoardLogger
+from torch import Tensor
 from torch.nn import functional as F
 from torchmetrics import Metric, MetricCollection
 from torchmetrics.classification import (
@@ -35,8 +36,8 @@ from utils.types import ClassificationMode, MetricMode
 @torch.no_grad()
 def shared_metric_calculation(
     module: CommonModelMixin,
-    masks: torch.Tensor,
-    masks_proba: torch.Tensor,
+    masks: Tensor,
+    masks_proba: Tensor,
     prefix: Literal["train", "val", "test"] = "train",
 ):
     """Calculate the metrics for the model.
@@ -416,10 +417,10 @@ def _grouped_generalized_metric_logging(
         prefix: The runtime mode (train, val, test).
 
     """
-    dice_results: dict[str, torch.Tensor] = dice_metric_obj.compute()
-    other_results: dict[str, torch.Tensor] = other_metric_obj.compute()
+    dice_results: dict[str, Tensor] = dice_metric_obj.compute()
+    other_results: dict[str, Tensor] = other_metric_obj.compute()
     results = dice_results | other_results
-    results_new: dict[str, torch.Tensor] = {}
+    results_new: dict[str, Tensor] = {}
     # (1) Log only validation metrics in hyperparameter tab.
     for k, v in results.items():
         if k in [
@@ -440,7 +441,7 @@ def _grouped_generalized_metric_logging(
             per_class := results.get(f"{prefix}/{metric_type}_per_class", None)
         ) is not None:
             assert isinstance(
-                per_class, torch.Tensor
+                per_class, Tensor
             ), f"Metric `per_class` is of an invalid type: {type(per_class)}"
 
             if metric_type in ["recall", "precision"] and per_class.ndim > 1:
@@ -475,10 +476,9 @@ def _grouped_generalized_metric_logging(
                 del results[f"{prefix}/{metric_type}"]
 
     # GUARD: Ensure that the metrics are of the correct type. Just use the basic
-    # Python primatives and torch Tensors.
+    # Python primatives and Tensors.
     assert all(
-        isinstance(metric, (float, int, bool, torch.Tensor))
-        for _, metric in results.items()
+        isinstance(metric, (float, int, bool, Tensor)) for _, metric in results.items()
     ), f"Invalid metric primative type for dict: {results}"
 
     module.log_dict(results, on_step=False, on_epoch=True, sync_dist=True)

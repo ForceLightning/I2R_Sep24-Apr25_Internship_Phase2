@@ -118,6 +118,10 @@ class Bottleneck(nn.Module, abc.ABC):
     """Base class for bottleneck block of TSCSENet."""
 
     expansion: int
+    layers: nn.Module
+    downsample: nn.Module | None
+    tscse: nn.Module
+    relu: nn.Module
 
     @override
     def forward(self, x: Tensor) -> Tensor:

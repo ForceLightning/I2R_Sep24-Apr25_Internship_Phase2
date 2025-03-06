@@ -15,8 +15,8 @@ from PIL.Image import Image
 
 # PyTorch
 import lightning as L
-import torch
 from lightning.pytorch.callbacks import BasePredictionWriter
+from torch import Tensor
 from torchvision.transforms.v2 import functional as v2f
 from torchvision.utils import draw_segmentation_masks
 
@@ -71,8 +71,8 @@ class MaskImageWriter(BasePredictionWriter):
         _trainer: L.Trainer,
         pl_module: L.LightningModule,
         predictions: (
-            Sequence[tuple[torch.Tensor, torch.Tensor, list[str]]]
-            | Sequence[Sequence[tuple[torch.Tensor, torch.Tensor, list[str]]]]
+            Sequence[tuple[Tensor, Tensor, list[str]]]
+            | Sequence[Sequence[tuple[Tensor, Tensor, list[str]]]]
         ),
         _batch_indices: Sequence[Any],
     ) -> None:
@@ -88,10 +88,8 @@ class MaskImageWriter(BasePredictionWriter):
         assert self.output_dir
         assert isinstance(pl_module, CommonModelMixin)
 
-        predictions_for_loop: list[
-            Sequence[tuple[torch.Tensor, torch.Tensor, list[str]]]
-        ]
-        if isinstance(predictions[0][0], torch.Tensor):
+        predictions_for_loop: list[Sequence[tuple[Tensor, Tensor, list[str]]]]
+        if isinstance(predictions[0][0], Tensor):
             predictions_for_loop = [
                 predictions  # pyright: ignore[reportAssignmentType]
             ]
@@ -218,10 +216,8 @@ class MaskImageWriter(BasePredictionWriter):
         _trainer: L.Trainer,
         _pl_module: L.LightningModule,
         predictions: (
-            Sequence[tuple[torch.Tensor, torch.Tensor, torch.Tensor, list[str]]]
-            | Sequence[
-                Sequence[tuple[torch.Tensor, torch.Tensor, torch.Tensor, list[str]]]
-            ]
+            Sequence[tuple[Tensor, Tensor, Tensor, list[str]]]
+            | Sequence[Sequence[tuple[Tensor, Tensor, Tensor, list[str]]]]
         ),
         _batch_indices: Sequence[Any],
     ) -> None:
@@ -235,10 +231,8 @@ class MaskImageWriter(BasePredictionWriter):
 
         """
         assert self.output_dir
-        predictions_for_loop: list[
-            Sequence[tuple[torch.Tensor, torch.Tensor, torch.Tensor, list[str]]]
-        ]
-        if isinstance(predictions[0][0], torch.Tensor):
+        predictions_for_loop: list[Sequence[tuple[Tensor, Tensor, Tensor, list[str]]]]
+        if isinstance(predictions[0][0], Tensor):
             predictions_for_loop = [
                 predictions  # pyright: ignore[reportAssignmentType]
             ]
@@ -370,12 +364,10 @@ class MaskImageWriter(BasePredictionWriter):
         trainer: L.Trainer,
         pl_module: L.LightningModule,
         predictions: (
-            Sequence[tuple[torch.Tensor, torch.Tensor, list[str]]]
-            | Sequence[Sequence[tuple[torch.Tensor, torch.Tensor, list[str]]]]
-            | Sequence[tuple[torch.Tensor, torch.Tensor, torch.Tensor, list[str]]]
-            | Sequence[
-                Sequence[tuple[torch.Tensor, torch.Tensor, torch.Tensor, list[str]]]
-            ]
+            Sequence[tuple[Tensor, Tensor, list[str]]]
+            | Sequence[Sequence[tuple[Tensor, Tensor, list[str]]]]
+            | Sequence[tuple[Tensor, Tensor, Tensor, list[str]]]
+            | Sequence[Sequence[tuple[Tensor, Tensor, Tensor, list[str]]]]
         ),
         batch_indices: Sequence[Any],
     ) -> None:
@@ -421,8 +413,8 @@ def get_output_dir_from_ckpt_path(ckpt_path: str | None):
 
 
 def _draw_masks(
-    img: torch.Tensor,
-    mask_one_hot: torch.Tensor,
+    img: Tensor,
+    mask_one_hot: Tensor,
     loading_mode: LoadingMode,
     inv_transform: InverseNormalize,
     drawn_classes: tuple[int, ...] = (0, 1, 2, 3),

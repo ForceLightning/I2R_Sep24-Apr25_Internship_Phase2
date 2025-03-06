@@ -15,7 +15,7 @@ from segmentation_models_pytorch.losses.focal import FocalLoss
 # PyTorch
 import torch
 from lightning.pytorch.loggers.tensorboard import TensorBoardLogger
-from torch import nn
+from torch import Tensor, nn
 from torch.nn import functional as F
 from torch.optim.lr_scheduler import LRScheduler
 from torch.optim.optimizer import Optimizer
@@ -169,7 +169,7 @@ class LightningUnetWrapper(CommonModelMixin):
         if isinstance(loss, str):
             match loss:
                 case "cross_entropy":
-                    class_weights = torch.Tensor(
+                    class_weights = Tensor(
                         [
                             0.000019931143,
                             0.001904109430,
@@ -181,7 +181,7 @@ class LightningUnetWrapper(CommonModelMixin):
                 case "focal":
                     self.loss = FocalLoss("multiclass", normalized=True)
                 case "weighted_dice":
-                    class_weights = torch.Tensor(
+                    class_weights = Tensor(
                         [
                             0.000019931143,
                             0.001904109430,
@@ -277,7 +277,7 @@ class LightningUnetWrapper(CommonModelMixin):
             )
 
     @override
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Tensor) -> Tensor:
         with torch.autocast(device_type=self.device.type):
             return self.model(x)  # pyright: ignore[reportCallIssue]
 
@@ -286,8 +286,8 @@ class LightningUnetWrapper(CommonModelMixin):
         shared_metric_logging_epoch_end(self, prefix)
 
     def training_step(
-        self, batch: tuple[torch.Tensor, torch.Tensor, str], batch_idx: int
-    ) -> torch.Tensor:
+        self, batch: tuple[Tensor, Tensor, str], batch_idx: int
+    ) -> Tensor:
         """Forward pass for the model with dataloader batches.
 
         Args:
@@ -305,7 +305,7 @@ class LightningUnetWrapper(CommonModelMixin):
         bs: int = images.shape[0] if len(images.shape) > 3 else 1
 
         with torch.autocast(device_type=self.device.type):
-            masks_proba: torch.Tensor = self.forward(images)
+            masks_proba: Tensor = self.forward(images)
 
             if (
                 self.dl_classification_mode == ClassificationMode.MULTILABEL_MODE
@@ -361,21 +361,17 @@ class LightningUnetWrapper(CommonModelMixin):
         return loss_all
 
     @override
-    def validation_step(
-        self, batch: tuple[torch.Tensor, torch.Tensor, str], batch_idx: int
-    ):
+    def validation_step(self, batch: tuple[Tensor, Tensor, str], batch_idx: int):
         self._shared_eval(batch, batch_idx, "val")
 
     @override
-    def test_step(
-        self, batch: tuple[torch.Tensor, torch.Tensor, str], batch_idx: int
-    ) -> None:
+    def test_step(self, batch: tuple[Tensor, Tensor, str], batch_idx: int) -> None:
         self._shared_eval(batch, batch_idx, "test")
 
     @torch.no_grad()
     def _shared_eval(
         self,
-        batch: tuple[torch.Tensor, torch.Tensor, str],
+        batch: tuple[Tensor, Tensor, str],
         batch_idx: int,
         prefix: Literal["val", "test"],
     ):
@@ -455,9 +451,9 @@ class LightningUnetWrapper(CommonModelMixin):
     def _shared_image_logging(
         self,
         batch_idx: int,
-        images: torch.Tensor,
-        masks_one_hot: torch.Tensor,
-        masks_preds: torch.Tensor,
+        images: Tensor,
+        masks_one_hot: Tensor,
+        masks_preds: Tensor,
         prefix: Literal["train", "val", "test"],
         every_interval: int = 10,
     ):
@@ -549,7 +545,7 @@ class LightningUnetWrapper(CommonModelMixin):
     @torch.no_grad()
     def predict_step(
         self,
-        batch: tuple[torch.Tensor, torch.Tensor, str | list[str]],
+        batch: tuple[Tensor, Tensor, str | list[str]],
         batch_idx: int,
         dataloader_idx: int = 0,
     ):
@@ -570,7 +566,7 @@ class LightningUnetWrapper(CommonModelMixin):
         images_input = images.to(self.device.type)
         masks = masks.to(self.device.type).long()
 
-        masks_preds: torch.Tensor
+        masks_preds: Tensor
         if self.dummy_predict == DummyPredictMode.GROUND_TRUTH:
             if self.eval_classification_mode == ClassificationMode.MULTICLASS_MODE:
                 masks_preds = (
@@ -589,7 +585,7 @@ class LightningUnetWrapper(CommonModelMixin):
                 masks_preds = torch.zeros_like(masks).bool()
         else:
             assert isinstance(self.model, nn.Module)
-            masks_proba: torch.Tensor = self.model(images_input)
+            masks_proba: Tensor = self.model(images_input)
 
             if self.eval_classification_mode == ClassificationMode.MULTICLASS_MODE:
                 masks_preds = masks_proba.argmax(dim=1)
