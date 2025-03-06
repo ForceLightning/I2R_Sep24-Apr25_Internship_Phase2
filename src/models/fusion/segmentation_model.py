@@ -134,7 +134,7 @@ class FourStreamAttentionUnet(SegmentationModel):
 
         if aux_params is not None:
             self.classification_head = ClassificationHead(
-                in_channels=self.vision_module.out_channels[-1],
+                in_channels=self.vision_module.encoder_channels[-1],
                 **aux_params,
             )
         else:
@@ -190,7 +190,7 @@ class FourStreamAttentionUnet(SegmentationModel):
             with torch.random.fork_rng(devices=("cpu", "cuda:0")):
                 attention = AttentionLayer(
                     c,
-                    num_heads=1,
+                    num_heads=2**i,
                     num_frames=self.num_frames,
                     reduce=self.reduce,
                     need_weights=False,
@@ -310,6 +310,7 @@ class ThreeStreamAttentionUnet(SegmentationModel):
         reduce: REDUCE_TYPES = "sum",
         single_attention_instance: bool = False,
         _attention_only: bool = False,
+        use_stn: bool = False,
     ) -> None:
         super().__init__()
 
@@ -331,6 +332,7 @@ class ThreeStreamAttentionUnet(SegmentationModel):
         self.single_attention_instance = single_attention_instance
         self._attention_only = _attention_only
         self.flat_conv = flat_conv
+        self.use_stn = use_stn
 
         self.spatial_dim = [7, 14, 28, 56, 112][: self.vision_module.encoder_depth][
             ::-1
@@ -367,7 +369,7 @@ class ThreeStreamAttentionUnet(SegmentationModel):
 
         if aux_params is not None:
             self.classification_head = ClassificationHead(
-                in_channels=self.vision_module.out_channels[-1],
+                in_channels=self.vision_module.encoder_channels[-1],
                 **aux_params,
             )
         else:
@@ -392,7 +394,7 @@ class ThreeStreamAttentionUnet(SegmentationModel):
             with torch.random.fork_rng(devices=("cpu", "cuda:0")):
                 attention = AttentionLayer(
                     c,
-                    num_heads=1,
+                    num_heads=2**i,
                     num_frames=self.num_frames,
                     reduce=self.reduce,
                     need_weights=False,

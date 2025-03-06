@@ -14,7 +14,6 @@ from segmentation_models_pytorch.encoders._utils import patch_first_conv
 # PyTorch
 import torch
 from torch import Tensor, nn
-from torch.nn import functional as F
 
 # Huggingface imports
 from transformers import AutoModel, ConvNextBackbone, ConvNextConfig
@@ -491,65 +490,6 @@ class FourStreamVisionModule(nn.Module):
             return zs, zr, zl
 
 
-# TODO: Include a way to have the motion data drive the transformation of the
-# spatial image(s).
-class SpatialTransformer(nn.Module):
-    def __init__(self, in_channels: int, input_is_3d: bool = False) -> None:
-        super().__init__()
-        # Spatial transformer localisation-network.
-        if input_is_3d:
-            self.localisation = nn.Sequential(
-                nn.Conv3d(in_channels, 8, kernel_size=(7, 7, 1)),
-                nn.MaxPool3d((2, 2, 1), stride=(2, 2, 1)),
-                nn.ReLU(True),
-                nn.Conv3d(8, 10, kernel_size=(5, 5, 1)),
-                nn.MaxPool3d((2, 2, 1), stride=(2, 2, 1)),
-                nn.ReLU(True),
-            )
-        else:
-            self.localisation = nn.Sequential(
-                nn.Conv2d(in_channels, 8, kernel_size=7),
-                nn.MaxPool2d(2, stride=2),
-                nn.ReLU(True),
-                nn.Conv2d(8, 10, kernel_size=5),
-                nn.MaxPool2d(2, stride=2),
-                nn.ReLU(True),
-            )
-
-        # Regressor for the 3 * 2 affine matrix
-        # NOTE: We need to know the output shape of the image embeddings in advance.
-        self.fc_loc = nn.Sequential(
-            nn.Linear(10 * 3 * 3, 32), nn.ReLU(True), nn.Linear(32, 3 * 2)
-        )
-
-        # Initialise the weights/bias with the identity transformation
-        self.fc_loc[2].weight.data.zero_()
-        self.fc_loc[2].bias.data.copy_(
-            torch.tensor([1, 0, 0, 0, 1, 0], dtype=torch.float)
-        )
-
-    def forward(self, x: Tensor) -> Tensor:
-        """Forward pass for the spatial transformer.
-
-        Args:
-            x: Image tensor of shape: (N, C, H, W)
-
-        Return:
-            Tensor: Image tensor of shape (N, C, H, W)
-
-        """
-        # Transform the input
-        xs = self.localisation(x)
-        xs = xs.view(-1, 10 * 3 * 3)
-        theta = self.fc_loc(xs)
-        theta = theta.view(-1, 2, 3)
-
-        grid = F.affine_grid(theta, list(x.size()))
-        x = F.grid_sample(x, grid)
-
-        return x
-
-
 class PositionalEncoding(nn.Module):
     def __init__(
         self, d_model: int, dropout: float = 0.0, max_len: int = 12544, **kwargs
@@ -570,7 +510,8 @@ class PositionalEncoding(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
         # output = word_embedding + positional_embedding
         z = x + nn.Parameter(
-            self.pe[:, : x.size(1)], requires_grad=False
+            self.pe[:, : x.size(1)],  # pyright: ignore[reportIndexIssue]
+            requires_grad=False,
         )  # size = (B, L, d_model)
         return self.dropout(z)
 
