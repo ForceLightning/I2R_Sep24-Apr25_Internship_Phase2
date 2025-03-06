@@ -13,3 +13,6 @@
 [submodule "thirdparty/vivim"]
 	path = thirdparty/vivim
 	url = git@github.com:ForceLightning/Vivim.git
+[submodule "thirdparty/libcpab"]
+	path = thirdparty/libcpab
+	url = https://github.com/SkafteNicki/libcpab.git
