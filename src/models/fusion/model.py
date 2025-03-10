@@ -16,7 +16,7 @@ import torch
 from torch import Tensor, nn
 
 # Huggingface imports
-from transformers import AutoModel, ConvNextBackbone, ConvNextConfig
+from transformers import AutoModel, BertModel, ConvNextBackbone, ConvNextConfig
 
 # First party imports
 from models.attention.utils import REDUCE_TYPES
@@ -35,7 +35,7 @@ class BERTModule(nn.Module):
     ):
         super().__init__()
 
-        self.model = AutoModel.from_pretrained(
+        self.model: BertModel = AutoModel.from_pretrained(
             bert_type, output_hidden_states=True, trust_remote_code=True
         )
         self.project_head = nn.Sequential(

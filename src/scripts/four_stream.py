@@ -112,6 +112,7 @@ class FourStreamDataModule(L.LightningDataModule):
             combine_train_val=self.combine_train_val,
             residual_mode=self.residual_mode,
             image_size=self.image_size,
+            _use_dummy_reports=self.dummy_text,
         )
 
         assert len(trainval_dataset) > 0, "combined train/val set is empty."
@@ -141,6 +142,7 @@ class FourStreamDataModule(L.LightningDataModule):
             combine_train_val=self.combine_train_val,
             residual_mode=self.residual_mode,
             image_size=self.image_size,
+            _use_dummy_reports=self.dummy_text,
         )
         if self.combine_train_val:
             self.train = trainval_dataset
@@ -172,6 +174,7 @@ class FourStreamDataModule(L.LightningDataModule):
                 combine_train_val=self.combine_train_val,
                 residual_mode=self.residual_mode,
                 image_size=self.image_size,
+                _use_dummy_reports=self.dummy_text,
             )
 
             train_set, valid_set = get_trainval_data_subsets(
@@ -290,8 +293,8 @@ class FourStreamAttentionCLI(I2RInternshipCommonCLI):
             "dl_classification_mode": ClassificationMode.BINARY_CLASS_3_MODE,
             "eval_classification_mode": ClassificationMode.BINARY_CLASS_3_MODE,
             "residual_mode": ResidualMode.SUBTRACT_NEXT_FRAME,
-            "model_architecture": ModelType.UNET,
             "trainer.max_epochs": 50,
+            "model.model_type": ModelType.UNET,
             "model.encoder_name": "resnet50",
             "model.encoder_weights": "imagenet",
             "model.in_channels": 3,

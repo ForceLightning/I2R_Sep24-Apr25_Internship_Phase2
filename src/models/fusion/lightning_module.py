@@ -286,11 +286,11 @@ class FourStreamAttentionLightningModule(CommonModelMixin):
                     dtype=torch.float32,
                 ).to(self.device.type),
                 # Text
-                torch.randn((self.batch_size, 768), dtype=torch.float32).to(
+                torch.randint(0, 512, (self.batch_size, 24), dtype=torch.long).to(
                     self.device.type
                 ),
                 # Attention Mask
-                torch.randn((self.batch_size, 768), dtype=torch.float32).to(
+                torch.randint(0, 2, (self.batch_size, 24), dtype=torch.long).to(
                     self.device.type
                 ),
                 # LGE
@@ -876,11 +876,11 @@ class ThreeStreamAttentionLightningModule(CommonModelMixin):
                     dtype=torch.float32,
                 ).to(self.device.type),
                 # Text
-                torch.randn((self.batch_size, 768), dtype=torch.float32).to(
+                torch.randint(0, 512, (self.batch_size, 24), dtype=torch.long).to(
                     self.device.type
                 ),
                 # Attention Mask
-                torch.randn((self.batch_size, 768), dtype=torch.float32).to(
+                torch.randint(0, 2, (self.batch_size, 24), dtype=torch.long).to(
                     self.device.type
                 ),
             )

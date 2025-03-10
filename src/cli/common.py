@@ -12,7 +12,7 @@ from lightning.pytorch.cli import LightningArgumentParser, LightningCLI
 # First party imports
 from utils import prediction_writer, utils
 from utils.prediction_writer import MaskImageWriter
-from utils.types import ClassificationMode, LoadingMode
+from utils.types import ClassificationMode, LoadingMode, ModelType
 
 
 class CommonCLI(LightningCLI):
@@ -155,12 +155,3 @@ class I2RInternshipCommonCLI(CommonCLI):
     @override
     def add_arguments_to_parser(self, parser: LightningArgumentParser):
         super().add_arguments_to_parser(parser)
-
-        # Model type argument
-        parser.add_argument(
-            "--model_architecture",
-            help="Model architecture (UNET, UNET_PLUS_PLUS, etc.)",
-        )
-        parser.link_arguments(
-            "model_architecture", "model.model_type", compute_fn=utils.get_model_type
-        )

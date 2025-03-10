@@ -480,8 +480,9 @@ if __name__ == "__main__":
 
     token, mask = token_output["input_ids"], token_output["attention_mask"]
 
-    image = torch.rand((1, 10, 1, 224, 224), dtype=torch.float32).cuda()
-    res_image = torch.rand((1, 10, 1, 224, 224), dtype=torch.float32).cuda()
+    xs = torch.rand((1, 10, 1, 224, 224), dtype=torch.float32).cuda()
+    xr = torch.rand((1, 10, 1, 224, 224), dtype=torch.float32).cuda()
+    xl = torch.rand((1, 1, 224, 224), dtype=torch.float32).cuda()
 
     text_module = BERTModule()
     vision_module = FourStreamVisionModule()
@@ -489,17 +490,9 @@ if __name__ == "__main__":
     model = FourStreamAttentionUnet(
         vision_module,
         text_module,
-        classes=4,
+        classes=1,
     ).cuda()
 
-    proba, initial_uncertainty, uncertainty, conf_loss = model(
-        image, res_image, token.cuda(), mask.cuda()
-    )
+    proba = model(xs, xr, token.cuda(), mask.cuda(), xl)
 
-    print(
-        proba.shape,
-        initial_uncertainty.shape,
-        uncertainty.shape,
-        conf_loss.shape,
-        sep="\n\n",
-    )
+    print(proba.shape)

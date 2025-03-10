@@ -38,3 +38,6 @@ configs
 # Documentation
 docs/source/apidoc
 docs/build/**
+
+# Logs
+logs
