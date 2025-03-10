@@ -1,13 +1,15 @@
 """Common definitions for the models module."""
 
 # Standard Library
-from typing import Literal, override
+from typing import Any, Literal, override
 
 # PyTorch
 import lightning as L
 import torch
 from lightning.pytorch.loggers.tensorboard import TensorBoardLogger
 from torch import nn
+from torch.optim import Optimizer
+from torch.optim.lr_scheduler import LRScheduler
 from torchmetrics import Metric, MetricCollection
 from torchvision.transforms.v2 import Compose
 
@@ -44,6 +46,17 @@ class CommonModelMixin(L.LightningModule):
     de_transform: Compose | InverseNormalize
     """The inverse transformation from augmentation of the samples by the dataloaders."""
     classes: int
+    """Number of output classes."""
+    optimizer: type[Optimizer] | str
+    """Which optimizer to use."""
+    optimizer_kwargs: dict[str, Any]
+    """Optimizer parameters."""
+    total_epochs: int
+    """Total number of training epochs."""
+    scheduler: type[LRScheduler] | str
+    """Learning rate scheduler."""
+    scheduler_kwargs: dict[str, Any]
+    """Scheduler parameters."""
 
     @override
     def setup(self, stage: str) -> None:

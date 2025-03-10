@@ -7,7 +7,6 @@ from typing import Any, override
 from warmup_scheduler import GradualWarmupScheduler
 
 # PyTorch
-import lightning as L
 import torch
 from torch.optim.adam import Adam
 from torch.optim.adamw import AdamW
@@ -18,6 +17,7 @@ from torchvision.transforms import v2
 from torchvision.transforms.v2 import Compose
 
 # First party imports
+from models.common import CommonModelMixin
 from utils.types import ClassificationMode, LoadingMode, ModelType, ResidualMode
 
 
@@ -162,7 +162,7 @@ def get_version_name(ckpt_path: str | None) -> str | None:
 
 
 def configure_optimizers(
-    module: L.LightningModule,
+    module: CommonModelMixin,
 ) -> dict[str, Optimizer | dict[str, Any]]:
     """Configure the optimizer and learning rate scheduler for the model.
 
@@ -242,7 +242,9 @@ def configure_optimizers(
                     f"Scheduler of type {module.scheduler} not implemented"
                 )
     else:
-        scheduler = module.scheduler(optimizer, **module.scheduler_kwargs)
+        scheduler = {
+            "scheduler": module.scheduler(optimizer, **module.scheduler_kwargs)
+        }
     return {"optimizer": optimizer, "lr_scheduler": scheduler}
 
 
