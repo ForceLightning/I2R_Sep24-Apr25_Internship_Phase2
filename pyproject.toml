@@ -25,6 +25,7 @@ dependencies = [
     "ipykernel>=6.29.5",
     "einops>=0.8.1",
     "torch-scatter==2.1.2+pt25cu124 ; os_name != 'darwin'",
+    "ml-collections>=1.0.0",
 ]
 
 [dependency-groups]

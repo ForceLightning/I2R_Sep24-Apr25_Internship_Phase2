@@ -137,6 +137,898 @@ class DefaultDatasetProtocol(Protocol):
         ...
 
 
+class LGEDataset(
+    Dataset[tuple[Tensor, Tensor, str]],
+    DefaultTransformsMixin,
+):
+    """LGE dataset for the cardiac LGE MRI images."""
+
+    def __init__(
+        self,
+        img_dir: str,
+        mask_dir: str,
+        idxs_dir: str,
+        transform_img: Compose,
+        transform_mask: Compose,
+        transform_together: Compose | None = None,
+        batch_size: int = 8,
+        mode: Literal["train", "val", "test"] = "train",
+        classification_mode: ClassificationMode = ClassificationMode.MULTICLASS_MODE,
+        loading_mode: LoadingMode = LoadingMode.RGB,
+        combine_train_val: bool = False,
+        image_size: _size_2_t = (224, 224),
+    ) -> None:
+        """Initialise the LGE dataset object.
+
+        Args:
+            img_dir: The directory containing the LGE images.
+            mask_dir: The directory containing the masks for the LGE images.
+            idxs_dir: The directory containing the indices for the training and
+            validation sets.
+            transform_img: The transform to apply to the images.
+            transform_mask: The transform to apply to the masks.
+            transform_resize: The resize transform to apply to both images and masks.
+            transform_together: The transform to apply to both the images and masks.
+            batch_size: The batch size for the dataset.
+            mode: The mode of the dataset.
+            classification_mode: The classification mode for the dataset.
+            loading_mode: Determines the cv2.imread flags for the images.
+            combine_train_val: Whether to combine the train/val sets.
+            image_size: Output image resolution
+
+        Raises:
+            NotImplementedError: If the classification mode is not implemented.
+            RuntimeError: If the indices fail to load.
+            AssertionError: If the indices are not disjoint.
+
+        """
+        super().__init__()
+
+        self.img_dir = img_dir
+        self.mask_dir = mask_dir
+
+        self.img_list = os.listdir(self.img_dir)
+        self.mask_list = os.listdir(self.mask_dir)
+
+        height = image_size[0] if isinstance(image_size, tuple) else image_size
+        width = image_size[1] if isinstance(image_size, tuple) else image_size
+        self.image_size: tuple[int, int] = (height, width)
+
+        self.transform_img = transform_img
+        self.transform_mask = transform_mask
+        self.transform_together = (
+            transform_together if transform_together else Compose([v2.Identity()])
+        )
+
+        self.train_idxs: list[int]
+        self.valid_idxs: list[int]
+
+        self.batch_size = batch_size
+        if mode != "test" and not combine_train_val:
+            load_train_indices(
+                self,
+                os.path.join(idxs_dir, "train_indices.pkl"),
+                os.path.join(idxs_dir, "val_indices.pkl"),
+            )
+
+        self.classification_mode = classification_mode
+        self.loading_mode = loading_mode
+        self._imread_mode = (
+            IMREAD_COLOR if self.loading_mode == LoadingMode.RGB else IMREAD_GRAYSCALE
+        )
+
+    @override
+    def __getitem__(self, index: int) -> tuple[Tensor, Tensor, str]:
+        """Get a batch of images, masks, and the image names from the dataset.
+
+        Args:
+            index: The index of the batch.
+
+        Returns:
+            The images, masks, and image names.
+
+        Raises:
+            ValueError: If the image is not in .PNG format.
+            NotImplementedError: If the classification mode is not implemented
+
+        """
+        img_name = self.img_list[index]
+        mask_name = self.img_list[index].split(".")[0] + "_0000.nii.png"
+
+        # PERF(PIL): This reduces the loading and transform time by 60% when compared
+        # to OpenCV.
+
+        # Convert LGE to RGB or Greyscale
+        with Image.open(os.path.join(self.img_dir, img_name), formats=["png"]) as img:
+            img_list = (
+                img.convert("RGB")
+                if self.loading_mode == LoadingMode.RGB
+                else img.convert("L")
+            )
+        out_img: Tensor = self.transform_img(img_list)
+
+        with Image.open(
+            os.path.join(self.mask_dir, mask_name), formats=["png"]
+        ) as mask:
+            out_mask = tv_tensors.Mask(self.transform_mask(mask))
+
+        num_classes: int
+        match self.classification_mode:
+            case ClassificationMode.MULTILABEL_MODE:
+                # NOTE: This turns the problem into a multilabel segmentation problem.
+                # As label_3 ⊂ label_2 and label_2 ⊂ label_1, we need to essentially apply
+                # bitwise or operations to adhere to those conditions.
+                lab_mask_one_hot = F.one_hot(
+                    out_mask.squeeze(), num_classes=4
+                )  # H x W x C
+                lab_mask_one_hot[:, :, 2] = lab_mask_one_hot[:, :, 2].bitwise_or(
+                    lab_mask_one_hot[:, :, 3]
+                )
+                lab_mask_one_hot[:, :, 1] = lab_mask_one_hot[:, :, 1].bitwise_or(
+                    lab_mask_one_hot[:, :, 2]
+                )
+                out_mask = tv_tensors.Mask(lab_mask_one_hot.bool().permute(-1, 0, 1))
+                num_classes = 4
+
+            case ClassificationMode.MULTICLASS_MODE:
+                num_classes = 4
+            case ClassificationMode.BINARY_CLASS_3_MODE:
+                lab_mask_one_hot = F.one_hot(
+                    out_mask.squeeze(), num_classes=4
+                )  # H x W x C
+                out_mask = tv_tensors.Mask(lab_mask_one_hot[:, :, 3].bool().long())
+                num_classes = 2
+            case _:
+                raise NotImplementedError(
+                    f"The mode {self.classification_mode.name} is not implemented"
+                )
+
+        out_img, out_mask = self.transform_together(out_img, out_mask)
+        out_mask = torch.clamp(out_mask, 0, num_classes)
+
+        # GUARD: OOB values can cause a CUDA error to occur later when F.one_hot is
+        # used.
+        assert out_mask.max() < num_classes and out_mask.min() >= 0, (
+            f"Out mask values should be 0 <= x < {num_classes}, "
+            + f"but has {out_mask.min()} min and {out_mask.max()} max. "
+            + f"for input image and mask paths: {img_name}, {mask_name}"
+        )
+
+        out_mask = out_mask.squeeze().long()
+        if self.classification_mode == ClassificationMode.BINARY_CLASS_3_MODE:
+            out_mask = out_mask.unsqueeze(0)
+
+        return out_img, tv_tensors.Mask(out_mask), img_name
+
+    def __len__(self) -> int:
+        """Get the length of the dataset."""
+        return len(self.img_list)
+
+
+class CineDataset(
+    Dataset[tuple[Tensor, Tensor, str]],
+    DefaultTransformsMixin,
+):
+    """Cine cardiac magnetic resonance imagery dataset."""
+
+    def __init__(
+        self,
+        img_dir: str,
+        mask_dir: str,
+        idxs_dir: str,
+        transform_img: Compose,
+        transform_mask: Compose,
+        transform_together: Compose | None = None,
+        frames: int = 30,
+        select_frame_method: Literal["consecutive", "specific"] = "consecutive",
+        batch_size: int = 4,
+        mode: Literal["train", "val", "test"] = "train",
+        classification_mode: ClassificationMode = ClassificationMode.MULTICLASS_MODE,
+        loading_mode: LoadingMode = LoadingMode.RGB,
+        combine_train_val: bool = False,
+        image_size: _size_2_t = (224, 224),
+    ) -> None:
+        """Initialise the dataset for the Cine baseline implementation.
+
+        Args:
+            img_dir: Path to the directory containing the images.
+            mask_dir: Path to the directory containing the masks.
+            idxs_dir: Path to the directory containing the indices.
+            transform_img: Transform to apply to the images.
+            transform_mask: Transform to apply to the masks.
+            transform_together: The transform to apply to both the images and masks.
+            frames: Number of frames to use for the model (out of 30).
+            select_frame_method: How to select the frames (if fewer than 30).
+            batch_size: Batch size for the dataset.
+            mode: Runtime mode.
+            classification_mode: Classification mode for the dataset.
+            loading_mode: Determines the cv2.imread flags for the images.
+            combine_train_val: Whether to combine the train/val sets.
+            image_size: Output image resolution.
+
+        Raises:
+            NotImplementedError: If the classification mode is not implemented.
+            RuntimeError: If the indices fail to load.
+            AssertionError: If the indices are not disjoint.
+
+        """
+        super().__init__()
+
+        self.img_dir = img_dir
+        self.mask_dir = mask_dir
+
+        self.img_list: list[str] = os.listdir(self.img_dir)
+        self.mask_list: list[str] = os.listdir(self.mask_dir)
+
+        height = image_size[0] if isinstance(image_size, tuple) else image_size
+        width = image_size[1] if isinstance(image_size, tuple) else image_size
+        self.image_size: tuple[int, int] = (height, width)
+
+        self.transform_img = transform_img
+        self.transform_mask = transform_mask
+        self.transform_together = (
+            transform_together if transform_together else Compose([v2.Identity()])
+        )
+
+        self.frames = frames
+        self.select_frame_method: Literal["consecutive", "specific"] = (
+            select_frame_method
+        )
+        self.train_idxs: list[int]
+        self.valid_idxs: list[int]
+
+        self.batch_size = batch_size
+        self.mode = mode
+        self.classification_mode = classification_mode
+        self.loading_mode = loading_mode
+        self._imread_mode = (
+            IMREAD_COLOR if self.loading_mode == LoadingMode.RGB else IMREAD_GRAYSCALE
+        )
+
+        if mode != "test" and not combine_train_val:
+            load_train_indices(
+                self,
+                os.path.join(idxs_dir, "train_indices.pkl"),
+                os.path.join(idxs_dir, "val_indices.pkl"),
+            )
+
+    @override
+    def __getitem__(self, index: int) -> tuple[Tensor, Tensor, str]:
+        # Define Cine file name
+        img_name: str = self.img_list[index]
+        mask_name: str = self.img_list[index].split(".")[0] + ".nii.png"
+
+        # PERF: Initialise the output tensor ahead of time to reduce memory allocation
+        # time.
+        _, img_list = cv2.imreadmulti(
+            os.path.join(self.img_dir, img_name), flags=IMREAD_GRAYSCALE
+        )
+        combined_video = torch.empty((30, *self.image_size), dtype=torch.uint8)
+        for i in range(30):
+            img = img_list[i]
+            img = cv2.resize(img, self.image_size)
+            combined_video[i, :, :] = torch.as_tensor(img)
+
+        combined_video = combined_video.view(30, 1, *self.image_size)
+        combined_video = self.transform_img(combined_video)
+
+        with Image.open(
+            os.path.join(self.mask_dir, mask_name), formats=["png"]
+        ) as mask:
+            out_mask = tv_tensors.Mask(self.transform_mask(mask))
+
+        num_classes: int
+        match self.classification_mode:
+            case ClassificationMode.MULTILABEL_MODE:
+                # NOTE: This turns the problem into a multilabel segmentation problem.
+                # As label_3 ⊂ label_2 and label_2 ⊂ label_1, we need to essentially apply
+                # bitwise or operations to adhere to those conditions.
+                lab_mask_one_hot = F.one_hot(
+                    out_mask.squeeze(), num_classes=4
+                )  # H x W x C
+                lab_mask_one_hot[:, :, 2] = lab_mask_one_hot[:, :, 2].bitwise_or(
+                    lab_mask_one_hot[:, :, 3]
+                )
+                lab_mask_one_hot[:, :, 1] = lab_mask_one_hot[:, :, 1].bitwise_or(
+                    lab_mask_one_hot[:, :, 2]
+                )
+                out_mask = tv_tensors.Mask(
+                    lab_mask_one_hot.bool().long().permute(-1, 0, 1)
+                )
+                num_classes = 4
+
+            case ClassificationMode.MULTICLASS_MODE:
+                num_classes = 4
+            case ClassificationMode.BINARY_CLASS_3_MODE:
+                lab_mask_one_hot = F.one_hot(
+                    out_mask.squeeze(), num_classes=4
+                )  # H x W x C
+                out_mask = lab_mask_one_hot[:, :, 3].bool()
+                num_classes = 2
+            case _:
+                raise NotImplementedError(
+                    f"The mode {self.classification_mode.name} is not implemented"
+                )
+
+        out_video, out_mask = self.transform_together(combined_video, out_mask)
+        out_mask = torch.clamp(out_mask, 0, num_classes)
+
+        # GUARD: OOB values can cause a CUDA error to occur later when F.one_hot is
+        # used.
+        assert out_mask.max() < num_classes and out_mask.min() >= 0, (
+            f"Out mask values should be 0 <= x < {num_classes}, "
+            + f"but has {out_mask.min()} min and {out_mask.max()} max. "
+            + f"for input image and mask paths: {img_name}, {mask_name}"
+        )
+
+        out_video = concatenate_imgs(self.frames, self.select_frame_method, out_video)
+
+        f, c, h, w = out_video.shape
+        out_video = out_video.reshape(f * c, h, w)
+
+        out_mask = out_mask.squeeze().long()
+        if self.classification_mode == ClassificationMode.BINARY_CLASS_3_MODE:
+            out_mask = out_mask.unsqueeze(0)
+
+        return out_video, tv_tensors.Mask(out_mask), img_name
+
+    def __len__(self) -> int:
+        """Get the length of the dataset."""
+        return len(self.img_list)
+
+
+class TwoPlusOneDataset(CineDataset, DefaultTransformsMixin):
+    """Cine CMR dataset."""
+
+    def __init__(
+        self,
+        img_dir: str,
+        mask_dir: str,
+        idxs_dir: str,
+        frames: int,
+        select_frame_method: Literal["consecutive", "specific"],
+        transform_img: Compose,
+        transform_mask: Compose,
+        transform_together: Compose | None = None,
+        batch_size: int = 2,
+        mode: Literal["train", "val", "test"] = "train",
+        classification_mode: ClassificationMode = ClassificationMode.MULTICLASS_MODE,
+        loading_mode: LoadingMode = LoadingMode.RGB,
+        combine_train_val: bool = False,
+        image_size: _size_2_t = (224, 224),
+    ) -> None:
+        """Init the cine CMR dataset.
+
+        Args:
+            img_dir: The directory containing the CINE images.
+            mask_dir: The directory containing the masks for the CINE images.
+            idxs_dir: The directory containing the indices for the training and
+                validation sets.
+            frames: The number of frames to concatenate.
+            select_frame_method: The method of selecting frames to concatenate.
+            transform_img: The transform to apply to the images.
+            transform_mask: The transform to apply to the masks.
+            transform_resize: The resize transform to apply to both images and masks.
+            transform_together: The transform to apply to both the images and masks.
+            batch_size: The batch size for the dataset.
+            mode: The mode of the dataset.
+            classification_mode: The classification mode for the dataset.
+            loading_mode: Determines the cv2.imread flags for the images.
+            combine_train_val: Whether to combine the train/val sets.
+            image_size: Output image resolution.
+
+        Raises:
+            NotImplementedError: If the classification mode is not implemented.
+            RuntimeError: If the indices fail to load.
+            AssertionError: If the indices are not disjoint.
+
+        """
+        self.frames = frames
+        self.select_frame_method: Literal["consecutive", "specific"] = (
+            select_frame_method
+        )
+        super().__init__(
+            img_dir,
+            mask_dir,
+            idxs_dir,
+            transform_img,
+            transform_mask,
+            transform_together,
+            frames,
+            select_frame_method,
+            batch_size,
+            mode,
+            classification_mode,
+            loading_mode=loading_mode,
+            combine_train_val=combine_train_val,
+            image_size=image_size,
+        )
+
+    @override
+    def __getitem__(self, index: int) -> tuple[Tensor, Tensor, str]:
+        img_name = self.img_list[index]
+        mask_name = self.img_list[index].split(".")[0] + ".nii.png"
+
+        # PERF: Initialise the output tensor ahead of time to reduce memory allocation
+        # time.
+        _, img_list = cv2.imreadmulti(
+            os.path.join(self.img_dir, img_name), flags=IMREAD_GRAYSCALE
+        )
+        combined_video = torch.empty((30, *self.image_size), dtype=torch.uint8)
+        for i in range(30):
+            img = img_list[i]
+            img = cv2.resize(img, self.image_size)
+            combined_video[i, :, :] = torch.as_tensor(img)
+
+        combined_video = combined_video.view(30, 1, *self.image_size)
+        combined_video = self.transform_img(combined_video)
+
+        # Perform necessary operations on the mask
+        with Image.open(
+            os.path.join(self.mask_dir, mask_name), formats=["png"]
+        ) as mask:
+            out_mask = tv_tensors.Mask(self.transform_mask(mask))
+
+        num_classes: int
+        match self.classification_mode:
+            case ClassificationMode.MULTILABEL_MODE:
+                # NOTE: This turns the problem into a multilabel segmentation problem.
+                # As label_3 ⊂ label_2 and label_2 ⊂ label_1, we need to essentially apply
+                # bitwise or operations to adhere to those conditions.
+                lab_mask_one_hot = F.one_hot(
+                    out_mask.squeeze(), num_classes=4
+                )  # H x W x C
+                lab_mask_one_hot[:, :, 2] = lab_mask_one_hot[:, :, 2].bitwise_or(
+                    lab_mask_one_hot[:, :, 3]
+                )
+                lab_mask_one_hot[:, :, 1] = lab_mask_one_hot[:, :, 1].bitwise_or(
+                    lab_mask_one_hot[:, :, 2]
+                )
+                out_mask = tv_tensors.Mask(
+                    lab_mask_one_hot.bool().long().permute(-1, 0, 1)
+                )
+                num_classes = 4
+
+            case ClassificationMode.MULTICLASS_MODE:
+                num_classes = 4
+            case ClassificationMode.BINARY_CLASS_3_MODE:
+                lab_mask_one_hot = F.one_hot(
+                    out_mask.squeeze(), num_classes=4
+                )  # H x W x C
+                out_mask = tv_tensors.Mask(lab_mask_one_hot[:, :, 3].bool().long())
+                num_classes = 2
+            case _:
+                raise NotImplementedError(
+                    f"The mode {self.classification_mode.name} is not implemented"
+                )
+
+        combined_video, out_mask = self.transform_together(combined_video, out_mask)
+        out_mask = torch.clamp(out_mask, 0, num_classes)
+
+        # GUARD: OOB values can cause a CUDA error to occur later when F.one_hot is
+        # used.
+        assert out_mask.max() < num_classes and out_mask.min() >= 0, (
+            f"Out mask values should be 0 <= x < {num_classes}, "
+            + f"but has {out_mask.min()} min and {out_mask.max()} max. "
+            + f"for input image and mask paths: {img_name}, {mask_name}"
+        )
+
+        assert (
+            len(combined_video.shape) == 4
+        ), f"Combined images must be of shape: (F, C, H, W) but is {combined_video.shape} instead."
+
+        out_video = concatenate_imgs(
+            self.frames, self.select_frame_method, combined_video
+        )
+        out_mask = out_mask.squeeze().long()
+        if self.classification_mode == ClassificationMode.BINARY_CLASS_3_MODE:
+            out_mask = out_mask.unsqueeze(0)
+
+        return out_video, tv_tensors.Mask(out_mask), img_name
+
+
+class ResidualTwoPlusOneDataset(
+    Dataset[tuple[Tensor, Tensor, Tensor, str]],
+    DefaultTransformsMixin,
+):
+    """Two stream dataset with cine images and residual frames."""
+
+    def __init__(
+        self,
+        img_dir: str,
+        mask_dir: str,
+        idxs_dir: str,
+        frames: int,
+        select_frame_method: Literal["consecutive", "specific"],
+        transform_img: Compose,
+        transform_mask: Compose,
+        transform_resize: Compose | v2.Resize | None = None,
+        transform_together: Compose | None = None,
+        transform_residual: Compose | None = None,
+        batch_size: int = 2,
+        mode: Literal["train", "val", "test"] = "train",
+        classification_mode: ClassificationMode = ClassificationMode.MULTICLASS_MODE,
+        loading_mode: LoadingMode = LoadingMode.RGB,
+        combine_train_val: bool = False,
+        residual_mode: ResidualMode = ResidualMode.SUBTRACT_NEXT_FRAME,
+        image_size: _size_2_t = (224, 224),
+    ) -> None:
+        """Initialise the two stream dataset with residual frames.
+
+        Args:
+            img_dir: The directory containing the images.
+            mask_dir: The directory containing the masks.
+            idxs_dir: The directory containing the indices.
+            frames: The number of frames to concatenate.
+            select_frame_method: The method of selecting frames.
+            transform_img: The transform to apply to the images.
+            transform_mask: The transform to apply to the masks.
+            transform_resize: The transform to apply to the images and masks.
+            transform_together: The transform to apply to both the images and masks.
+            transform_residual: The transform to apply to the residual frames.
+            batch_size: The batch size for the dataset.
+            mode: The mode of the dataset.
+            classification_mode: The classification mode for the dataset.
+            loading_mode: Determines the cv2.imread flags for the images.
+            combine_train_val: Whether to combine the train/val sets.
+            residual_mode: The mode of calculating the residual frames.
+            image_size: Output image resolution.
+
+        """
+        super().__init__()
+        self.frames = frames
+        self.select_frame_method: Literal["consecutive", "specific"] = (
+            select_frame_method
+        )
+
+        self.img_dir = img_dir
+        self.mask_dir = mask_dir
+
+        self.img_list: list[str] = os.listdir(self.img_dir)
+        self.mask_list: list[str] = os.listdir(self.mask_dir)
+
+        height = image_size[0] if isinstance(image_size, tuple) else image_size
+        width = image_size[1] if isinstance(image_size, tuple) else image_size
+        self.image_size: tuple[int, int] = (height, width)
+
+        self.transform_img = transform_img
+        self.transform_mask = transform_mask
+        self.transform_resize = transform_resize
+        self.transform_together = (
+            transform_together if transform_together else Compose([v2.Identity()])
+        )
+        if transform_residual:
+            self.transform_residual = transform_residual
+        else:
+            match residual_mode:
+                case ResidualMode.SUBTRACT_NEXT_FRAME:
+                    self.transform_residual = Compose([v2.Identity()])
+                case ResidualMode.OPTICAL_FLOW_CPU | ResidualMode.OPTICAL_FLOW_GPU:
+                    self.transform_residual = Compose(
+                        [v2.ToImage(), v2.ToDtype(torch.float32, scale=False)]
+                    )
+
+        self.train_idxs: list[int]
+        self.valid_idxs: list[int]
+
+        self.batch_size = batch_size
+        self.mode = mode
+        self.classification_mode = classification_mode
+        self.loading_mode = loading_mode
+        self._imread_mode = (
+            IMREAD_COLOR if self.loading_mode == LoadingMode.RGB else IMREAD_GRAYSCALE
+        )
+        self.residual_mode = residual_mode
+
+        if mode != "test" and not combine_train_val:
+            load_train_indices(
+                self,
+                os.path.join(idxs_dir, "train_indices.pkl"),
+                os.path.join(idxs_dir, "val_indices.pkl"),
+            )
+
+    def __len__(self) -> int:
+        """Get the length of the dataset."""
+        return len(self.img_list)
+
+    def _get_regular(self, index: int) -> tuple[Tensor, Tensor, tv_tensors.Mask, str]:
+        img_name = self.img_list[index]
+        mask_name = self.img_list[index].split(".")[0] + ".nii.png"
+
+        # PERF: Initialise the output tensor ahead of time to reduce memory allocation
+        # time.
+        _, img_list = cv2.imreadmulti(
+            os.path.join(self.img_dir, img_name), flags=IMREAD_GRAYSCALE
+        )
+        combined_video = torch.empty((30, *self.image_size), dtype=torch.uint8)
+        for i in range(30):
+            img = img_list[i]
+            img = cv2.resize(
+                img, self.image_size, interpolation=cv2.INTER_NEAREST_EXACT
+            )
+            combined_video[i, :, :] = torch.as_tensor(img)
+
+        combined_video = combined_video.view(30, 1, *self.image_size)
+        combined_video = self.transform_img(combined_video)
+
+        # Perform necessary operations on the mask
+        with Image.open(
+            os.path.join(self.mask_dir, mask_name), formats=["png"]
+        ) as mask:
+            out_mask = tv_tensors.Mask(self.transform_mask(mask))
+            if out_mask.min() < 0 or out_mask.max() >= 4:
+                logger.warning(
+                    "mask does not have values 0 <= x < 4, but is instead %f min and %f max.",
+                    out_mask.min().item(),
+                    out_mask.max().item(),
+                )
+                out_mask = tv_tensors.Mask(self.transform_mask(mask))
+
+        num_classes: int
+        match self.classification_mode:
+            case ClassificationMode.MULTILABEL_MODE:
+                # NOTE: This turns the problem into a multilabel segmentation problem.
+                # As label_3 ⊂ label_2 and label_2 ⊂ label_1, we need to essentially apply
+                # bitwise or operations to adhere to those conditions.
+                lab_mask_one_hot = F.one_hot(
+                    out_mask.squeeze(), num_classes=4
+                )  # H x W x C
+                lab_mask_one_hot[:, :, 2] = lab_mask_one_hot[:, :, 2].bitwise_or(
+                    lab_mask_one_hot[:, :, 3]
+                )
+                lab_mask_one_hot[:, :, 1] = lab_mask_one_hot[:, :, 1].bitwise_or(
+                    lab_mask_one_hot[:, :, 2]
+                )
+                out_mask = tv_tensors.Mask(
+                    lab_mask_one_hot.bool().long().permute(-1, 0, 1)
+                )
+                num_classes = 4
+
+            case ClassificationMode.MULTICLASS_MODE:
+                num_classes = 4
+            case ClassificationMode.BINARY_CLASS_3_MODE:
+                lab_mask_one_hot = F.one_hot(
+                    out_mask.squeeze(), num_classes=4
+                )  # H x W x C
+                out_mask = tv_tensors.Mask(lab_mask_one_hot[:, :, 3].bool().long())
+                num_classes = 2
+
+            case _:
+                raise NotImplementedError(
+                    f"The mode {self.classification_mode.name} is not implemented"
+                )
+
+        combined_video, out_mask = self.transform_together(combined_video, out_mask)
+        out_mask = torch.clamp(out_mask, 0, num_classes)
+
+        # GUARD: OOB values can cause a CUDA error to occur later when F.one_hot is
+        # used.
+        assert out_mask.max() < num_classes and out_mask.min() >= 0, (
+            f"Out mask values should be 0 <= x < {num_classes}, "
+            + f"but has {out_mask.min()} min and {out_mask.max()} max. "
+            + f"for input image and mask paths: {img_name}, {mask_name}"
+        )
+
+        assert len(combined_video.shape) == 4, (
+            "Combined images must be of shape: (F, C, H, W) but is "
+            + f"{combined_video.shape}"
+        )
+
+        out_video = concatenate_imgs(
+            self.frames, self.select_frame_method, combined_video
+        )
+        out_residuals = out_video - torch.roll(out_video, -1, 0)
+
+        out_mask = out_mask.squeeze().long()
+        if self.classification_mode == ClassificationMode.BINARY_CLASS_3_MODE:
+            out_mask = out_mask.unsqueeze(0)
+
+        return out_video, out_residuals, tv_tensors.Mask(out_mask), img_name
+
+    def _get_opticalflow(
+        self, index: int
+    ) -> tuple[Tensor, Tensor, tv_tensors.Mask, str]:
+        img_name = self.img_list[index]
+        mask_name = self.img_list[index].split(".")[0] + ".nii.png"
+
+        # PERF: Initialise the output tensor ahead of time to reduce memory allocation
+        # time.
+        _, img_list = cv2.imreadmulti(
+            os.path.join(self.img_dir, img_name), flags=IMREAD_GRAYSCALE
+        )
+        h, w, *_ = img_list[0].shape
+        combined_video = torch.empty((30, h, w), dtype=torch.uint8)
+        for i in range(30):
+            img = img_list[i]
+            img = cv2.resize(img, (h, w))
+            combined_video[i, :, :] = torch.as_tensor(img)
+
+        combined_video = combined_video.view(30, 1, h, w)
+        combined_video = self.transform_img(combined_video)
+
+        # Perform necessary operations on the mask
+        with Image.open(
+            os.path.join(self.mask_dir, mask_name), formats=["png"]
+        ) as mask:
+            out_mask = tv_tensors.Mask(self.transform_mask(mask))
+
+        match self.classification_mode:
+            case ClassificationMode.MULTILABEL_MODE:
+                # NOTE: This turns the problem into a multilabel segmentation problem.
+                # As label_3 ⊂ label_2 and label_2 ⊂ label_1, we need to essentially apply
+                # bitwise or operations to adhere to those conditions.
+                lab_mask_one_hot = F.one_hot(
+                    out_mask.squeeze(), num_classes=4
+                )  # H x W x C
+                lab_mask_one_hot[:, :, 2] = lab_mask_one_hot[:, :, 2].bitwise_or(
+                    lab_mask_one_hot[:, :, 3]
+                )
+                lab_mask_one_hot[:, :, 1] = lab_mask_one_hot[:, :, 1].bitwise_or(
+                    lab_mask_one_hot[:, :, 2]
+                )
+                out_mask = lab_mask_one_hot.bool().permute(-1, 0, 1)
+
+            case ClassificationMode.MULTICLASS_MODE:
+                pass
+            case _:
+                raise NotImplementedError(
+                    f"The mode {self.classification_mode.name} is not implemented"
+                )
+
+        # INFO: As the resize operation is performed before this, perhaps a better idea
+        # is to delay the resize until the end.
+        combined_video, out_mask = self.transform_together(combined_video, out_mask)
+        assert len(combined_video.shape) == 4, (
+            "Combined images must be of shape: (F, C, H, W) but is "
+            + f"{combined_video.shape}"
+        )
+
+        out_video = concatenate_imgs(
+            self.frames, self.select_frame_method, combined_video
+        )
+
+        # Calculate residual frames after initial transformations are complete.
+        # (F, C, H, W) -> (F, H, W)
+        in_video = (
+            v2f.to_grayscale(INV_NORM_GREYSCALE_DEFAULT(out_video).clamp(0, 1)).view(
+                self.frames, h, w
+            )
+            * 255
+        )
+        in_video = list(in_video.numpy().astype(np.uint8))
+
+        # Expects input (F, H, W).
+        if self.residual_mode == ResidualMode.OPTICAL_FLOW_CPU:
+            out_residuals = dense_optical_flow(
+                in_video  # pyright: ignore[reportArgumentType] false positive
+            )
+        else:
+            out_residuals, _ = cuda_optical_flow(
+                in_video  # pyright: ignore[reportArgumentType] false positive
+            )
+
+        # (F, H, W, 2) -> (F, 2, H, W)
+        out_residuals = (
+            default_collate(out_residuals)
+            .view(self.frames, h, w, 2)
+            .permute(0, 3, 1, 2)
+        )
+
+        # NOTE: This may not be the best way of normalising the optical flow
+        # vectors.
+
+        # Normalise the channel dimensions with l2 norm (Euclidean distance)
+        out_residuals = F.normalize(out_residuals, 2.0, 3)
+
+        out_residuals = self.transform_residual(out_residuals)
+
+        assert (
+            self.transform_resize is not None
+        ), "transforms_resize must be set for optical flow methods."
+
+        out_video, out_residuals, out_mask = self.transform_resize(
+            tv_tensors.Image(out_video),
+            tv_tensors.Image(out_residuals),
+            tv_tensors.Mask(out_mask),
+        )
+
+        out_mask = out_mask.squeeze().long()
+        if self.classification_mode == ClassificationMode.BINARY_CLASS_3_MODE:
+            out_mask = out_mask.unsqueeze(0)
+
+        return out_video, out_residuals, tv_tensors.Mask(out_mask), img_name
+
+    @override
+    def __getitem__(  # pyright: ignore[reportIncompatibleMethodOverride]
+        self, index: int
+    ) -> tuple[Tensor, Tensor, tv_tensors.Mask, str]:
+        match self.residual_mode:
+            case ResidualMode.SUBTRACT_NEXT_FRAME:
+                return self._get_regular(index)
+            case ResidualMode.OPTICAL_FLOW_CPU | ResidualMode.OPTICAL_FLOW_GPU:
+                return self._get_opticalflow(index)
+
+    @classmethod
+    @override
+    def get_default_transforms(  # pyright: ignore[reportIncompatibleMethodOverride]
+        cls,
+        loading_mode: LoadingMode,
+        residual_mode: ResidualMode,
+        augment: bool = False,
+        image_size: _size_2_t = (224, 224),
+    ) -> tuple[Compose, Compose, Compose, Compose | None]:
+        match residual_mode:
+            case ResidualMode.SUBTRACT_NEXT_FRAME:
+                transforms_img, transforms_mask, transforms_together = (
+                    DefaultTransformsMixin.get_default_transforms(
+                        loading_mode, augment, image_size
+                    )
+                )
+                return transforms_img, transforms_mask, transforms_together, None
+
+            case _:
+                # Sets the image transforms
+                transforms_img = Compose(
+                    [
+                        v2.ToImage(),
+                        v2.ToDtype(torch.float32, scale=True),
+                        v2.Normalize(
+                            mean=(0.485, 0.456, 0.406), std=(0.22, 0.224, 0.225)
+                        ),
+                        (
+                            v2.Identity()
+                            if loading_mode == LoadingMode.RGB
+                            else v2.Grayscale(1)
+                        ),
+                    ]
+                )
+
+                # Sets the mask transforms
+                transforms_mask = Compose(
+                    [
+                        v2.ToImage(),
+                        v2.ToDtype(torch.long, scale=False),
+                    ]
+                )
+
+                # Randomly rotates +/- 180 deg and warps the image.
+                transforms_together = Compose(
+                    [
+                        v2.RandomHorizontalFlip(),
+                        v2.RandomVerticalFlip(),
+                        v2.RandomRotation(
+                            180.0,  # pyright: ignore[reportArgumentType]
+                            v2.InterpolationMode.NEAREST,
+                            fill={
+                                tv_tensors.Image: 0,
+                                tv_tensors.Video: 0,
+                                tv_tensors.Mask: 0,
+                            },
+                        ),
+                        v2.ElasticTransform(
+                            alpha=33.0,
+                            interpolation=v2.InterpolationMode.NEAREST,
+                            fill={
+                                tv_tensors.Image: 0,
+                                tv_tensors.Video: 0,
+                                tv_tensors.Mask: 0,
+                            },
+                        ),
+                    ]
+                    if augment
+                    else [v2.Identity()]
+                )
+
+                transforms_resize = Compose([v2.Resize(224, antialias=True)])
+
+                return (
+                    transforms_img,
+                    transforms_mask,
+                    transforms_together,
+                    transforms_resize,
+                )
+
+
 class FourStreamDataset(
     Dataset[tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, str]],
     DefaultTransformsMixin,
@@ -910,17 +1802,14 @@ class ThreeStreamDataset(
                     out_mask.min().item(),
                     out_mask.max().item(),
                 )
-                out_mask = tv_tensors.Mask(self.transform_mask(mask))
 
         num_classes: int
+        lab_mask_one_hot = F.one_hot(out_mask.squeeze(), num_classes=4)  # H x W x C
         match self.classification_mode:
             case ClassificationMode.MULTILABEL_MODE:
                 # NOTE: This turns the problem into a multilabel segmentation problem.
                 # As label_3 ⊂ label_2 and label_2 ⊂ label_1, we need to essentially apply
                 # bitwise or operations to adhere to those conditions.
-                lab_mask_one_hot = F.one_hot(
-                    out_mask.squeeze(), num_classes=4
-                )  # H x W x C
                 lab_mask_one_hot[:, :, 2] = lab_mask_one_hot[:, :, 2].bitwise_or(
                     lab_mask_one_hot[:, :, 3]
                 )
@@ -974,7 +1863,7 @@ class ThreeStreamDataset(
             out_mask = out_mask.unsqueeze(0)
 
         if self._use_dummy_reports:
-            if (out_mask[:, :, -1] == 1).any():
+            if (lab_mask_one_hot[:, :, -1] == 1).any():
                 txt_fp = os.path.join(self.txt_dir, "AMI patient.txt")
             else:
                 txt_fp = os.path.join(self.txt_dir, "Normal.txt")

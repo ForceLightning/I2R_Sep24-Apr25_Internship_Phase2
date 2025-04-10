@@ -6,7 +6,7 @@ from __future__ import annotations
 import math
 import warnings
 from enum import Enum, auto
-from typing import Any, Callable, Literal, OrderedDict, override
+from typing import Any, Callable, Literal, OrderedDict, Type, override
 
 # Third-Party
 import segmentation_models_pytorch as smp
@@ -50,18 +50,14 @@ from utils.types import (
 
 
 class TemporalConvolutionalType(Enum):
-    """1D Temporal Convolutional Layer type.
-
-    Attributes:
-        ORIGINAL: Original 1D convolutional operation with significant use of reshape.
-        DILATED: Modified 1D convolutional operation to replace stride with dilation.
-        TEMPORAL_3D: Uses a 3D convolutional operation to reduce calls to reshape.
-
-    """
+    """1D Temporal Convolutional Layer type."""
 
     ORIGINAL = auto()
+    """Original 1D convolutional operation with significant use of reshape."""
     DILATED = auto()
+    """Modified 1D convolutional operation to replace stride with dilation."""
     TEMPORAL_3D = auto()
+    """Uses a 3D convolutional operation to reduce calls to reshape."""
 
     def get_class(self):
         """Get the class of the convolutional layer for instantiation."""
@@ -72,8 +68,6 @@ class TemporalConvolutionalType(Enum):
                 return DilatedOneD
             case TemporalConvolutionalType.TEMPORAL_3D:
                 return Temporal3DConv
-            case _:
-                raise NotImplementedError
 
 
 def get_temporal_conv_type(query: str) -> TemporalConvolutionalType:
@@ -98,7 +92,7 @@ class OneD(nn.Module):
         out_channels: int,
         num_frames: int,
         flat: bool = False,
-        activation: str | type[nn.Module] | None = None,
+        activation: str | Type[nn.Module] | None = None,
     ) -> None:
         """Init the 1D Temporal Convolutional Block.
 
@@ -417,8 +411,8 @@ def compress_2(stacked_outputs: Tensor, block: OneD) -> Tensor:
         stacked_outputs: 5D tensor of shape (num_frames, batch_size, num_channels, h, w).
         block: 1d temporal convolutional block.
 
-    Return:
-        Tensor: 4D tensor of shape (batch_size, num_channels, h, w).
+    Returns:
+        4D tensor of shape (batch_size, num_channels, h, w).
 
     """
     # Input shape: (B, F, C, H, W).
@@ -445,7 +439,7 @@ def compress_dilated(stacked_outputs: Tensor, block: DilatedOneD) -> Tensor:
         block: 1d temporal convolutional block.
 
     Return:
-        Tensor: 4D tensor of shape (batch_size, num_channels, h, w).
+        4D tensor of shape (batch_size, num_channels, h, w).
 
     """
     # Input shape: (B, F, C, H, W).
@@ -639,7 +633,7 @@ class TwoPlusOneUnet(SegmentationModel):
             x: 5D tensor of shape (batch_size, num_frames, channels, height, width).
 
         Return:
-            Tensor: 4D tensor of shape (batch_size, classes, height, width).
+            4D tensor of shape (batch_size, classes, height, width).
 
         """
         # The first layer of the skip connection gets ignored, but in order for the
@@ -688,15 +682,14 @@ class TwoPlusOneUnet(SegmentationModel):
 
     @override
     @torch.no_grad()
-    def predict(self, x):
+    def predict(self, x: Tensor) -> Tensor:
         """Inference method.
 
         Args:
             x: 4D torch tensor with shape (batch_size, channels, height, width)
 
         Return:
-            Tensor: 4D torch tensor with shape (batch_size, classes, height,
-            width).
+            4D torch tensor with shape (batch_size, classes, height, width).
 
         """
         if self.training:
@@ -932,7 +925,7 @@ class TwoPlusOneUnetLightning(CommonModelMixin):
             batch_idx: Index of the batch in the epoch.
 
         Return:
-            torch.tensor: Training loss.
+            Training loss.
 
         Raises:
             AssertionError: Prediction shape and ground truth mask shapes are different.
@@ -1104,9 +1097,6 @@ class TwoPlusOneUnetLightning(CommonModelMixin):
             prefix: The runtime mode (train, val, test).
             every_interval: The interval to log images.
 
-        Returns:
-            None.
-
         Raises:
             AssertionError: If the logger is not detected or is not an instance of
             TensorboardLogger.
@@ -1189,7 +1179,7 @@ class TwoPlusOneUnetLightning(CommonModelMixin):
         batch: tuple[Tensor, Tensor, str | list[str]],
         batch_idx: int,
         dataloader_idx: int = 0,
-    ):
+    ) -> tuple[Tensor, Tensor, str | list[str]]:
         """Forward pass for the model for one minibatch of a test epoch.
 
         Args:
@@ -1198,8 +1188,7 @@ class TwoPlusOneUnetLightning(CommonModelMixin):
             dataloader_idx: Index of the dataloader.
 
         Return:
-            tuple[torch.tensor, torch.tensor, str]: Mask predictions, original images,
-                and filename.
+            Mask predictions, original images, and filename.
 
         """
         self.eval()

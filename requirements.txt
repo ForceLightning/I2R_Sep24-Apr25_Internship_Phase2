@@ -208,6 +208,8 @@ omegaconf==2.3.0
     #   hydra-core
     #   jsonargparse
     #   lightning
+opencv-contrib-python-headless==4.10.0.84
+    # via i2r-sep24-apr25-internship-phase2 (pyproject.toml)
 packaging==24.2
     # via
     #   deepspeed

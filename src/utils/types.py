@@ -52,6 +52,9 @@ class ClassificationMode(Enum):
     BINARY_CLASS_3_MODE = auto()
     """The model is trained to predict a single class for a binary
         classification task for each pixel."""
+    MULTICLASS_1_2_MODE = auto()
+    """The model is trained to predict the LV myocardium and scar tissue (MI)
+        regions."""
 
 
 class ResidualMode(Enum):
