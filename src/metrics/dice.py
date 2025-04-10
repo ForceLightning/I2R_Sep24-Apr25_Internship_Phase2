@@ -24,6 +24,7 @@ class GeneralizedDiceScoreVariant(GeneralizedDiceScore):
     per_class_metric: Tensor
     weighted_avg_metric: Tensor
     class_weights: Tensor
+    count: Tensor
 
     def __init__(
         self,
