@@ -1,12 +1,6 @@
 [submodule "thirdparty/TransUNet"]
 	path = thirdparty/TransUNet
 	url = https://github.com/ForceLightning/TransUNet.git
-[submodule "thirdparty/gloria"]
-	path = thirdparty/gloria
-	url = https://github.com/ForceLightning/gloria.git
-[submodule "thirdparty/MedCLIP"]
-	path = thirdparty/MedCLIP
-	url = git@github.com:ForceLightning/MedCLIP.git
 [submodule "thirdparty/AFB_URR"]
 	path = thirdparty/AFB_URR
 	url = git@github.com:ForceLightning/AFB-URR.git
