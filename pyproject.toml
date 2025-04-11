@@ -43,6 +43,7 @@ opencv-custom-build = [
     "opencv-contrib-python-headless",
 ]
 dev = [
+    "optuna>=4.2.1",
     "pytest>=8.3.4",
 ]
 
