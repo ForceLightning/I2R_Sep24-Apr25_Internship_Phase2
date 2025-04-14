@@ -353,8 +353,6 @@ torch==2.6.0
     #   timm
     #   torchmetrics
     #   torchvision
-torch-scatter==2.1.2
-    # via i2r-sep24-apr25-internship-phase2 (pyproject.toml)
 torchmetrics==1.6.1
     # via
     #   lightning
