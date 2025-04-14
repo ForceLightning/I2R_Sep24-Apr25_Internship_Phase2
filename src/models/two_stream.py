@@ -370,6 +370,7 @@ class TwoStreamUnetLightning(CommonModelMixin):
 
         self.dice_metrics = {}
         self.other_metrics = {}
+        self.infarct_metrics = {}
         setup_metrics(self, metric, classes, metric_mode, metric_div_zero)
 
         # Attempts to load checkpoint if provided.

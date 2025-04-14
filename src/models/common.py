@@ -39,6 +39,8 @@ class CommonModelMixin(L.LightningModule):
     """A collection of dice score variants."""
     other_metrics: dict[str, MetricCollection]
     """A collection of other metrics (recall, precision, jaccard)."""
+    infarct_metrics: dict[str, MetricCollection]
+    """A collection of infarct-related clinical heuristics."""
     model: nn.Module
     """The internal model used."""
     model_type: ModelType
@@ -112,6 +114,11 @@ class CommonModelMixin(L.LightningModule):
                     "hp/val/recall_class_1": 0,
                     "hp/val/recall_class_2": 0,
                     "hp/val/recall_class_3": 0,
+                    # (6) Infarct heuristics
+                    "hp/val/infarct_area_r2": 0,
+                    "hp/val/infarct_ratio_r2": 0,
+                    "hp/val/infarct_span_r2": 0,
+                    "hp/val/infarct_transmurality_r2": 0,
                 }
             self.logger.log_hyperparams(
                 self.hparams, params  # pyright: ignore[reportArgumentType]

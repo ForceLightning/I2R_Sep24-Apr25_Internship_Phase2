@@ -4,6 +4,9 @@
 # Standard Library
 from typing import Literal
 
+# Third-Party
+from matplotlib import pyplot as plt
+
 # PyTorch
 import lightning as L
 import torch
@@ -23,6 +26,12 @@ from torchmetrics.classification import (
 
 # First party imports
 from metrics.dice import GeneralizedDiceScoreVariant
+from metrics.infarct import (
+    InfarctArea,
+    InfarctAreaRatio,
+    InfarctSpan,
+    InfarctTransmuralities,
+)
 from metrics.jaccard import (
     BinaryMJaccardIndex,
     MulticlassMJaccardIndex,
@@ -31,6 +40,8 @@ from metrics.jaccard import (
 from metrics.precision_recall import MulticlassMPrecision, MulticlassMRecall
 from models.common import CommonModelMixin
 from utils.types import ClassificationMode, MetricMode
+
+SHOW_PLOTS = True  # Set to false to disable plot popups.
 
 
 @torch.no_grad()
@@ -67,9 +78,17 @@ def shared_metric_calculation(
                     masks_preds_one_hot > 0.5, masks_one_hot
                 )
                 module.other_metrics[prefix].update(masks_preds_one_hot, masks_one_hot)
+                module.infarct_metrics[prefix].update(
+                    masks_preds_one_hot.permute(0, 2, 3, 1) > 0.5,
+                    masks_one_hot.permute(0, 2, 3, 1),
+                )
             else:
                 module.dice_metrics[prefix].update(masks_preds_one_hot > 0.5, masks)
                 module.other_metrics[prefix].update(masks_preds_one_hot, masks)
+                module.infarct_metrics[prefix].update(
+                    masks_preds_one_hot.permute(0, 2, 3, 1) > 0.5,
+                    masks.permute(0, 2, 3, 1),
+                )
         case ClassificationMode.MULTICLASS_MODE:
             # Output: BS x C x H x W
             masks_preds = masks_proba.softmax(dim=1)
@@ -78,6 +97,10 @@ def shared_metric_calculation(
             ).permute(0, -1, 1, 2)
             module.dice_metrics[prefix].update(masks_preds_one_hot, masks_one_hot)
             module.other_metrics[prefix].update(masks_preds, masks)
+            module.infarct_metrics[prefix].update(
+                masks_preds_one_hot.permute(0, 2, 3, 1),
+                masks_one_hot.permute(0, 2, 3, 1),
+            )
         case ClassificationMode.BINARY_CLASS_3_MODE:
             masks_preds = masks_proba.sigmoid()
             masks_preds_one_hot = masks_preds > 0.5
@@ -142,6 +165,21 @@ def setup_metrics(
 
         # NOTE: This allows for the metrics to be accessed via the module, and Lightning
         # will handle casting the metrics to the right dtype.
+
+        match module.eval_classification_mode:
+            case (
+                ClassificationMode.MULTICLASS_MODE
+                | ClassificationMode.MULTILABEL_MODE
+                | ClassificationMode.MULTICLASS_1_2_MODE
+            ):
+                infarct_dict = _setup_infarct_heuristics(module)
+                infarct_combined = MetricCollection(
+                    infarct_dict, prefix=f"{stage}/", compute_groups=True
+                )
+                module.__setattr__(f"{stage}_infarct_combined", infarct_combined)
+                module.infarct_metrics[stage] = infarct_combined
+            case _:
+                continue
 
 
 def _setup_dice(
@@ -230,6 +268,11 @@ def _setup_dice(
             )
             return {"dice": dice}
 
+        case _:
+            raise NotImplementedError(
+                f"{eval_classification_mode} not fully implemented!"
+            )
+
 
 def _setup_jaccard(
     module: CommonModelMixin,
@@ -257,6 +300,11 @@ def _setup_jaccard(
                 zero_division=division_by_zero,
             )
             return {"jaccard": jaccard}
+
+        case _:
+            raise NotImplementedError(
+                f"{module.eval_classification_mode} not fully implemented!"
+            )
 
     return {
         "jaccard_per_class": non_agg_jaccard,
@@ -325,10 +373,48 @@ def _setup_precision_recall(
             )
             return {"recall": recall, "precision": precision}
 
+        case _:
+            raise NotImplementedError(
+                f"{module.eval_classification_mode} not fully implemented!"
+            )
+
     return {
         "recall_per_class": non_agg_recall,
         "precision_per_class": non_agg_precision,
     }
+
+
+def _setup_infarct_heuristics(module: CommonModelMixin):
+
+    match module.eval_classification_mode:
+        case (
+            ClassificationMode.MULTICLASS_MODE
+            | ClassificationMode.MULTILABEL_MODE
+            | ClassificationMode.MULTICLASS_1_2_MODE
+        ):
+            infarct_area = InfarctArea(
+                module.eval_classification_mode, plot_type="advanced"
+            )
+            infarct_area_ratio = InfarctAreaRatio(
+                module.eval_classification_mode, plot_type="advanced"
+            )
+            infarct_span = InfarctSpan(
+                module.eval_classification_mode, plot_type="advanced"
+            )
+            infarct_transmurality = InfarctTransmuralities(
+                module.eval_classification_mode, plot_type="advanced"
+            )
+
+            return {
+                "infarct_area_r2": infarct_area,
+                "infarct_ratio_r2": infarct_area_ratio,
+                "infarct_span_r2": infarct_span,
+                "infarct_transmurality_r2": infarct_transmurality,
+            }
+        case _:
+            raise NotImplementedError(
+                f"{module.eval_classification_mode} not fully implemented!"
+            )
 
 
 def shared_metric_logging_epoch_end(module: CommonModelMixin, prefix: str):
@@ -343,15 +429,17 @@ def shared_metric_logging_epoch_end(module: CommonModelMixin, prefix: str):
     """
     dice_metric_obj = module.dice_metrics[prefix]
     other_metric_obj = module.other_metrics[prefix]
+    infarct_metric_obj = (
+        module.infarct_metrics[prefix] if hasattr(module, "infarct_metrics") else None
+    )
 
-    if isinstance(dice_metric_obj, GeneralizedDiceScoreVariant):
-        # Handle the single metric case.
-        _single_generalized_dice_logging(module, dice_metric_obj, prefix)
-    elif isinstance(dice_metric_obj, MetricCollection):
-        # Handle the grouped metric case.
-        _grouped_generalized_metric_logging(
-            module, dice_metric_obj, other_metric_obj, prefix
-        )
+    match dice_metric_obj:
+        case GeneralizedDiceScoreVariant():
+            _single_generalized_dice_logging(module, dice_metric_obj, prefix)
+        case MetricCollection():
+            _grouped_generalized_metric_logging(
+                module, dice_metric_obj, other_metric_obj, infarct_metric_obj, prefix
+            )
 
 
 def _single_generalized_dice_logging(
@@ -406,6 +494,7 @@ def _grouped_generalized_metric_logging(
     module: CommonModelMixin,
     dice_metric_obj: MetricCollection,
     other_metric_obj: MetricCollection,
+    infarct_metric_obj: MetricCollection | None,
     prefix: str,
 ):
     """Log the metrics for the model for a MetricCollection of Dice metrics.
@@ -419,7 +508,10 @@ def _grouped_generalized_metric_logging(
     """
     dice_results: dict[str, Tensor] = dice_metric_obj.compute()
     other_results: dict[str, Tensor] = other_metric_obj.compute()
-    results = dice_results | other_results
+    infarct_results: dict[str, Tensor] = (
+        infarct_metric_obj.compute() if infarct_metric_obj is not None else {}
+    )
+    results = dice_results | other_results | infarct_results
     results_new: dict[str, Tensor] = {}
     # (1) Log only validation metrics in hyperparameter tab.
     for k, v in results.items():
@@ -428,6 +520,10 @@ def _grouped_generalized_metric_logging(
             "val/dice_weighted_avg",
             "val/dice_macro_class_2_3",
             "val/dice_weighted_class_2_3",
+            "val/infarct_area_r2",
+            "val/infarct_ratio_r2",
+            "val/infarct_span_r2",
+            "val_infarct_transmurality_r2",
         ]:
             results_new[f"hp/{k}"] = v
 
@@ -480,5 +576,9 @@ def _grouped_generalized_metric_logging(
     assert all(
         isinstance(metric, (float, int, bool, Tensor)) for _, metric in results.items()
     ), f"Invalid metric primative type for dict: {results}"
+
+    if prefix == "test" and infarct_metric_obj and SHOW_PLOTS:
+        _ = infarct_metric_obj.plot(val=infarct_results)
+        plt.show()
 
     module.log_dict(results, on_step=False, on_epoch=True, sync_dist=True)

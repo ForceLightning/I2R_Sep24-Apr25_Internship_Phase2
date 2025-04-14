@@ -141,7 +141,9 @@ def batchnorm2d_to_batchnorm3d(old: nn.BatchNorm2d) -> nn.BatchNorm3d:
     return new
 
 
-LUT_2D_3D: dict[type, dict[{"type": type[nn.Module], "func": Callable[[Any], Any]}]] = {
+LUT_2D_3D: dict[
+    type, dict[{"type": type[nn.Module], "func": Callable[[Any], Any]}]  # noqa: F821
+] = {
     nn.Conv2d: {"type": nn.Conv3d, "func": conv2d_to_3d},
     nn.AvgPool2d: {"type": nn.AvgPool3d, "func": pool2d_to_pool3d},
     nn.AdaptiveAvgPool2d: {"type": nn.AdaptiveAvgPool3d, "func": pool2d_to_pool3d},

@@ -12,7 +12,7 @@ from lightning.pytorch.cli import LightningArgumentParser, LightningCLI
 # First party imports
 from utils import prediction_writer, utils
 from utils.prediction_writer import MaskImageWriter
-from utils.types import ClassificationMode, LoadingMode, ModelType
+from utils.types import ClassificationMode, LoadingMode
 
 
 class CommonCLI(LightningCLI):

@@ -1,5 +1,4 @@
 # Standard Library
-from typing import TypeVar
 
 # Third-Party
 from einops import repeat

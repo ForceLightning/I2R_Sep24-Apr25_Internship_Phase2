@@ -485,7 +485,7 @@ if __name__ == "__main__":
     xl = torch.rand((1, 1, 224, 224), dtype=torch.float32).cuda()
 
     text_module = BERTModule()
-    vision_module = FourStreamVisionModule()
+    vision_module = FourStreamVisionModule(num_frames=10)
 
     model = FourStreamAttentionUnet(
         vision_module,
