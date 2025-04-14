@@ -98,14 +98,14 @@ class TestInfarctMetrics:
             max_radius,
             cv2.WARP_FILL_OUTLIERS | cv2.WARP_INVERSE_MAP,
         )
-        infarct_metric = infarct.InfarctMetrics()
+        infarct_metric = infarct.InfarctHeuristics()
         return infarct_metric(torch.from_numpy(img))
 
     @torch.no_grad()
     def test_is_result_eq_to_base(
-        self, warp_linear: Tensor, base_metrics: infarct.InfarctMetrics
+        self, warp_linear: Tensor, base_metrics: infarct.InfarctHeuristics
     ):
-        metric = infarct.InfarctMetrics()
+        metric = infarct.InfarctHeuristics()
         result: infarct.InfarctResults = metric(warp_linear)
 
         if not result.is_close(base_metrics):
