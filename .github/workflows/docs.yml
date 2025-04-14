@@ -21,7 +21,7 @@ jobs:
           cache: 'pip'
       - name: Install dependencies
         run: |
-          pip install -r requirements-cpu.txt
+          pip install -r requirements.txt
           pip install sphinx sphinx_rtd_theme myst_parser sphinx-autodoc-typehints
       - name: Sphinx build
         run: |
