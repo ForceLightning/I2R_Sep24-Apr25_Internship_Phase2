@@ -303,6 +303,7 @@ safetensors==0.5.2
     # via
     #   timm
     #   transformers
+seaborn==0.13.2
 scikit-learn==1.6.1
     # via i2r-sep24-apr25-internship-phase2 (pyproject.toml)
 scipy==1.15.1
