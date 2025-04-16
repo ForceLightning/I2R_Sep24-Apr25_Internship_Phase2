@@ -1,0 +1,53 @@
+models.attention package
+========================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   models.attention.urr
+
+Submodules
+----------
+
+models.attention.lightning\_module module
+-----------------------------------------
+
+.. automodule:: models.attention.lightning_module
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.attention.model module
+-----------------------------
+
+.. automodule:: models.attention.model
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.attention.segmentation\_model module
+-------------------------------------------
+
+.. automodule:: models.attention.segmentation_model
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.attention.utils module
+-----------------------------
+
+.. automodule:: models.attention.utils
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: models.attention
+   :members:
+   :show-inheritance:
+   :undoc-members:

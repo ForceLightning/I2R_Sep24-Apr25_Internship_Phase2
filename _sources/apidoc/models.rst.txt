@@ -1,0 +1,62 @@
+models package
+==============
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   models.attention
+   models.fusion
+
+Submodules
+----------
+
+models.common module
+--------------------
+
+.. automodule:: models.common
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.default\_unet module
+---------------------------
+
+.. automodule:: models.default_unet
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.transunet module
+-----------------------
+
+.. automodule:: models.transunet
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.two\_plus\_one module
+----------------------------
+
+.. automodule:: models.two_plus_one
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.two\_stream module
+-------------------------
+
+.. automodule:: models.two_stream
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: models
+   :members:
+   :show-inheritance:
+   :undoc-members:

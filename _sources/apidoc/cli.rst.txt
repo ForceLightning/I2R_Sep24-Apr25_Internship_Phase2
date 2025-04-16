@@ -1,0 +1,21 @@
+cli package
+===========
+
+Submodules
+----------
+
+cli.common module
+-----------------
+
+.. automodule:: cli.common
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: cli
+   :members:
+   :show-inheritance:
+   :undoc-members:
