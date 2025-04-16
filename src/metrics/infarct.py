@@ -2,6 +2,7 @@
 """Clinical metrics for myocardial infarction."""
 
 # Standard Library
+import logging
 from dataclasses import dataclass
 from typing import Callable, Literal, Sequence, override
 
@@ -36,8 +37,11 @@ from utils.types import (
 )
 
 sns.set_theme("paper", "whitegrid")
+logger = logging.getLogger(__name__)
 
-__all__ = ["InfarctResults", "InfarctHeuristics"]
+__all__ = ["InfarctResults", "InfarctHeuristics", "InfarctVisualisation"]
+
+SHIFT = 10
 
 
 @dataclass
@@ -239,7 +243,6 @@ class InfarctArea(InfarctMetricBase):
         _b, w, h, _k = target.shape
         preds_infarct_area = preds_infarct_area / (w * h)
         target_infarct_area = target_infarct_area / (w * h)
-        # print("infarct_area", preds_infarct_area, target_infarct_area)
         super().update(preds_infarct_area, target_infarct_area)
 
 
@@ -345,7 +348,7 @@ class InfarctVisualisation:
         span = spans[0]
 
         # (3) Draw lines of the span originating from the centre of the LV myocardium.
-        centre: cvt.Point = (
+        centre = (
             int(round(span.lv_myo_centre[0])),
             int(round(span.lv_myo_centre[1])),
         )
@@ -364,32 +367,33 @@ class InfarctVisualisation:
         )
 
         # (4) Draw arc to represent θ of the arc.
-        ccw_arc_end = _create_line_endpoint(
-            span.lv_myo_centre, span.starting_rads, h // 50
-        )
-        cw_arc_end = _create_line_endpoint(
-            span.lv_myo_centre, span.ending_rads, h // 50
-        )
-
-        arc = _convert_arc(cw_arc_end, ccw_arc_end, h // 50)
+        starting_angle = int(round(span.starting_rads * 180 / np.pi))
+        ending_angle = int(round(span.ending_rads * 180 / np.pi))
+        if ending_angle < starting_angle:
+            ending_angle += 360
 
         annotated_img = cv2.ellipse(
             annotated_img,
-            arc.centre,
-            (arc.radius, arc.radius),
+            _apply_shift(10, tuple(span.lv_myo_centre)),
+            _apply_shift(10, (h / 50, h / 50)),
             0,
-            arc.pt1_angle,
-            arc.pt2_angle,
+            starting_angle,
+            ending_angle,
             (255, 0, 0),
             1,
             cv2.LINE_AA,
-            arc.shift,
+            10,
         )
 
         # (5) Return the image.
         annotated_img = cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB)
         img = Image.fromarray(annotated_img)
         return img
+
+
+def _apply_shift(shift: int = 0, *args: tuple[float, ...]) -> tuple[int, ...]:
+    res = tuple(map(lambda x: int(round(x * 2**shift)), *args))
+    return res
 
 
 def _create_line_endpoint(
@@ -409,56 +413,6 @@ class Arc:
     pt1_angle: float
     pt2_angle: float
     shift: int
-
-
-def _convert_arc(pt1: cvt.Point, pt2: cvt.Point, sagitta: int, shift: int = 10) -> Arc:
-
-    # extract point coordinates
-    x1, y1 = pt1
-    x2, y2 = pt2
-
-    # find normal from midpoint, follow by length sagitta
-    n = np.array([y2 - y1, x1 - x2])
-    n_dist = np.sqrt(np.sum(n**2))
-
-    if np.isclose(n_dist, 0):
-        # catch error here, d(pt1, pt2) ~ 0
-        print("Error: The distance between pt1 and pt2 is too small.")
-
-    n = n / n_dist
-    x3, y3 = (np.array(pt1) + np.array(pt2)) / 2 + sagitta * n
-
-    # calculate the circle from three points
-    # see https://math.stackexchange.com/a/1460096/246399
-    A = np.array(
-        [
-            [x1**2 + y1**2, x1, y1, 1],
-            [x2**2 + y2**2, x2, y2, 1],
-            [x3**2 + y3**2, x3, y3, 1],
-        ]
-    )
-    M11 = np.linalg.det(A[:, (1, 2, 3)])
-    M12 = np.linalg.det(A[:, (0, 2, 3)])
-    M13 = np.linalg.det(A[:, (0, 1, 3)])
-    M14 = np.linalg.det(A[:, (0, 1, 2)])
-
-    if np.isclose(M11, 0):
-        # catch error here, the points are collinear (sagitta ~ 0)
-        print("Error: The third point is collinear.")
-
-    cx = 0.5 * M12 / M11
-    cy = -0.5 * M13 / M11
-    radius = np.sqrt(cx**2 + cy**2 + M14 / M11) * 2
-
-    # calculate angles of pt1 and pt2 from center of circle
-    pt1_angle = 180 * np.arctan2(y1 - cy, x1 - cx) / np.pi
-    pt2_angle = 180 * np.arctan2(y2 - cy, x2 - cx) / np.pi
-
-    cx = int(round(cx * 2**shift))
-    cy = int(round(cy * 2**shift))
-    radius = int(round(radius * 2**shift))
-
-    return Arc((cx, cy), radius, pt1_angle, pt2_angle, shift)
 
 
 @dataclass
@@ -529,13 +483,13 @@ def _get_infarct_spans_transmuralities(
         # (5) Calculate span
         span = ((max_polar_coord - min_polar_coord) / height) % 1
 
+        starting_rads = ((min_polar_coord + best_shift) % height) / height * 2 * np.pi
+        ending_rads = ((max_polar_coord + best_shift) % height) / height * 2 * np.pi
+
         span_result = InfarctSpanResult(
             span=span,
-            starting_rads=((min_polar_coord + best_shift) % height)
-            / height
-            * 2
-            * np.pi,
-            ending_rads=((max_polar_coord + best_shift) % height) / height * 2 * np.pi,
+            starting_rads=starting_rads,
+            ending_rads=ending_rads,
             lv_myo_centre=centre,
             lv_myo_radius=radius,
         )
@@ -752,11 +706,18 @@ def _cv2_polar_to_linear(
 # DEBUG: Checks if simple implementation works.
 if __name__ == "__main__":
     # PyTorch
+    from torch.nn.common_types import _size_2_t
     from torch.utils.data import DataLoader
 
     # First party imports
     from dataset.dataset import ResidualTwoPlusOneDataset
+    from utils.logging import LOGGING_FORMAT
     from utils.types import ClassificationMode, LoadingMode, ResidualMode
+
+    logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
+    logger = logging.getLogger(__name__)
+
+    dsize: _size_2_t = (1024, 1024)
 
     (
         transforms_img,
@@ -764,7 +725,7 @@ if __name__ == "__main__":
         _transforms_together,
         transforms_resize,
     ) = ResidualTwoPlusOneDataset.get_default_transforms(
-        LoadingMode.GREYSCALE, ResidualMode.SUBTRACT_NEXT_FRAME
+        LoadingMode.GREYSCALE, ResidualMode.SUBTRACT_NEXT_FRAME, image_size=dsize
     )
     dataset = ResidualTwoPlusOneDataset(
         img_dir="data/train_val/Cine",
@@ -778,6 +739,7 @@ if __name__ == "__main__":
         combine_train_val=True,
         classification_mode=ClassificationMode.MULTICLASS_MODE,
         loading_mode=LoadingMode.GREYSCALE,
+        image_size=dsize,
     )
 
     dataloader = DataLoader(dataset, batch_size=2)

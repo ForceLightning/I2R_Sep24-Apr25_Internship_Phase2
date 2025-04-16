@@ -21,7 +21,7 @@ import torch
 from torch import Tensor
 
 # First party imports
-from metrics import infarct
+from metrics.infarct import InfarctHeuristics, InfarctResults
 
 
 def pytest_generate_tests(metafunc: pytest.Metafunc):
@@ -98,15 +98,15 @@ class TestInfarctMetrics:
             max_radius,
             cv2.WARP_FILL_OUTLIERS | cv2.WARP_INVERSE_MAP,
         )
-        infarct_metric = infarct.InfarctHeuristics()
+        infarct_metric = InfarctHeuristics()
         return infarct_metric(torch.from_numpy(img))
 
     @torch.no_grad()
     def test_is_result_eq_to_base(
-        self, warp_linear: Tensor, base_metrics: infarct.InfarctHeuristics
+        self, warp_linear: Tensor, base_metrics: InfarctHeuristics
     ):
-        metric = infarct.InfarctHeuristics()
-        result: infarct.InfarctResults = metric(warp_linear)
+        metric = InfarctHeuristics()
+        result: InfarctResults = metric(warp_linear)
 
         if not result.is_close(base_metrics):
             mask = (warp_linear.numpy() * 255).astype(np.uint8)
