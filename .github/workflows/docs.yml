@@ -11,14 +11,24 @@ jobs:
   docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
           token: ${{ secrets.PAT_TOKEN }}
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          cache: 'pip'
+      - name: Restore pip cache
+        uses: re-actors/cache-python-deps@release/v1
+        with:
+          cache-key-for-dependency-files: >-
+            ${{
+              hashFiles(
+                'requirements*.txt',
+                'pyproject.toml',
+                'uv.lock'
+              )
+            }}
       - name: Install dependencies
         run: |
           pip install -r requirements-cpu.txt
