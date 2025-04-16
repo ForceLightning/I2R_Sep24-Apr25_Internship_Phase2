@@ -192,8 +192,8 @@ class MultilabelMJaccardIndex(MultilabelJaccardIndex):
         self.samples += bs
 
         for pred_sample, target_sample in zip(preds, target, strict=True):
-            p_sample = pred_sample.view(1, self.num_classes, -1)
-            t_sample = target_sample.view(1, self.num_classes, -1)
+            p_sample = pred_sample.view(1, self.num_labels, -1)
+            t_sample = target_sample.view(1, self.num_labels, -1)
 
             if self.validate_args:
                 _multilabel_confusion_matrix_tensor_validation(
