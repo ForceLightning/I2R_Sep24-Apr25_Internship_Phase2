@@ -1019,7 +1019,7 @@ class ResidualTwoPlusOneDataset(
                     else [v2.Identity()]
                 )
 
-                transforms_resize = Compose([v2.Resize(224, antialias=True)])
+                transforms_resize = Compose([v2.Resize(image_size, antialias=True)])
 
                 return (
                     transforms_img,
@@ -1653,7 +1653,7 @@ class FourStreamDataset(
                     else [v2.Identity()]
                 )
 
-                transforms_resize = Compose([v2.Resize(224, antialias=True)])
+                transforms_resize = Compose([v2.Resize(image_size, antialias=True)])
 
                 return (
                     transforms_lge,
@@ -2256,7 +2256,7 @@ class ThreeStreamDataset(
                     else [v2.Identity()]
                 )
 
-                transforms_resize = Compose([v2.Resize(224, antialias=True)])
+                transforms_resize = Compose([v2.Resize(image_size, antialias=True)])
 
                 return (
                     transforms_lge,
