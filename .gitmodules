@@ -3,10 +3,10 @@
 	url = https://github.com/ForceLightning/TransUNet.git
 [submodule "thirdparty/AFB_URR"]
 	path = thirdparty/AFB_URR
-	url = https://github.com:ForceLightning/AFB-URR.git
+	url = https://github.com/ForceLightning/AFB-URR.git
 [submodule "thirdparty/vivim"]
 	path = thirdparty/vivim
-	url = https://github.com:ForceLightning/Vivim.git
+	url = https://github.com/ForceLightning/Vivim.git
 [submodule "thirdparty/libcpab"]
 	path = thirdparty/libcpab
 	url = https://github.com/SkafteNicki/libcpab.git
