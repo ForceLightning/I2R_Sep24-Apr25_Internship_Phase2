@@ -246,8 +246,8 @@ class InfarctArea(InfarctMetricBase):
     def update(self, preds: Tensor, target: Tensor) -> None:
         preds, target = self.preprocessing(preds, target)
 
-        preds_infarct_area = preds[self.infarct_index, :, :, :].sum(dim=(1, 2))
-        target_infarct_area = target[self.infarct_index, :, :, :].sum(dim=(1, 2))
+        preds_infarct_area = preds[:, self.infarct_index, :, :].sum(dim=(1, 2))
+        target_infarct_area = target[:, self.infarct_index, :, :].sum(dim=(1, 2))
         _b, w, h, _k = target.shape
         preds_infarct_area = preds_infarct_area / (w * h)
         target_infarct_area = target_infarct_area / (w * h)
@@ -260,10 +260,10 @@ class InfarctAreaRatio(InfarctMetricBase):
     def update(self, preds: Tensor, target: Tensor) -> None:
         preds, target = self.preprocessing(preds, target)
 
-        preds_infarct_area = preds[self.infarct_index, :, :, :].sum(dim=(1, 2))
-        preds_lv_area = preds[self.lv_index, :, :, :].sum(dim=(1, 2))
-        target_infarct_area = target[self.infarct_index, :, :, :].sum(dim=(1, 2))
-        target_lv_area = target[self.lv_index, :, :, :].sum(dim=(1, 2))
+        preds_infarct_area = preds[:, self.infarct_index, :, :].sum(dim=(1, 2))
+        preds_lv_area = preds[:, self.lv_index, :, :].sum(dim=(1, 2))
+        target_infarct_area = target[:, self.infarct_index, :, :].sum(dim=(1, 2))
+        target_lv_area = target[:, self.lv_index, :, :].sum(dim=(1, 2))
 
         preds_ratio = _safe_divide(preds_infarct_area, preds_lv_area)
         target_ratio = _safe_divide(target_infarct_area, target_lv_area)
@@ -284,8 +284,12 @@ class InfarctSpan(InfarctMetricBase):
             target, self.lv_index, self.infarct_index
         )
 
-        preds_spans = torch.from_numpy(preds_spans) * 2 * torch.pi
-        target_spans = torch.from_numpy(target_spans) * 2 * torch.pi
+        preds_spans = torch.from_numpy(
+            np.array([x.span for x in preds_spans]) * 2 * torch.pi
+        )
+        target_spans = torch.from_numpy(
+            np.array([x.span for x in target_spans]) * 2 * torch.pi
+        )
 
         super().update(preds_spans, target_spans)
 
@@ -322,7 +326,12 @@ class InfarctVisualisation:
         self.lv_index = lv_index
         self.infarct_index = infarct_index
 
-    def viz(self, cine_image: Tensor, segmentation_mask: Tensor) -> Image.Image:
+    def viz(
+        self,
+        cine_image: Tensor,
+        segmentation_mask: Tensor,
+        output_raw_annotation: bool = False,
+    ) -> Image.Image:
         segmentation_mask = segmentation_mask.detach().cpu()
         _k, h, _w = segmentation_mask.shape
         loading_mode = (
@@ -339,7 +348,7 @@ class InfarctVisualisation:
 
         # (1) Draw segmentation mask.
         annotated_img = draw_segmentation_masks(
-            norm_img,
+            torch.zeros_like(norm_img) if output_raw_annotation else norm_img,
             segmentation_mask[1:, :, :].bool(),
             alpha=0.5,
             colors=colors,

@@ -41,7 +41,7 @@ from metrics.precision_recall import MulticlassMPrecision, MulticlassMRecall
 from models.common import CommonModelMixin
 from utils.types import ClassificationMode, MetricMode
 
-SHOW_PLOTS = True  # Set to false to disable plot popups.
+SHOW_PLOTS = False  # Set to false to disable plot popups.
 
 
 @torch.no_grad()
@@ -79,15 +79,15 @@ def shared_metric_calculation(
                 )
                 module.other_metrics[prefix].update(masks_preds_one_hot, masks_one_hot)
                 module.infarct_metrics[prefix].update(
-                    masks_preds_one_hot.permute(0, 2, 3, 1) > 0.5,
-                    masks_one_hot.permute(0, 2, 3, 1),
+                    masks_preds_one_hot > 0.5,
+                    masks_one_hot,
                 )
             else:
                 module.dice_metrics[prefix].update(masks_preds_one_hot > 0.5, masks)
                 module.other_metrics[prefix].update(masks_preds_one_hot, masks)
                 module.infarct_metrics[prefix].update(
-                    masks_preds_one_hot.permute(0, 2, 3, 1) > 0.5,
-                    masks.permute(0, 2, 3, 1),
+                    masks_preds_one_hot > 0.5,
+                    masks,
                 )
         case ClassificationMode.MULTICLASS_MODE:
             # Output: BS x C x H x W
@@ -98,8 +98,8 @@ def shared_metric_calculation(
             module.dice_metrics[prefix].update(masks_preds_one_hot, masks_one_hot)
             module.other_metrics[prefix].update(masks_preds, masks)
             module.infarct_metrics[prefix].update(
-                masks_preds_one_hot.permute(0, 2, 3, 1),
-                masks_one_hot.permute(0, 2, 3, 1),
+                masks_preds_one_hot,
+                masks_one_hot,
             )
         case ClassificationMode.BINARY_CLASS_3_MODE:
             masks_preds = masks_proba.sigmoid()
