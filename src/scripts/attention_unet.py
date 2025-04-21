@@ -302,7 +302,7 @@ class ResidualAttentionCLI(I2RInternshipCommonCLI):
             "dl_classification_mode": "MULTICLASS_MODE",
             "eval_classification_mode": "MULTICLASS_MODE",
             "residual_mode": "SUBTRACT_NEXT_FRAME",
-            "model_architecture": "UNET",
+            "model.model_type": "UNET",
             "trainer.max_epochs": 50,
             "model.encoder_name": "resnet50",
             "model.encoder_weights": "imagenet",

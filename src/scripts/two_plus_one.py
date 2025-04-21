@@ -220,7 +220,7 @@ class TwoPlusOneCLI(I2RInternshipCommonCLI):
             "dl_classification_mode": "MULTICLASS_MODE",
             "eval_classification_mode": "MULTILABEL_MODE",
             "trainer.max_epochs": 50,
-            "model_architecture": "UNET",
+            "model.model_type": "UNET",
             "model.encoder_name": "resnet50",
             "model.encoder_weights": "imagenet",
             "model.in_channels": 3,
