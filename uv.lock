@@ -701,7 +701,7 @@ requires-dist = [
     { name = "tensorboard" },
     { name = "tokenizers", specifier = ">=0.21.0" },
     { name = "torch", specifier = "==2.6.0", index = "https://download.pytorch.org/whl/cu124" },
-    { name = "torch-scatter", marker = "os_name != 'darwin'", specifier = "==2.1.2+pt25cu124" },
+    { name = "torch-scatter", marker = "os_name != 'darwin'", specifier = "==2.1.2+pt26cu124" },
     { name = "torchsummary" },
     { name = "torchvision", index = "https://download.pytorch.org/whl/cu124" },
     { name = "tqdm" },
@@ -2515,11 +2515,11 @@ wheels = [
 
 [[package]]
 name = "torch-scatter"
-version = "2.1.2+pt25cu124"
-source = { registry = "https://data.pyg.org/whl/torch-2.5.1+cu124.html" }
+version = "2.1.2+pt26cu124"
+source = { registry = "https://data.pyg.org/whl/torch-2.6.0+cu124.html" }
 wheels = [
-    { url = "https://data.pyg.org/whl/torch-2.5.0%2Bcu124/torch_scatter-2.1.2%2Bpt25cu124-cp312-cp312-linux_x86_64.whl" },
-    { url = "https://data.pyg.org/whl/torch-2.5.0%2Bcu124/torch_scatter-2.1.2%2Bpt25cu124-cp312-cp312-win_amd64.whl" },
+    { url = "https://data.pyg.org/whl/torch-2.6.0%2Bcu124/torch_scatter-2.1.2%2Bpt26cu124-cp312-cp312-linux_x86_64.whl" },
+    { url = "https://data.pyg.org/whl/torch-2.6.0%2Bcu124/torch_scatter-2.1.2%2Bpt26cu124-cp312-cp312-win_amd64.whl" },
 ]
 
 [[package]]
