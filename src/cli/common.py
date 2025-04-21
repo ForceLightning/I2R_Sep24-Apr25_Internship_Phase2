@@ -10,6 +10,7 @@ from lightning.pytorch.callbacks import ModelCheckpoint
 from lightning.pytorch.cli import LightningArgumentParser, LightningCLI
 
 # First party imports
+from metrics.infarct import InfarctPredictionWriter
 from utils import prediction_writer, utils
 from utils.prediction_writer import MaskImageWriter
 from utils.types import ClassificationMode, LoadingMode
@@ -145,6 +146,18 @@ class CommonCLI(LightningCLI):
         parser.link_arguments(
             "model.weights_from_ckpt_path",
             "prediction_writer.output_dir",
+            compute_fn=prediction_writer.get_output_dir_from_ckpt_path,
+        )
+
+        parser.add_lightning_class_args(
+            InfarctPredictionWriter, "infarct_prediction_writer"
+        )
+        parser.link_arguments(
+            "image_loading_mode", "infarct_prediction_writer.loading_mode"
+        )
+        parser.link_arguments(
+            "model.weights_from_ckpt_path",
+            "infarct_prediction_writer.output_dir",
             compute_fn=prediction_writer.get_output_dir_from_ckpt_path,
         )
 

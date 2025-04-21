@@ -3,12 +3,14 @@
 
 # Standard Library
 import logging
+import os
 from dataclasses import dataclass
-from typing import Callable, Literal, Sequence, override
+from typing import Any, Callable, Literal, Sequence, override
 
 # Third-Party
 import seaborn as sns
 from matplotlib import pyplot as plt
+from tqdm.auto import tqdm
 
 # Scientific Libraries
 import numpy as np
@@ -21,8 +23,10 @@ from cv2 import typing as cvt
 from PIL import Image
 
 # PyTorch
+import lightning as L
 import torch
 import torchmetrics
+from lightning.pytorch.callbacks import BasePredictionWriter
 from torch import Tensor, nn
 from torch.nn import functional as F
 from torchmetrics.utilities import dim_zero_cat
@@ -30,10 +34,14 @@ from torchmetrics.utilities.compute import _safe_divide
 from torchvision.utils import draw_segmentation_masks
 
 # First party imports
+from models.common import CommonModelMixin
 from utils.types import (
     INV_NORM_GREYSCALE_DEFAULT,
     INV_NORM_RGB_DEFAULT,
     ClassificationMode,
+    InverseNormalize,
+    LoadingMode,
+    ResidualMode,
 )
 
 sns.set_theme("paper", "whitegrid")
@@ -391,6 +399,130 @@ class InfarctVisualisation:
         return img
 
 
+class InfarctPredictionWriter(BasePredictionWriter):
+    def __init__(
+        self,
+        lv_myo_index: int = 1,
+        infarct_index: int = 2,
+        loading_mode: LoadingMode = LoadingMode.GREYSCALE,
+        output_dir: str | None = None,
+        write_interval: Literal["batch", "epoch", "batch_and_epoch"] = "epoch",
+        inv_transform: InverseNormalize = INV_NORM_GREYSCALE_DEFAULT,
+        format: Literal["apng", "tiff", "gif", "webp", "png"] = "gif",
+    ):
+        super().__init__(write_interval)
+        self.lv_myo_index = lv_myo_index
+        self.infarct_index = infarct_index
+        self.loading_mode = loading_mode
+        self.output_dir = output_dir
+        self.inv_transform = inv_transform
+        self.format: Literal["apng", "tiff", "gif", "webp", "png"] = format
+        self.infarct_viz = InfarctVisualisation(
+            ClassificationMode.MULTICLASS_MODE, self.lv_myo_index, self.infarct_index
+        )
+
+        if self.output_dir:
+            if not os.path.exists(out_dir := os.path.normpath(self.output_dir)):
+                os.makedirs(out_dir)
+
+    def write_on_epoch_end(
+        self,
+        trainer: L.Trainer,
+        pl_module: L.LightningModule,
+        predictions: (
+            Sequence[tuple[Tensor, Tensor, list[str]]]
+            | Sequence[Sequence[tuple[Tensor, Tensor, list[str]]]]
+            | Sequence[tuple[Tensor, Tensor, Tensor, list[str]]]
+            | Sequence[Sequence[tuple[Tensor, Tensor, Tensor, list[str]]]]
+        ),
+        batch_indices: Sequence[Any],
+    ) -> None:
+        if not self.output_dir:
+            return
+
+        assert isinstance(pl_module, CommonModelMixin)
+
+        predictions_for_loop: list[Sequence[tuple[Tensor, Tensor, list[str]]]]
+        if isinstance(predictions[0][0], Tensor):
+            predictions_for_loop = [
+                predictions  # pyright: ignore[reportAssignmentType]
+            ]
+        else:
+            predictions_for_loop = predictions  # pyright: ignore[reportAssignmentType]
+
+        for preds in predictions_for_loop:
+            for batched_mask_preds, batched_images, batched_fns in tqdm(
+                preds, desc="batches"
+            ):
+                for (
+                    mask_pred,
+                    image,
+                    fn,
+                ) in zip(batched_mask_preds, batched_images, batched_fns, strict=True):
+                    num_frames = image.shape[0]
+
+                    masked_frames: list[Image.Image] = []
+                    for frame in image:
+                        masked_frame = self.infarct_viz.viz(frame, mask_pred)
+                        masked_frames.append(masked_frame)
+
+                    save_sample_fp = ".".join(fn.split(".")[:-1]) + "infarct_annotation"
+
+                    save_path = os.path.join(
+                        os.path.normpath(self.output_dir),
+                        save_sample_fp,
+                        f"pred.{self.format}",
+                    )
+
+                    match self.format:
+                        case "tiff":
+                            masked_frames[0].save(
+                                save_path,
+                                append_images=masked_frames[1:],
+                                save_all=True,
+                            )
+                        case "apng":
+                            masked_frames[0].save(
+                                save_path,
+                                append_images=masked_frames[1:],
+                                save_all=True,
+                                duration=1000 // num_frames,
+                                default_image=False,
+                                disposal=1,
+                                loop=0,
+                            )
+                        case "gif":
+                            masked_frames[0].save(
+                                save_path,
+                                append_images=masked_frames[1:],
+                                save_all=True,
+                                duration=1000 // num_frames,
+                                disposal=2,
+                                loop=0,
+                            )
+                        case "webp":
+                            masked_frames[0].save(
+                                save_path,
+                                append_images=masked_frames[1:],
+                                save_all=True,
+                                duration=1000 // num_frames,
+                                loop=0,
+                                background=(0, 0, 0, 0),
+                                allow_mixed=True,
+                            )
+                        case "png":
+                            for i, frame in enumerate(masked_frames):
+                                save_path = os.path.join(
+                                    os.path.normpath(self.output_dir), save_sample_fp
+                                )
+                                if not os.path.exists(save_path):
+                                    os.makedirs(save_path)
+                                save_path = os.path.join(
+                                    save_path, f"pred{i:04d}.{self.format}"
+                                )
+                                frame.save(save_path)
+
+
 def _apply_shift(shift: int = 0, *args: tuple[float, ...]) -> tuple[int, ...]:
     res = tuple(map(lambda x: int(round(x * 2**shift)), *args))
     return res
@@ -712,7 +844,6 @@ if __name__ == "__main__":
     # First party imports
     from dataset.dataset import ResidualTwoPlusOneDataset
     from utils.logging import LOGGING_FORMAT
-    from utils.types import ClassificationMode, LoadingMode, ResidualMode
 
     logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
     logger = logging.getLogger(__name__)
