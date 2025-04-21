@@ -193,7 +193,7 @@ class URRResidualAttentionUnet(ResidualAttentionUnet):
         single_attention_instance: bool = False,
         _attention_only: bool = False,
     ):
-        super(ResidualAttentionUnet, self).__init__()
+        super().__init__()
         self.num_frames = num_frames
         self.flat_conv = flat_conv
         self.activation = activation
@@ -267,7 +267,7 @@ class URRResidualAttentionUnet(ResidualAttentionUnet):
             center=encoder_name.startswith("vgg"),
             attention_type=decoder_attention_type,
         )
-        self.segmentation_head = SegmentationHead(
+        segmentation_head = SegmentationHead(
             in_channels=decoder_channels[-1],
             out_channels=(
                 classes * 2 if self.uncertainty_mode == UncertaintyMode.URR else classes
@@ -281,7 +281,7 @@ class URRResidualAttentionUnet(ResidualAttentionUnet):
             region_refiner = RegionRefiner(7, 16, 32, self.classes)
 
         self.decoder = URRDecoder(
-            decoder, self.segmentation_head, region_refiner, classes, uncertainty_mode
+            decoder, segmentation_head, region_refiner, classes, uncertainty_mode
         )
 
         if aux_params is not None:
@@ -417,7 +417,7 @@ class URRResidualAttentionUnetPlusPlus(URRResidualAttentionUnet):
         single_attention_instance: bool = False,
         _attention_only: bool = False,
     ):
-        super(URRResidualAttentionUnet, self).__init__()
+        super().__init__()
         self.num_frames = num_frames
         self.flat_conv = flat_conv
         self.activation = activation
@@ -492,7 +492,7 @@ class URRResidualAttentionUnetPlusPlus(URRResidualAttentionUnet):
             center=encoder_name.startswith("vgg"),
             attention_type=decoder_attention_type,
         )
-        self.segmentation_head = SegmentationHead(
+        segmentation_head = SegmentationHead(
             in_channels=decoder_channels[-1],
             out_channels=classes * 2,
             activation=activation,
@@ -503,7 +503,7 @@ class URRResidualAttentionUnetPlusPlus(URRResidualAttentionUnet):
             region_refiner = RegionRefiner(7, 16, 32, self.classes)
 
         self.decoder = URRDecoder(
-            decoder, self.segmentation_head, region_refiner, classes, uncertainty_mode
+            decoder, segmentation_head, region_refiner, classes, uncertainty_mode
         )
 
         if aux_params is not None:
