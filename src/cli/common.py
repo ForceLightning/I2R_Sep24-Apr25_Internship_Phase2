@@ -160,6 +160,19 @@ class CommonCLI(LightningCLI):
             "infarct_prediction_writer.output_dir",
             compute_fn=prediction_writer.get_output_dir_from_ckpt_path,
         )
+        parser.link_arguments(
+            "prediction_writer.raw_masks",
+            "infarct_prediction_writer.output_samples_to_dirs",
+        )
+        parser.link_arguments(
+            "prediction_writer.format",
+            "infarct_prediction_writer.format",
+            apply_on="instantiate",
+        )
+        parser.link_arguments(
+            "prediction_writer.inv_transform",
+            "infarct_prediction_writer.inv_transform",
+        )
 
 
 class I2RInternshipCommonCLI(CommonCLI):

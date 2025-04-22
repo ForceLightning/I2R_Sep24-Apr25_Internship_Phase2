@@ -1,0 +1,29 @@
+# lightning.pytorch==2.5.0
+trainer:
+  accelerator: auto
+  strategy: auto
+  devices: 1
+  num_nodes: 1
+  precision: null
+  logger: false
+  callbacks:
+  - class_path: utils.global_progress_bar.BetterProgressBar
+model:
+  classes: 4
+data:
+  batch_size: 1
+model_checkpoint_val_loss:
+  save_last: false
+  save_top_k: 0
+model_checkpoint_last:
+  every_n_epochs: null
+  save_last: false
+  save_top_k: 0
+model_checkpoint_dice_weighted:
+  save_last: false
+  save_top_k: 0
+model_checkpoint_dice_macro_class_2_3:
+  save_last: false
+  save_top_k: 0
+eval_classification_mode: MULTICLASS_MODE
+

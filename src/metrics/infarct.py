@@ -8,17 +8,18 @@ from dataclasses import dataclass
 from typing import Any, Callable, Literal, Sequence, override
 
 # Third-Party
-import seaborn as sns
-from matplotlib import pyplot as plt
 from tqdm.auto import tqdm
 
 # Scientific Libraries
 import numpy as np
+import seaborn as sns
+from matplotlib import pyplot as plt
 from numpy import typing as npt
 from scipy.spatial import distance
 
 # Image Libraries
 import cv2
+from blend_modes import addition
 from cv2 import typing as cvt
 from PIL import Image
 
@@ -31,6 +32,7 @@ from torch import Tensor, nn
 from torch.nn import functional as F
 from torchmetrics.utilities import dim_zero_cat
 from torchmetrics.utilities.compute import _safe_divide
+from torchvision.transforms.v2 import functional as v2f
 from torchvision.utils import draw_segmentation_masks
 
 # First party imports
@@ -314,6 +316,8 @@ class InfarctTransmuralities(InfarctMetricBase):
 
 
 class InfarctVisualisation:
+    """Visualise the infarct clinical metrics."""
+
     def __init__(
         self,
         classification_mode: ClassificationMode,
@@ -321,6 +325,13 @@ class InfarctVisualisation:
         infarct_index: int = 2,
         **kwargs,
     ):
+        """Initialise a new visualisation object.
+
+        Args:
+            classification_mode: Segmentation classification mode.
+            lv_index: LV myocardium index of mask.
+            infarct_index: Myocardial Infarct scar tissue index of mask.
+        """
         super().__init__(**kwargs)
         self.classification_mode = classification_mode
         self.lv_index = lv_index
@@ -332,25 +343,38 @@ class InfarctVisualisation:
         segmentation_mask: Tensor,
         output_raw_annotation: bool = False,
     ) -> Image.Image:
+        """Visualise the input with masks and annotations.
+
+        Args:
+            cine_image: Tensor of cine image sequence.
+            segmentation_mask: Segmentation mask of cine input.
+            output_raw_annotation: Whether to output just the annotation.
+
+        Return:
+            Image.Image: Annotated image or raw annotation.
+        """
         segmentation_mask = segmentation_mask.detach().cpu()
         _k, h, _w = segmentation_mask.shape
         loading_mode = (
             LoadingMode.GREYSCALE if cine_image.shape[2] == 1 else LoadingMode.RGB
         )
-        if loading_mode == LoadingMode.GREYSCALE:
-            norm_img = (
-                INV_NORM_GREYSCALE_DEFAULT(cine_image).repeat(3, 1, 1).clamp(0, 1)
-            )
+        if output_raw_annotation:
+            norm_img = torch.zeros((3, *cine_image.shape[1:]), dtype=torch.float32)
         else:
-            norm_img = INV_NORM_RGB_DEFAULT(cine_image).clamp(0, 1)
+            if loading_mode == LoadingMode.GREYSCALE:
+                norm_img = (
+                    INV_NORM_GREYSCALE_DEFAULT(cine_image).repeat(3, 1, 1).clamp(0, 1)
+                )
+            else:
+                norm_img = INV_NORM_RGB_DEFAULT(cine_image).clamp(0, 1)
 
         colors: list[str | tuple[int, int, int]] = ["red", "blue", "green"]
 
         # (1) Draw segmentation mask.
         annotated_img = draw_segmentation_masks(
-            torch.zeros_like(norm_img) if output_raw_annotation else norm_img,
+            norm_img,
             segmentation_mask[1:, :, :].bool(),
-            alpha=0.5,
+            alpha=1.0 if output_raw_annotation else 0.5,
             colors=colors,
         )
 
@@ -409,6 +433,8 @@ class InfarctVisualisation:
 
 
 class InfarctPredictionWriter(BasePredictionWriter):
+    """Prediction writer for infarct visualisation."""
+
     def __init__(
         self,
         lv_myo_index: int = 1,
@@ -418,7 +444,21 @@ class InfarctPredictionWriter(BasePredictionWriter):
         write_interval: Literal["batch", "epoch", "batch_and_epoch"] = "epoch",
         inv_transform: InverseNormalize = INV_NORM_GREYSCALE_DEFAULT,
         format: Literal["apng", "tiff", "gif", "webp", "png"] = "gif",
+        output_samples_to_dirs: bool = False,
     ):
+        """Initialise the infarct prediction writer.
+
+        Args:
+            lv_myo_index: LV myocardium mask index in mask.
+            infarct_index: Myocardial infarct scar tissue index in mask.
+            loading_mode: Color mode of images.
+            output_dir: Output prediction directory. None to disable writer.
+            write_interval: How often to write predictions to files.
+            inv_transform: Inverse transformation of normalised input images.
+            format: File format to save to.
+            output_samples_to_dirs: Whether to output individual sample predictions to
+                their own directories.
+        """
         super().__init__(write_interval)
         self.lv_myo_index = lv_myo_index
         self.infarct_index = infarct_index
@@ -429,6 +469,7 @@ class InfarctPredictionWriter(BasePredictionWriter):
         self.infarct_viz = InfarctVisualisation(
             ClassificationMode.MULTICLASS_MODE, self.lv_myo_index, self.infarct_index
         )
+        self.output_samples_to_dirs = output_samples_to_dirs
 
         if self.output_dir:
             if not os.path.exists(out_dir := os.path.normpath(self.output_dir)):
@@ -451,7 +492,10 @@ class InfarctPredictionWriter(BasePredictionWriter):
 
         assert isinstance(pl_module, CommonModelMixin)
 
-        predictions_for_loop: list[Sequence[tuple[Tensor, Tensor, list[str]]]]
+        predictions_for_loop: (
+            list[Sequence[tuple[Tensor, Tensor, list[str]]]]
+            | list[Sequence[tuple[Tensor, Tensor, Tensor, list[str]]]]
+        )
         if isinstance(predictions[0][0], Tensor):
             predictions_for_loop = [
                 predictions  # pyright: ignore[reportAssignmentType]
@@ -460,28 +504,67 @@ class InfarctPredictionWriter(BasePredictionWriter):
             predictions_for_loop = predictions  # pyright: ignore[reportAssignmentType]
 
         for preds in predictions_for_loop:
-            for batched_mask_preds, batched_images, batched_fns in tqdm(
-                preds, desc="batches"
-            ):
-                for (
-                    mask_pred,
-                    image,
-                    fn,
-                ) in zip(batched_mask_preds, batched_images, batched_fns, strict=True):
+            for batch in tqdm(preds, desc="Batches"):
+                uncertainties = len(batch) == 4
+                if uncertainties:
+                    (
+                        batched_mask_preds,
+                        _batched_uncertainties,
+                        batched_images,
+                        batched_fns,
+                    ) = batch
+                else:
+                    batched_mask_preds, batched_images, batched_fns = batch
+
+                for mask_pred, image, fn in zip(
+                    batched_mask_preds, batched_images, batched_fns, strict=True
+                ):
                     num_frames = image.shape[0]
 
+                    # Blend the annotation with the cine image.
                     masked_frames: list[Image.Image] = []
+                    raw_annotation = self.infarct_viz.viz(
+                        image[0], mask_pred, True
+                    ).convert("RGBA")
+                    raw_annotation = np.array(raw_annotation).astype(float)
                     for frame in image:
-                        masked_frame = self.infarct_viz.viz(frame, mask_pred)
+                        if self.loading_mode == LoadingMode.GREYSCALE:
+                            norm_img = (
+                                self.inv_transform(frame).repeat(3, 1, 1).clamp(0, 1)
+                            )
+                        else:
+                            norm_img = self.inv_transform(frame).clamp(0, 1)
+                        norm_pil_img: Image.Image = v2f.to_pil_image(norm_img)
+                        norm_pil_img = norm_pil_img.convert("RGBA")
+                        norm_img = np.array(norm_pil_img).astype(float)
+                        masked_frame = Image.fromarray(
+                            np.uint8(addition(norm_img, raw_annotation, opacity=0.5))
+                        ).convert("RGB")
                         masked_frames.append(masked_frame)
 
-                    save_sample_fp = ".".join(fn.split(".")[:-1]) + "infarct_annotation"
+                    save_sample_fp = ".".join(fn.split(".")[:-1])
+                    if (mask_pred[3, :, :] == 1).any():
+                        save_sample_fp = f"{save_sample_fp}_pos3"
 
-                    save_path = os.path.join(
-                        os.path.normpath(self.output_dir),
-                        save_sample_fp,
-                        f"pred.{self.format}",
-                    )
+                    if self.output_samples_to_dirs:
+                        save_path = os.path.join(
+                            os.path.normpath(self.output_dir),
+                            "save_sample_fp",
+                        )
+
+                        if not os.path.exists(save_path):
+                            os.makedirs(save_path)
+
+                        save_path = os.path.join(
+                            os.path.normpath(self.output_dir),
+                            save_sample_fp,
+                            f"infarct_annotation.{self.format}",
+                        )
+                    else:
+                        save_path = os.path.join(
+                            os.path.normpath(self.output_dir),
+                            f"{save_sample_fp}.infarct_annotation.{self.format}",
+                        )
 
                     match self.format:
                         case "tiff":

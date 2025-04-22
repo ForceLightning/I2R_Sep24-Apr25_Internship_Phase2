@@ -27,6 +27,7 @@ dependencies = [
     "torch-scatter==2.1.2+pt26cu124 ; os_name != 'darwin'",
     "ml-collections>=1.0.0",
     "scikit-learn>=1.6.1",
+    "blend-modes>=2.2.0",
 ]
 
 [dependency-groups]

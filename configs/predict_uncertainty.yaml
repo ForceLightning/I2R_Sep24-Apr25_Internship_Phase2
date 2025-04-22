@@ -1,0 +1,31 @@
+# lightning.pytorch==2.4.0
+trainer:
+  logger: false
+  accelerator: auto
+  strategy: auto
+  devices: 1
+  num_nodes: 1
+  precision: null
+  max_epochs: 1
+  callbacks:
+  - class_path: utils.global_progress_bar.BetterProgressBar
+  - class_path: metrics.infarct.InfarctPredictionWriter
+model:
+  classes: 4
+data:
+  augment: false
+model_checkpoint_val_loss:
+  save_last: false
+  save_top_k: 0
+model_checkpoint_last:
+  every_n_epochs: null
+  save_last: false
+  save_top_k: 0
+model_checkpoint_dice_weighted:
+  save_last: false
+  save_top_k: 0
+model_checkpoint_dice_macro_class_2_3:
+  save_last: false
+  save_top_k: 0
+prediction_writer:
+  uncertainty: true

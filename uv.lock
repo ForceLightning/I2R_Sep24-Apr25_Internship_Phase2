@@ -192,6 +192,18 @@ wheels = [
 ]
 
 [[package]]
+name = "blend-modes"
+version = "2.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/91/8a/45b841790ca838fdf145efde894b28a21b47c8903f455b40bace43938e5f/blend_modes-2.2.0.tar.gz", hash = "sha256:54e0703be83097a94af792e52a21fbbd3af20a690b21c9175283e216762c123a", size = 18404 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2f/51/10b145d0f054ec53ce8e3716148fbb2dfd05941d77b02f4fbeb4516fef93/blend_modes-2.2.0-py3-none-any.whl", hash = "sha256:31ad22b382071e6716a48534fcfcd1b0c22cd5f77ffc6b10d3f5547371141218", size = 9533 },
+]
+
+[[package]]
 name = "certifi"
 version = "2025.1.31"
 source = { registry = "https://pypi.org/simple" }
@@ -637,6 +649,7 @@ name = "i2r-sep24-apr25-internship-phase2"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "blend-modes" },
     { name = "deepspeed" },
     { name = "einops" },
     { name = "ipykernel" },
@@ -685,6 +698,7 @@ wsl = [
 
 [package.metadata]
 requires-dist = [
+    { name = "blend-modes", specifier = ">=2.2.0" },
     { name = "deepspeed" },
     { name = "einops", specifier = ">=0.8.1" },
     { name = "ipykernel", specifier = ">=6.29.5" },

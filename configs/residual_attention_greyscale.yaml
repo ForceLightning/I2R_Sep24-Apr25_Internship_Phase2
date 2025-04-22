@@ -1,0 +1,4 @@
+# lightning.pytorch==2.4.0
+model:
+  in_channels: 1
+image_loading_mode: GREYSCALE
