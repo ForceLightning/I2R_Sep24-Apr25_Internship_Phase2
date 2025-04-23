@@ -52,6 +52,7 @@ logger = logging.getLogger(__name__)
 __all__ = ["InfarctResults", "InfarctHeuristics", "InfarctVisualisation"]
 
 SHIFT = 10
+_DEBUG = False
 
 
 @dataclass
@@ -134,14 +135,14 @@ class InfarctHeuristics(nn.Module):
             segmentation_mask = segmentation_mask.unsqueeze(0)
 
         # (1) Get the area of the infarct.
-        areas = segmentation_mask[:, :, :, infarct_index].sum(dim=(1, 2))
+        areas = segmentation_mask[:, infarct_index, ...].sum(dim=(1, 2))
         # (2) Get the ratio.
         ratios = _safe_divide(
-            areas, areas + segmentation_mask[:, :, :, lv_index].sum(dim=(1, 2))
+            areas, areas + segmentation_mask[:, lv_index, ...].sum(dim=(1, 2))
         )
         # (3) Get the spans and transmuralities of the infarcts.
         spans, transmuralities = _get_infarct_spans_transmuralities(
-            segmentation_mask, lv_index, infarct_index
+            segmentation_mask, lv_index, infarct_index, _debug=False
         )
 
         span_only = np.array([result.span for result in spans])
@@ -203,11 +204,11 @@ class InfarctMetricBase(torchmetrics.R2Score):
         match self.classification_mode:
             case ClassificationMode.MULTICLASS_1_2_MODE:
                 for y in [preds, target]:
-                    y[:, :, :, 1] = torch.bitwise_or(y[:, :, :, 1], y[:, :, :, 2])
+                    y[:, 1, ...] = torch.bitwise_or(y[:, 1, ...], y[:, 2, ...])
             case ClassificationMode.MULTICLASS_MODE:
                 for y in [preds, target]:
-                    y[:, :, :, 2] = torch.bitwise_or(y[:, :, :, 2], y[:, :, :, 3])
-                    y[:, :, :, 1] = torch.bitwise_or(y[:, :, :, 1], y[:, :, :, 2])
+                    y[:, 2, ...] = torch.bitwise_or(y[:, 2, ...], y[:, 3, ...])
+                    y[:, 1, ...] = torch.bitwise_or(y[:, 1, ...], y[:, 2, ...])
             case _:
                 pass
 
@@ -236,7 +237,9 @@ class InfarctMetricBase(torchmetrics.R2Score):
 
                 ax.set_xlabel("Target")
                 ax.set_ylabel("Prediction")
-                ax.set_title(self.__class__.__name__)
+                ax.set_title(
+                    f"{self.__class__.__name__} R²: {self.compute().item():.2f}"
+                )
 
                 return fig, ax
 
@@ -248,8 +251,8 @@ class InfarctArea(InfarctMetricBase):
     def update(self, preds: Tensor, target: Tensor) -> None:
         preds, target = self.preprocessing(preds, target)
 
-        preds_infarct_area = preds[:, self.infarct_index, :, :].sum(dim=(1, 2))
-        target_infarct_area = target[:, self.infarct_index, :, :].sum(dim=(1, 2))
+        preds_infarct_area = preds[:, self.infarct_index, ...].sum(dim=(1, 2))
+        target_infarct_area = target[:, self.infarct_index, ...].sum(dim=(1, 2))
         _b, w, h, _k = target.shape
         preds_infarct_area = preds_infarct_area / (w * h)
         target_infarct_area = target_infarct_area / (w * h)
@@ -262,10 +265,10 @@ class InfarctAreaRatio(InfarctMetricBase):
     def update(self, preds: Tensor, target: Tensor) -> None:
         preds, target = self.preprocessing(preds, target)
 
-        preds_infarct_area = preds[:, self.infarct_index, :, :].sum(dim=(1, 2))
-        preds_lv_area = preds[:, self.lv_index, :, :].sum(dim=(1, 2))
-        target_infarct_area = target[:, self.infarct_index, :, :].sum(dim=(1, 2))
-        target_lv_area = target[:, self.lv_index, :, :].sum(dim=(1, 2))
+        preds_infarct_area = preds[:, self.infarct_index, ...].sum(dim=(1, 2))
+        preds_lv_area = preds[:, self.lv_index, ...].sum(dim=(1, 2))
+        target_infarct_area = target[:, self.infarct_index, ...].sum(dim=(1, 2))
+        target_lv_area = target[:, self.lv_index, ...].sum(dim=(1, 2))
 
         preds_ratio = _safe_divide(preds_infarct_area, preds_lv_area)
         target_ratio = _safe_divide(target_infarct_area, target_lv_area)
@@ -280,10 +283,10 @@ class InfarctSpan(InfarctMetricBase):
         preds, target = self.preprocessing(preds, target)
 
         preds_spans, _ = _get_infarct_spans_transmuralities(
-            preds, self.lv_index, self.infarct_index
+            preds, self.lv_index, self.infarct_index, _debug=False
         )
         target_spans, _ = _get_infarct_spans_transmuralities(
-            target, self.lv_index, self.infarct_index
+            target, self.lv_index, self.infarct_index, _debug=False
         )
 
         preds_spans = torch.from_numpy(
@@ -303,10 +306,10 @@ class InfarctTransmuralities(InfarctMetricBase):
         preds, target = self.preprocessing(preds, target)
 
         _, preds_trans = _get_infarct_spans_transmuralities(
-            preds, self.lv_index, self.infarct_index
+            preds, self.lv_index, self.infarct_index, _debug=False
         )
         _, target_trans = _get_infarct_spans_transmuralities(
-            target, self.lv_index, self.infarct_index
+            target, self.lv_index, self.infarct_index, _debug=False
         )
 
         preds_trans = torch.from_numpy(preds_trans)
@@ -342,6 +345,7 @@ class InfarctVisualisation:
         cine_image: Tensor,
         segmentation_mask: Tensor,
         output_raw_annotation: bool = False,
+        _debug: bool = False,
     ) -> Image.Image:
         """Visualise the input with masks and annotations.
 
@@ -354,12 +358,12 @@ class InfarctVisualisation:
             Image.Image: Annotated image or raw annotation.
         """
         segmentation_mask = segmentation_mask.detach().cpu()
-        _k, h, _w = segmentation_mask.shape
+        _k, h, w = segmentation_mask.shape
         loading_mode = (
             LoadingMode.GREYSCALE if cine_image.shape[2] == 1 else LoadingMode.RGB
         )
         if output_raw_annotation:
-            norm_img = torch.zeros((3, *cine_image.shape[1:]), dtype=torch.float32)
+            norm_img = torch.zeros((3, h, w), dtype=torch.float32)
         else:
             if loading_mode == LoadingMode.GREYSCALE:
                 norm_img = (
@@ -383,7 +387,10 @@ class InfarctVisualisation:
 
         # (2) Calculate span.
         spans, _ = _get_infarct_spans_transmuralities(
-            segmentation_mask.unsqueeze(0), self.lv_index, self.infarct_index
+            segmentation_mask.unsqueeze(0),
+            self.lv_index,
+            self.infarct_index,
+            _debug=_DEBUG,
         )
 
         span = spans[0]
@@ -396,16 +403,42 @@ class InfarctVisualisation:
         ccw_bound_end = _create_line_endpoint(
             span.lv_myo_centre, span.starting_rads, span.lv_myo_radius
         )
+        annotated_img = cv2.line(
+            annotated_img,
+            centre,
+            ccw_bound_end,
+            (255, 0, 0, 63),
+            max(h // 224, 1),
+            cv2.LINE_AA,
+        )
+
         cw_bound_end = _create_line_endpoint(
             span.lv_myo_centre, span.ending_rads, span.lv_myo_radius
         )
+        annotated_img = cv2.line(
+            annotated_img,
+            centre,
+            cw_bound_end,
+            (255, 0, 0, 63),
+            max(h // 224, 1),
+            cv2.LINE_AA,
+        )
 
-        annotated_img = cv2.line(
-            annotated_img, centre, ccw_bound_end, (255, 0, 0, 63), 1, cv2.LINE_AA
-        )
-        annotated_img = cv2.line(
-            annotated_img, centre, cw_bound_end, (255, 0, 0, 63), 1, cv2.LINE_AA
-        )
+        # DEBUG: Show bisector line.
+        if _debug:
+            bisector_line_end = _create_line_endpoint(
+                span.lv_myo_centre,
+                -span.best_shift_rads,
+                span.lv_myo_radius,
+            )
+            annotated_img = cv2.line(
+                annotated_img,
+                centre,
+                bisector_line_end,
+                (0, 255, 0),
+                max(h // 224, 1),
+                cv2.LINE_AA,
+            )
 
         # (4) Draw arc to represent θ of the arc.
         starting_angle = int(round(span.starting_rads * 180 / np.pi))
@@ -415,15 +448,15 @@ class InfarctVisualisation:
 
         annotated_img = cv2.ellipse(
             annotated_img,
-            _apply_shift(10, tuple(span.lv_myo_centre)),
-            _apply_shift(10, (h / 50, h / 50)),
+            _apply_shift(SHIFT, tuple(span.lv_myo_centre)),
+            _apply_shift(SHIFT, (h / 50, h / 50)),
             0,
             starting_angle,
             ending_angle,
             (255, 0, 0),
-            1,
+            max(h // 224, 1),
             cv2.LINE_AA,
-            10,
+            SHIFT,
         )
 
         # (5) Return the image.
@@ -445,6 +478,7 @@ class InfarctPredictionWriter(BasePredictionWriter):
         inv_transform: InverseNormalize = INV_NORM_GREYSCALE_DEFAULT,
         format: Literal["apng", "tiff", "gif", "webp", "png"] = "gif",
         output_samples_to_dirs: bool = False,
+        output: bool = True,
     ):
         """Initialise the infarct prediction writer.
 
@@ -458,6 +492,7 @@ class InfarctPredictionWriter(BasePredictionWriter):
             format: File format to save to.
             output_samples_to_dirs: Whether to output individual sample predictions to
                 their own directories.
+            output: Whether to output anything at all.
         """
         super().__init__(write_interval)
         self.lv_myo_index = lv_myo_index
@@ -475,6 +510,8 @@ class InfarctPredictionWriter(BasePredictionWriter):
             if not os.path.exists(out_dir := os.path.normpath(self.output_dir)):
                 os.makedirs(out_dir)
 
+        self.output = output
+
     def write_on_epoch_end(
         self,
         trainer: L.Trainer,
@@ -487,7 +524,7 @@ class InfarctPredictionWriter(BasePredictionWriter):
         ),
         batch_indices: Sequence[Any],
     ) -> None:
-        if not self.output_dir:
+        if not (self.output_dir and self.output):
             return
 
         assert isinstance(pl_module, CommonModelMixin)
@@ -549,7 +586,7 @@ class InfarctPredictionWriter(BasePredictionWriter):
                     if self.output_samples_to_dirs:
                         save_path = os.path.join(
                             os.path.normpath(self.output_dir),
-                            "save_sample_fp",
+                            save_sample_fp,
                         )
 
                         if not os.path.exists(save_path):
@@ -561,9 +598,17 @@ class InfarctPredictionWriter(BasePredictionWriter):
                             f"infarct_annotation.{self.format}",
                         )
                     else:
+                        if not os.path.exists(
+                            temp_dir := os.path.join(
+                                os.path.normpath(self.output_dir), "infarct_annotation"
+                            )
+                        ):
+                            os.makedirs(temp_dir)
+
                         save_path = os.path.join(
                             os.path.normpath(self.output_dir),
-                            f"{save_sample_fp}.infarct_annotation.{self.format}",
+                            "infarct_annotation",
+                            f"{save_sample_fp}.{self.format}",
                         )
 
                     match self.format:
@@ -621,7 +666,9 @@ def _apply_shift(shift: int = 0, *args: tuple[float, ...]) -> tuple[int, ...]:
 
 
 def _create_line_endpoint(
-    centre: cvt.Point2f, angle: float, radius: float
+    centre: cvt.Point2f,
+    angle: float,
+    radius: float,
 ) -> cvt.Point2i:
     endpoint: cvt.Point2i = (
         int(round(centre[0] + radius * np.cos(angle))),
@@ -644,6 +691,7 @@ class InfarctSpanResult:
     span: float
     starting_rads: float
     ending_rads: float
+    best_shift_rads: float
     lv_myo_centre: cvt.Point2f
     lv_myo_radius: float
 
@@ -653,6 +701,7 @@ def _get_infarct_spans_transmuralities(
     lv_index: int = 1,
     infarct_index: int = 2,
     mvo_index: int = 3,
+    _debug: bool = False,
 ) -> tuple[list[InfarctSpanResult], npt.NDArray]:
     """Compute the span and transmurality of the infarct area.
 
@@ -666,16 +715,16 @@ def _get_infarct_spans_transmuralities(
     """
     spans: list[InfarctSpanResult] = []
     transmuralities: npt.NDArray = np.zeros(segmentation_mask.size(0))
-    segmentation_mask = segmentation_mask.detach().cpu()
-    segmentation_mask[:, infarct_index, ...] = torch.bitwise_or(
-        segmentation_mask[:, infarct_index, ...], segmentation_mask[:, mvo_index, ...]
+    seg_mask = segmentation_mask.detach().cpu().clone()
+    seg_mask[:, infarct_index, ...] = torch.bitwise_or(
+        seg_mask[:, infarct_index, ...], seg_mask[:, mvo_index, ...]
     )
-    segmentation_mask[:, lv_index, ...] = torch.bitwise_or(
-        segmentation_mask[:, lv_index, ...], segmentation_mask[:, infarct_index, ...]
+    seg_mask[:, lv_index, ...] = torch.bitwise_or(
+        seg_mask[:, lv_index, ...], seg_mask[:, infarct_index, ...]
     )
-    for i, mask in enumerate(segmentation_mask):
+    for i, mask in enumerate(seg_mask):
         if mask[infarct_index, :, :].sum() == 0:
-            spans.append(InfarctSpanResult(0, 0, 0, (0, 0), 0))
+            spans.append(InfarctSpanResult(0, 0, 0, 0, (0, 0), 0))
             transmuralities[i] = 0.0
             continue
 
@@ -689,8 +738,8 @@ def _get_infarct_spans_transmuralities(
         # (2) Transform the image to polar coordinates.
         polar_infarct_mat = _cv2_linear_to_polar(infarct_mat, centre, radius)
 
-        # (3) Find the best shift to minimise the average distance between centroids.
-        best_shift = _find_optimal_shift(polar_infarct_mat, 3)
+        # (3) Find the best shift to minimise the average distance beteen centroids.
+        best_shift = _find_optimal_shift(polar_infarct_mat, 10, _debug)
         shifted_polar_infarct_mat = np.roll(polar_infarct_mat, best_shift, axis=0)
 
         # (4) Get the infarct CCW and CW bounds from the polar mask
@@ -707,13 +756,14 @@ def _get_infarct_spans_transmuralities(
         # (5) Calculate span
         span = ((max_polar_coord - min_polar_coord) / height) % 1
 
-        starting_rads = ((min_polar_coord + best_shift) % height) / height * 2 * np.pi
-        ending_rads = ((max_polar_coord + best_shift) % height) / height * 2 * np.pi
+        starting_rads = (min_polar_coord - best_shift) / height * 2 * np.pi
+        ending_rads = (max_polar_coord - best_shift) / height * 2 * np.pi
 
         span_result = InfarctSpanResult(
             span=span,
             starting_rads=starting_rads,
             ending_rads=ending_rads,
+            best_shift_rads=best_shift / height * 2 * np.pi,
             lv_myo_centre=centre,
             lv_myo_radius=radius,
         )
@@ -743,7 +793,7 @@ def _infarct_transmurality(
 
     Args:
         infarct_mat: Normal binary mask for infarct.
-        shifted_polar_lv_mat: Polar warped LV myocardium mask, shifted by optimal amount.
+        shifted_polar_lv_mat: Polar arped LV myocardium mask, shifted by optimal amount.
         min_polar_coord: Starting y-coordinate of polar infarct span (shifted)
         max_polar_coord: Ending y-coordinate of polar infarct span (shifted)
         min_bounding_circle: Centre and radius of LV myocardium bounding circle.
@@ -771,12 +821,15 @@ def _infarct_transmurality(
     lv_span_area = masked_lv_mat.sum()
     infarct_area = infarct_mat.sum()
 
-    return infarct_area / lv_span_area
+    ratio = infarct_area / lv_span_area if lv_span_area != 0.0 else 0.0
+
+    return ratio
 
 
 def _find_optimal_shift(
     polar_mat: cvt.MatLike,
     max_iter: int = 10,
+    _debug: bool = _DEBUG,
 ) -> int:
     """Finds the optimal shift required to not bisect the infarct area.
 
@@ -790,29 +843,75 @@ def _find_optimal_shift(
     _, _, _, centroids = cv2.connectedComponentsWithStats(polar_mat)
     height, _ = polar_mat.shape
     metrics = np.zeros((max_iter + 1, 2), dtype=np.float32)
+    metrics[:, 1] = 2**20
     metrics[0, 1] = _get_distances_between_blobs(centroids).max()
 
     # Try some shift
-    shift = height // 2
+    shift: int = height // 2
+    if len(centroids) > 1:
+        min_centroid_y = centroids[:, 1].min()
+        max_centroid_y = centroids[:, 1].max()
+        shift = int(np.floor(np.mean([min_centroid_y, max_centroid_y])))
+    _temp_mats = [polar_mat.copy()]  # DEBUG: To show the shifts.
     for i in range(1, max_iter + 1):
         shifted_polar_mat = np.roll(polar_mat, shift, axis=0)
-        _, _, _stats, shift_centroids = cv2.connectedComponentsWithStats(
+        _, _, shift_stats, shift_centroids = cv2.connectedComponentsWithStats(
             shifted_polar_mat
         )
+        _temp_mats.append(shifted_polar_mat.copy())  # DEBUG: To show the shifts.
         metrics[i, 0] = shift
         metrics[i, 1] = _get_distances_between_blobs(shift_centroids).max()
-        shift_diff = metrics[i, 0] - metrics[i - 1, 0]
-        if metrics[i, 1] >= metrics[i - 1, 1]:
-            # Go the other way
-            shift = (shift - (shift_diff // 2)) % height
-            continue
-        elif metrics[i, 1] < metrics[i - 1, 1]:
-            # Continue in that direction
-            shift = (shift + (shift_diff // 2)) % height
-            continue
+        if len(centroids) > 1:
+            # OPTIM: If at least 2 of the same shifts have been attempted, try
+            # centroid detection on an inverse of the image, and bisect there.
+            if len(np.where(metrics[:, 0] == shift)) >= 2:
+                nonzero_columns = shifted_polar_mat[:, shifted_polar_mat.any(0)]
+                inv_columns = (
+                    np.logical_not(nonzero_columns.astype(bool)).astype(np.uint8) * 255
+                )
+                _, _, inv_shift_stats, inv_shift_centroids = (
+                    cv2.connectedComponentsWithStats(inv_columns)
+                )
+                # Find the largest area's centroid.
+                max_idx = inv_shift_stats[:, cv2.CC_STAT_AREA].argmax()
+                shift = int(inv_shift_centroids[max_idx, 1])
+                continue
+            min_shift_centroid_y = shift_centroids[:, 1].min()
+            max_shift_centroid_y = shift_centroids[:, 1].max()
+            shift = int(np.floor(np.mean([min_shift_centroid_y, max_shift_centroid_y])))
+            if shift in metrics[:, 0]:
+                # Take an inversely weighted average of the centroids by their area.
+                inv_w_shift_stats = shift_stats.copy().astype(np.float64)
+                inv_w_shift_stats[:, cv2.CC_STAT_AREA] = np.float_power(
+                    inv_w_shift_stats[:, cv2.CC_STAT_AREA], -1.0
+                )
+                inv_w_area_power = inv_w_shift_stats[:, cv2.CC_STAT_AREA].sum()
+
+                average_loc = (
+                    shift_centroids[:, 1] @ inv_w_shift_stats[:, cv2.CC_STAT_AREA].T
+                )
+                average_loc /= inv_w_area_power
+                shift = int(average_loc)
+        # OPTIM: No more attempts are necessary if there's only 1 centroid.
+        else:
+            break
 
     best_shift_index = metrics[:, 1].argmin()
     best_shift = int(metrics[best_shift_index, 0].item())
+
+    # DEBUG: To show the shifts
+    if _debug:
+        for i, (shifted_mat, (temp_shift, temp_dist)) in enumerate(
+            zip(_temp_mats, metrics, strict=True)
+        ):
+            is_best_shift = i == best_shift_index
+
+            cv2.imshow(
+                f"{i}: Max dist ({temp_dist}) with shift ({temp_shift}), best_shift = {is_best_shift}",
+                shifted_mat * 255,
+            )
+
+        cv2.waitKey(0)
 
     return best_shift
 
@@ -951,8 +1050,8 @@ if __name__ == "__main__":
         LoadingMode.GREYSCALE, ResidualMode.SUBTRACT_NEXT_FRAME, image_size=dsize
     )
     dataset = ResidualTwoPlusOneDataset(
-        img_dir="data/train_val/Cine",
-        mask_dir="data/train_val/masks",
+        img_dir="data/test/Cine",
+        mask_dir="data/test/masks",
         idxs_dir="data/indices",
         frames=10,
         select_frame_method="specific",
@@ -963,20 +1062,36 @@ if __name__ == "__main__":
         classification_mode=ClassificationMode.MULTICLASS_MODE,
         loading_mode=LoadingMode.GREYSCALE,
         image_size=dsize,
+        mode="test",
     )
 
-    dataloader = DataLoader(dataset, batch_size=2)
+    dataloader = DataLoader(dataset, batch_size=1, num_workers=8)
     infarct_metrics = InfarctHeuristics()
     infarct_viz = InfarctVisualisation(ClassificationMode.MULTICLASS_MODE)
 
-    for img, _r, mask, _ in dataloader:
-        if (mask == 2).any():
-            one_hot_mask = F.one_hot(mask, num_classes=4).bool()
+    for img, _r, mask, fn in dataloader:
+        if any(
+            [
+                f
+                in [
+                    # "228_5_0000.nii.tiff",
+                    # "195_4_0000.nii.tiff",
+                    # "262_6_0000.nii.tiff",
+                    # "157_4_0000.nii.tiff",
+                    # "157_5_0000.nii.tiff",
+                    "195_3_0000.nii.tiff"
+                ]
+                for f in fn
+            ]
+        ):
+            # if (mask == 2).any():
+            print(fn)
+            one_hot_mask = F.one_hot(mask, num_classes=4).bool().permute(0, -1, 1, 2)
 
             print(infarct_metrics(one_hot_mask))
 
-            for i, mask in zip(img, one_hot_mask.permute(0, 3, 1, 2)):
+            for i, mask in zip(img, one_hot_mask):
                 annotated_img = infarct_viz.viz(i[0], mask)
                 annotated_img.show()
 
-            break
+            # break

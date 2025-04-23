@@ -4,7 +4,7 @@
 # Standard Library
 from typing import Literal
 
-# Third-Party
+# Scientific Libraries
 from matplotlib import pyplot as plt
 
 # PyTorch

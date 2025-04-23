@@ -40,6 +40,7 @@ class MaskImageWriter(BasePredictionWriter):
         raw_masks: bool = False,
         uncertainty: bool = False,
         drawn_classes: tuple[int, ...] = (0, 1, 2, 3),
+        output: bool = True,
     ):
         """Initialise the MaskImageWriter.
 
@@ -52,6 +53,7 @@ class MaskImageWriter(BasePredictionWriter):
             raw_masks: Whether to output raw predicted masks as well (B/W image).
             uncertainty: Whether to expect uncertainty input.
             drawn_classes: Number of classes to draw.
+            output: Whether to save the files at all.
 
         """
         super().__init__(write_interval)
@@ -65,6 +67,7 @@ class MaskImageWriter(BasePredictionWriter):
         if self.output_dir:
             if not os.path.exists(out_dir := os.path.normpath(self.output_dir)):
                 os.makedirs(out_dir)
+        self.output = output
 
     def _write_on_epoch_end_no_uncertainty(
         self,
@@ -380,7 +383,7 @@ class MaskImageWriter(BasePredictionWriter):
             batch_indices: The indices of the batch.
 
         """
-        if not self.output_dir:
+        if not (self.output_dir and self.output):
             return
 
         if self.uncertainty:
