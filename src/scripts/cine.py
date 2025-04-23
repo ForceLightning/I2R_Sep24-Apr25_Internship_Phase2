@@ -91,7 +91,9 @@ class CineBaselineDataModule(L.LightningDataModule):
         trainval_mask_dir = os.path.join(os.getcwd(), self.data_dir, "masks")
 
         transforms_img, transforms_mask, transforms_together = (
-            CineDataset.get_default_transforms(self.loading_mode, self.augment)
+            CineDataset.get_default_transforms(
+                self.loading_mode, self.augment, image_size=self.image_size
+            )
         )
 
         trainval_dataset = CineDataset(

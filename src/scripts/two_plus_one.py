@@ -10,6 +10,7 @@ from typing import Literal, override
 import lightning as L
 import torch
 from lightning.pytorch.cli import LightningArgumentParser
+from torch.nn.common_types import _size_2_t
 from torch.utils.data import DataLoader
 
 # First party imports
@@ -33,6 +34,7 @@ class TwoPlusOneDataModule(L.LightningDataModule):
         indices_dir: str = "data/indices/",
         batch_size: int = BATCH_SIZE_TRAIN,
         frames: int = NUM_FRAMES,
+        image_size: _size_2_t = (224, 224),
         select_frame_method: Literal["consecutive", "specific"] = "specific",
         classification_mode: ClassificationMode = ClassificationMode.MULTICLASS_MODE,
         num_workers: int = 8,
@@ -51,6 +53,7 @@ class TwoPlusOneDataModule(L.LightningDataModule):
             `val_indices.pkl`.
             batch_size: Minibatch sizes for the DataLoader.
             frames: Number of frames from the original dataset to use.
+            image_size: Dataloader output image resolution.
             select_frame_method: How frames < 30 are selected for training.
             classification_mode: The classification mode for the dataloader.
             num_workers: The number of workers for the DataLoader.
@@ -67,6 +70,7 @@ class TwoPlusOneDataModule(L.LightningDataModule):
         self.indices_dir = indices_dir
         self.batch_size = batch_size
         self.frames = frames
+        self.image_size = image_size
         self.select_frame_method: Literal["consecutive", "specific"] = (
             select_frame_method
         )
@@ -85,7 +89,9 @@ class TwoPlusOneDataModule(L.LightningDataModule):
 
         # Get transforms for the CINE images, masks, and combined transforms.
         transforms_img, transforms_mask, transforms_together = (
-            TwoPlusOneDataset.get_default_transforms(self.loading_mode, self.augment)
+            TwoPlusOneDataset.get_default_transforms(
+                self.loading_mode, self.augment, self.image_size
+            )
         )
 
         trainval_dataset = TwoPlusOneDataset(
@@ -100,6 +106,7 @@ class TwoPlusOneDataModule(L.LightningDataModule):
             classification_mode=self.classification_mode,
             loading_mode=self.loading_mode,
             combine_train_val=self.combine_train_val,
+            image_size=self.image_size,
         )
         assert len(trainval_dataset) > 0, "combined train/val set is empty"
 
@@ -118,6 +125,7 @@ class TwoPlusOneDataModule(L.LightningDataModule):
             classification_mode=self.classification_mode,
             loading_mode=self.loading_mode,
             combine_train_val=self.combine_train_val,
+            image_size=self.image_size,
         )
 
         if self.combine_train_val:
@@ -144,6 +152,7 @@ class TwoPlusOneDataModule(L.LightningDataModule):
                 classification_mode=self.classification_mode,
                 loading_mode=self.loading_mode,
                 combine_train_val=self.combine_train_val,
+                image_size=self.image_size,
             )
 
             train_set, valid_set = get_trainval_data_subsets(
