@@ -737,9 +737,10 @@ def _get_infarct_spans_transmuralities(
 
         # (2) Transform the image to polar coordinates.
         polar_infarct_mat = _cv2_linear_to_polar(infarct_mat, centre, radius)
+        polar_lv_mat = _cv2_linear_to_polar(lv_mat, centre, radius)
 
         # (3) Find the best shift to minimise the average distance beteen centroids.
-        best_shift = _find_optimal_shift(polar_infarct_mat, 10, _debug)
+        best_shift = _find_optimal_shift(polar_infarct_mat, polar_lv_mat, 10, _debug)
         shifted_polar_infarct_mat = np.roll(polar_infarct_mat, best_shift, axis=0)
 
         # (4) Get the infarct CCW and CW bounds from the polar mask
@@ -770,7 +771,6 @@ def _get_infarct_spans_transmuralities(
         spans.append(span_result)
 
         # (6) Get transmurality
-        polar_lv_mat = _cv2_linear_to_polar(lv_mat, centre, radius)
         transmuralities[i] = _infarct_transmurality(
             infarct_mat,
             np.roll(polar_lv_mat, best_shift, axis=0),
@@ -827,7 +827,8 @@ def _infarct_transmurality(
 
 
 def _find_optimal_shift(
-    polar_mat: cvt.MatLike,
+    polar_infarct: cvt.MatLike,
+    polar_lv: cvt.MatLike,
     max_iter: int = 10,
     _debug: bool = _DEBUG,
 ) -> int:
@@ -837,64 +838,58 @@ def _find_optimal_shift(
         polar_mat: Polar warped binary mask.
         max_iter: Max number of iterations to attempt.
     """
+    # (0) Remove the infarct area from the lv myocardium mask.
+    height, _ = polar_infarct.shape
+    nonzero_rows = polar_infarct[polar_infarct.any(0), :]
+    # Make sure that the LV myo mat has connected components in it after removing rows.
+    if len(nonzero_rows) != height:
+        polar_lv[nonzero_rows, :] = 0  # pyright: ignore False positive
+    else:
+        polar_lv = np.bitwise_and(np.bitwise_not(polar_infarct), polar_lv)
+
     # (1) Start with metrics for the base case.
     #   Index 0 contains the shift.
     #   Index 1 contains the max distance.
-    _, _, _, centroids = cv2.connectedComponentsWithStats(polar_mat)
-    height, _ = polar_mat.shape
-    metrics = np.zeros((max_iter + 1, 2), dtype=np.float32)
+    _, _, _, infarct_centroids = cv2.connectedComponentsWithStats(polar_infarct)
+    _, _, lv_stats, lv_centroids = cv2.connectedComponentsWithStats(polar_lv)
+    metrics = np.zeros((max(max_iter, lv_centroids.shape[0]) + 1, 2), dtype=np.float32)
     metrics[:, 1] = 2**20
-    metrics[0, 1] = _get_distances_between_blobs(centroids).max()
+    metrics[0, 1] = _get_distances_between_blobs(infarct_centroids).max()
 
-    # Try some shift
-    shift: int = height // 2
-    if len(centroids) > 1:
-        min_centroid_y = centroids[:, 1].min()
-        max_centroid_y = centroids[:, 1].max()
-        shift = int(np.floor(np.mean([min_centroid_y, max_centroid_y])))
-    _temp_mats = [polar_mat.copy()]  # DEBUG: To show the shifts.
-    for i in range(1, max_iter + 1):
-        shifted_polar_mat = np.roll(polar_mat, shift, axis=0)
-        _, _, shift_stats, shift_centroids = cv2.connectedComponentsWithStats(
-            shifted_polar_mat
+    # (2) Sort lv connected components by their size.
+    sort_index = lv_stats[:, cv2.CC_STAT_AREA].argsort()
+    lv_stats = lv_stats[sort_index[::-1]]
+    lv_centroids = lv_centroids[sort_index[::-1]]
+
+    # (3) Test various shift values.
+    shift = lv_centroids[0, 1]
+    _temp_mats = [polar_infarct.copy()]  # DEBUG: To show the shifts.
+    for i in range(1, max(lv_centroids.shape[0], max_iter) + 1):
+        # (3.1) Begin checks
+        shifted_infarct_mat = np.roll(polar_infarct, shift, axis=0)
+        _, _, infarct_shift_stats, infarct_shift_centroids = (
+            cv2.connectedComponentsWithStats(shifted_infarct_mat)
         )
-        _temp_mats.append(shifted_polar_mat.copy())  # DEBUG: To show the shifts.
+        _temp_mats.append(shifted_infarct_mat.copy())
         metrics[i, 0] = shift
-        metrics[i, 1] = _get_distances_between_blobs(shift_centroids).max()
-        if len(centroids) > 1:
-            # OPTIM: If at least 2 of the same shifts have been attempted, try
-            # centroid detection on an inverse of the image, and bisect there.
-            if len(np.where(metrics[:, 0] == shift)) >= 2:
-                nonzero_columns = shifted_polar_mat[:, shifted_polar_mat.any(0)]
-                inv_columns = (
-                    np.logical_not(nonzero_columns.astype(bool)).astype(np.uint8) * 255
-                )
-                _, _, inv_shift_stats, inv_shift_centroids = (
-                    cv2.connectedComponentsWithStats(inv_columns)
-                )
-                # Find the largest area's centroid.
-                max_idx = inv_shift_stats[:, cv2.CC_STAT_AREA].argmax()
-                shift = int(inv_shift_centroids[max_idx, 1])
-                continue
-            min_shift_centroid_y = shift_centroids[:, 1].min()
-            max_shift_centroid_y = shift_centroids[:, 1].max()
-            shift = int(np.floor(np.mean([min_shift_centroid_y, max_shift_centroid_y])))
-            if shift in metrics[:, 0]:
-                # Take an inversely weighted average of the centroids by their area.
-                inv_w_shift_stats = shift_stats.copy().astype(np.float64)
-                inv_w_shift_stats[:, cv2.CC_STAT_AREA] = np.float_power(
-                    inv_w_shift_stats[:, cv2.CC_STAT_AREA], -1.0
-                )
-                inv_w_area_power = inv_w_shift_stats[:, cv2.CC_STAT_AREA].sum()
-
-                average_loc = (
-                    shift_centroids[:, 1] @ inv_w_shift_stats[:, cv2.CC_STAT_AREA].T
-                )
-                average_loc /= inv_w_area_power
-                shift = int(average_loc)
-        # OPTIM: No more attempts are necessary if there's only 1 centroid.
+        metrics[i, 1] = _get_distances_between_blobs(infarct_shift_centroids).max()
+        # (3.2) Loop with the following shift value:
+        if i < lv_centroids.shape[0] - 1:
+            shift = lv_centroids[i, 1]
         else:
-            break
+            # (3.3) Take an inversely weighted average of the infarct centroids by
+            # their area.
+            inv_w_shift_stats = infarct_shift_stats.copy().astype(np.float64)
+            inv_w_shift_stats[:, cv2.CC_STAT_AREA] = np.float_power(
+                inv_w_shift_stats[:, cv2.CC_STAT_AREA], -1.0
+            )
+            inv_w_area_power = inv_w_shift_stats[:, cv2.CC_STAT_AREA].sum()
+
+            average_loc = (
+                infarct_shift_centroids[:, 1] @ inv_w_shift_stats[:, cv2.CC_STAT_AREA].T
+            )
+            average_loc /= inv_w_area_power
+            shift = int(average_loc)
 
     best_shift_index = metrics[:, 1].argmin()
     best_shift = int(metrics[best_shift_index, 0].item())
