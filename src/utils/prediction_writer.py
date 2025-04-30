@@ -336,7 +336,7 @@ class MaskImageWriter(BasePredictionWriter):
                                 append_images=masked_frames[1:],
                                 save_all=True,
                                 duration=1000 // num_frames,
-                                disposal=2,
+                                disposal=0,
                                 loop=0,
                             )
                         case "webp":
