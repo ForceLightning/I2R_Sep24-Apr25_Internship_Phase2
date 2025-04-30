@@ -9,6 +9,9 @@ import pickle
 import random
 from typing import Any, Literal, Protocol, override
 
+# Third-Party
+from einops import repeat
+
 # Scientific Libraries
 import numpy as np
 from numpy import typing as npt
@@ -49,6 +52,57 @@ SEED_CUS = 1
 logger = logging.getLogger(__name__)
 
 
+class RemoveBlackLevelLiftByMin(v2.Transform):
+    """Removes black level lift from input. Use before normalising."""
+
+    def transform(self, inpt: Any, params: dict[str, Any]):
+        if isinstance(inpt, Tensor):
+            min = inpt.reshape(*inpt.shape[:-2], -1).min(dim=-1).values
+            if inpt.ndim == 3:
+                n, h, w = inpt.shape
+                min = repeat(min, "n -> n h w", n=n, h=h, w=w)
+            elif inpt.ndim == 4:
+                b, n, h, w = inpt.shape
+                min = repeat(min, "b n -> b n h w", b=b, n=n, h=h, w=w)
+            return inpt - min
+
+
+class RemoveBlackLevelLiftByHistogram(v2.Transform):
+    """Removes static black level lift using a histogram. Use before normalising."""
+
+    def _transform_channel_or_img(self, inpt: Tensor):
+        assert inpt.ndim == 3
+        for i, img in enumerate(inpt):
+            temp_img = img.to(torch.float32)
+            freq, bins = temp_img.reshape(*temp_img.shape[:-2], -1).histogram(
+                torch.tensor(list(range(0, 257)), dtype=torch.float32)
+            )
+            most_common_val = bins[freq.argmax()].to(torch.long)
+            temp_img = img.to(torch.int64)
+            replace_idxs = temp_img <= most_common_val
+            inpt[i] = (
+                (temp_img - most_common_val)
+                .max(torch.zeros_like(temp_img))
+                .clamp(0, 255)
+                .to(torch.uint8)
+            )
+            inpt[i][replace_idxs] = 0
+            assert (inpt[i][replace_idxs] == 0).all()
+            assert (inpt[i] >= 0).all()
+
+        return inpt
+
+    def transform(self, inpt: Any, params: dict[str, Any]):
+        if isinstance(inpt, Tensor):
+            if inpt.ndim == 3:
+                self._transform_channel_or_img(inpt)
+            elif inpt.ndim == 4:
+                for i, frame in enumerate(inpt):
+                    inpt[i] = self._transform_channel_or_img(frame)
+
+        return inpt
+
+
 class DefaultTransformsMixin:
     """Mixin class for getting default transforms."""
 
@@ -77,6 +131,7 @@ class DefaultTransformsMixin:
         transforms_img = Compose(
             [
                 v2.ToImage(),
+                RemoveBlackLevelLiftByHistogram(),
                 v2.Resize(image_size, antialias=True),
                 v2.ToDtype(torch.float32, scale=True),
                 v2.Normalize(mean=(0.485, 0.456, 0.406), std=(0.22, 0.224, 0.225)),
@@ -894,7 +949,7 @@ class ResidualTwoPlusOneDataset(
                 self.frames, h, w
             )
             * 255
-        )
+        ).clamp(0, 255)
         in_video = list(in_video.numpy().astype(np.uint8))
 
         # Expects input (F, H, W).
@@ -971,6 +1026,7 @@ class ResidualTwoPlusOneDataset(
                 transforms_img = Compose(
                     [
                         v2.ToImage(),
+                        RemoveBlackLevelLiftByHistogram(),
                         v2.ToDtype(torch.float32, scale=True),
                         v2.Normalize(
                             mean=(0.485, 0.456, 0.406), std=(0.22, 0.224, 0.225)
@@ -1392,7 +1448,7 @@ class FourStreamDataset(
                 self.frames, h, w
             )
             * 255
-        )
+        ).clamp(0, 255)
         in_video = list(in_video.numpy().astype(np.uint8))
 
         # Expects input (F, H, W).
@@ -1524,6 +1580,7 @@ class FourStreamDataset(
                 transforms_cine = Compose(
                     [
                         v2.ToImage(),
+                        RemoveBlackLevelLiftByHistogram(),
                         v2.Resize(image_size, antialias=True),
                         v2.ToDtype(torch.float32, scale=True),
                         v2.Normalize(
@@ -1605,6 +1662,7 @@ class FourStreamDataset(
                 transforms_cine = Compose(
                     [
                         v2.ToImage(),
+                        RemoveBlackLevelLiftByHistogram(),
                         v2.ToDtype(torch.float32, scale=True),
                         v2.Normalize(
                             mean=(0.485, 0.456, 0.406), std=(0.22, 0.224, 0.225)
@@ -1996,7 +2054,7 @@ class ThreeStreamDataset(
                 self.frames, h, w
             )
             * 255
-        )
+        ).clamp(0, 255)
         in_video = list(in_video.numpy().astype(np.uint8))
 
         # Expects input (F, H, W).
@@ -2127,6 +2185,7 @@ class ThreeStreamDataset(
                 transforms_cine = Compose(
                     [
                         v2.ToImage(),
+                        RemoveBlackLevelLiftByHistogram(),
                         v2.Resize(image_size, antialias=True),
                         v2.ToDtype(torch.float32, scale=True),
                         v2.Normalize(
@@ -2208,6 +2267,7 @@ class ThreeStreamDataset(
                 transforms_cine = Compose(
                     [
                         v2.ToImage(),
+                        RemoveBlackLevelLiftByHistogram(),
                         v2.ToDtype(torch.float32, scale=True),
                         v2.Normalize(
                             mean=(0.485, 0.456, 0.406), std=(0.22, 0.224, 0.225)
