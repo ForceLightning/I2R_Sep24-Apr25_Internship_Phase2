@@ -49,13 +49,13 @@ class CommonModelMixin(L.LightningModule):
     """The inverse transformation from augmentation of the samples by the dataloaders."""
     classes: int
     """Number of output classes."""
-    optimizer: type[Optimizer] | str
+    optimizer: type[Optimizer] | Optimizer | str
     """Which optimizer to use."""
     optimizer_kwargs: dict[str, Any]
     """Optimizer parameters."""
     total_epochs: int
     """Total number of training epochs."""
-    scheduler: type[LRScheduler] | str
+    scheduler: type[LRScheduler] | LRScheduler | str
     """Learning rate scheduler."""
     scheduler_kwargs: dict[str, Any]
     """Scheduler parameters."""
