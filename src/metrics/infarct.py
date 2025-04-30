@@ -565,17 +565,36 @@ class InfarctPredictionWriter(BasePredictionWriter):
                     ).convert("RGBA")
                     raw_annotation = np.array(raw_annotation).astype(float)
                     for frame in image:
+                        # NOTE: This is a pretty ugly hack to prevent an unsigned
+                        # integer underflow.
                         if self.loading_mode == LoadingMode.GREYSCALE:
                             norm_img = (
-                                self.inv_transform(frame).repeat(3, 1, 1).clamp(0, 1)
+                                (
+                                    self.inv_transform(frame)
+                                    .to(torch.float64)
+                                    .repeat(3, 1, 1)
+                                    * 255
+                                )
+                                .to(torch.long)
+                                .clamp(0, 255)
+                                .to(torch.uint8)
                             )
                         else:
-                            norm_img = self.inv_transform(frame).clamp(0, 1)
+                            norm_img = (
+                                (self.inv_transform(frame).to(torch.float64) * 255)
+                                .to(torch.long)
+                                .clamp(0, 255)
+                                .to(torch.uint8)
+                            )
                         norm_pil_img: Image.Image = v2f.to_pil_image(norm_img)
                         norm_pil_img = norm_pil_img.convert("RGBA")
                         norm_img = np.array(norm_pil_img).astype(float)
                         masked_frame = Image.fromarray(
-                            np.uint8(addition(norm_img, raw_annotation, opacity=0.5))
+                            np.uint8(
+                                addition(norm_img, raw_annotation, opacity=0.5).clip(
+                                    0, 255
+                                )
+                            )
                         ).convert("RGB")
                         masked_frames.append(masked_frame)
 
@@ -634,8 +653,8 @@ class InfarctPredictionWriter(BasePredictionWriter):
                                 append_images=masked_frames[1:],
                                 save_all=True,
                                 duration=1000 // num_frames,
-                                disposal=2,
                                 loop=0,
+                                disposal=0,
                             )
                         case "webp":
                             masked_frames[0].save(
@@ -1034,7 +1053,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
     logger = logging.getLogger(__name__)
 
-    dsize: _size_2_t = (1024, 1024)
+    dsize: _size_2_t = (224, 224)
 
     (
         transforms_img,
@@ -1069,12 +1088,17 @@ if __name__ == "__main__":
             [
                 f
                 in [
-                    # "228_5_0000.nii.tiff",
-                    # "195_4_0000.nii.tiff",
-                    # "262_6_0000.nii.tiff",
-                    # "157_4_0000.nii.tiff",
-                    # "157_5_0000.nii.tiff",
-                    "195_3_0000.nii.tiff"
+                    "228_5_0000.nii.tiff",
+                    "195_4_0000.nii.tiff",
+                    "262_6_0000.nii.tiff",
+                    "157_4_0000.nii.tiff",
+                    "157_5_0000.nii.tiff",
+                    "195_3_0000.nii.tiff",
+                    # Fireflies:
+                    # "37_1_0000.nii.tiff",
+                    # "39_2_0000.nii.tiff",
+                    # "89_2_0000.nii.tiff",
+                    # "106_2_0000.nii.tiff",
                 ]
                 for f in fn
             ]
