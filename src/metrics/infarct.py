@@ -754,6 +754,19 @@ def _get_infarct_spans_transmuralities(
         # (1) Get the minimum bounding circle
         centre, radius = smallest_bounding_circle(lv_mat * 255)
 
+        if _debug:
+            im = lv_mat * 255
+            im = cv2.circle(
+                im,
+                (int(centre[0]), int(centre[1])),
+                int(radius),
+                (255, 0, 0),
+                2,
+                cv2.LINE_AA,
+            )
+            cv2.imshow("Smallest bounding circle", im)
+            cv2.waitKey(0)
+
         # (2) Transform the image to polar coordinates.
         polar_infarct_mat = _cv2_linear_to_polar(infarct_mat, centre, radius)
         polar_lv_mat = _cv2_linear_to_polar(lv_mat, centre, radius)
