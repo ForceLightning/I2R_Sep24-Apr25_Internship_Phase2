@@ -91,6 +91,7 @@ class URRResidualAttentionLightningModule(ResidualAttentionLightningModule):
         metric_mode: MetricMode = MetricMode.INCLUDE_EMPTY_CLASS,
         metric_div_zero: float = 1.0,
         single_attention_instance: bool = False,
+        show_r2_plots: bool = False,
     ):
         super(ResidualAttentionLightningModule, self).__init__()
         self.save_hyperparameters(ignore=["metric", "loss"])
@@ -136,6 +137,7 @@ class URRResidualAttentionLightningModule(ResidualAttentionLightningModule):
         self.uncertainty_mode = uncertainty_mode
         """Whether to include uncertain-regions refinement or to just use confidence loss."""
         self.single_attention_instance = single_attention_instance
+        self.show_r2_plots = show_r2_plots
 
         # Trace memory usage
         if self.dump_memory_snapshot:

@@ -438,7 +438,12 @@ def shared_metric_logging_epoch_end(module: CommonModelMixin, prefix: str):
             _single_generalized_dice_logging(module, dice_metric_obj, prefix)
         case MetricCollection():
             _grouped_generalized_metric_logging(
-                module, dice_metric_obj, other_metric_obj, infarct_metric_obj, prefix
+                module,
+                dice_metric_obj,
+                other_metric_obj,
+                infarct_metric_obj,
+                prefix,
+                module.show_r2_plots,
             )
 
 
@@ -496,6 +501,7 @@ def _grouped_generalized_metric_logging(
     other_metric_obj: MetricCollection,
     infarct_metric_obj: MetricCollection | None,
     prefix: str,
+    _show_plots: bool = False,
 ):
     """Log the metrics for the model for a MetricCollection of Dice metrics.
 
@@ -577,7 +583,7 @@ def _grouped_generalized_metric_logging(
         isinstance(metric, (float, int, bool, Tensor)) for _, metric in results.items()
     ), f"Invalid metric primative type for dict: {results}"
 
-    if prefix == "test" and infarct_metric_obj and SHOW_PLOTS:
+    if prefix == "test" and infarct_metric_obj and (SHOW_PLOTS or _show_plots):
         _ = infarct_metric_obj.plot(val=infarct_results)
         plt.show()
 

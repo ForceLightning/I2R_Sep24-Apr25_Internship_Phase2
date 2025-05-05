@@ -59,6 +59,8 @@ class CommonModelMixin(L.LightningModule):
     """Learning rate scheduler."""
     scheduler_kwargs: dict[str, Any]
     """Scheduler parameters."""
+    show_r2_plots: bool = False
+    """Whether to show R^2 plots for infarct metrics."""
 
     @override
     def setup(self, stage: str) -> None:
