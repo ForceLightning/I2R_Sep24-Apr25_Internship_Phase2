@@ -1,0 +1,12 @@
+exclude = [
+    "data",
+    "checkpoints",
+    "thirdparty",
+]
+target-version = "py312"
+
+lint.select = ["F", "E", "W", "B", "C4", "D"]
+lint.ignore = [
+    "E501", # Line too long, handled by black
+]
+
