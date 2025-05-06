@@ -2,6 +2,7 @@ exclude = [
     "data",
     "checkpoints",
     "thirdparty",
+    "src/tests"
 ]
 target-version = "py312"
 

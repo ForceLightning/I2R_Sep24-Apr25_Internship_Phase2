@@ -37,6 +37,9 @@ logger = logging.getLogger(__name__)
 
 
 class FourStreamDataModule(L.LightningDataModule):
+    """Lightning datamodule for the four stream task."""
+
+    @override
     def __init__(
         self,
         data_dir: str = "data/train_val",

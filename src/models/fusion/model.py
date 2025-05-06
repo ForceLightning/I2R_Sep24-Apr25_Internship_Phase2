@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Feature fusion modules."""
 
 from __future__ import annotations
 
@@ -28,6 +29,9 @@ from ..tscse.tscse import get_encoder as tscse_get_encoder
 
 
 class BERTModule(nn.Module):
+    """BERT submodule."""
+
+    @override
     def __init__(
         self,
         bert_type: str = "microsoft/BiomedVLP-CXR-BERT-specialized",
@@ -48,6 +52,7 @@ class BERTModule(nn.Module):
         for param in self.model.parameters():
             param.requires_grad = False
 
+    @override
     def forward(
         self, input_ids: torch.LongTensor, attention_mask: torch.FloatTensor
     ) -> dict[str, Tensor]:
@@ -74,6 +79,9 @@ class BERTModule(nn.Module):
 
 
 class ThreeStreamVisionModule(nn.Module):
+    """Three stream task vision module."""
+
+    @override
     def __init__(
         self,
         encoder_name: str = "resnet50",
@@ -184,12 +192,20 @@ class ThreeStreamVisionModule(nn.Module):
                 else self.spatial_encoder.out_channels
             )
 
-    def check_input_shape(self, x):
+    def check_input_shape(self, x: Tensor):
+        """Check input shape and raise an error if the shape is wrong.
+
+        Args:
+            x: Input tensor.
+
+        """
         if isinstance(self.residual_encoder, TSCSENetEncoder):
             self._check_input_shape_tscse(x)
         else:
             h, w = x.shape[-2:]
-            output_stride = self.spatial_encoder.output_stride
+            output_stride: int = (
+                self.spatial_encoder.output_stride
+            )  # pyright: ignore[reportAssignmentType]
             if h % output_stride != 0 or w % output_stride != 0:
                 new_h = (
                     (h // output_stride + 1) * output_stride
@@ -266,6 +282,9 @@ class ThreeStreamVisionModule(nn.Module):
 
 
 class FourStreamVisionModule(nn.Module):
+    """Four stream task vision module."""
+
+    @override
     def __init__(
         self,
         encoder_name: str = "resnet50",
@@ -399,12 +418,20 @@ class FourStreamVisionModule(nn.Module):
                 else self.spatial_encoder.out_channels
             )
 
-    def check_input_shape(self, x):
+    def check_input_shape(self, x: Tensor):
+        """Check input shape and raise an error if the shape is wrong.
+
+        Args:
+            x: Input tensor.
+
+        """
         if isinstance(self.spatial_encoder, TSCSENetEncoder):
             self._check_input_shape_tscse(x)
         else:
             h, w = x.shape[-2:]
-            output_stride = self.spatial_encoder.output_stride
+            output_stride: int = (
+                self.spatial_encoder.output_stride
+            )  # pyright: ignore[reportAssignmentType]
             if h % output_stride != 0 or w % output_stride != 0:
                 new_h = (
                     (h // output_stride + 1) * output_stride
@@ -491,6 +518,9 @@ class FourStreamVisionModule(nn.Module):
 
 
 class PositionalEncoding(nn.Module):
+    """Positional encoding module."""
+
+    @override
     def __init__(
         self, d_model: int, dropout: float = 0.0, max_len: int = 12544, **kwargs
     ) -> None:
@@ -507,6 +537,7 @@ class PositionalEncoding(nn.Module):
         pe = pe.unsqueeze(0)  # (1, L, d_model)
         self.register_buffer("pe", pe)
 
+    @override
     def forward(self, x: Tensor) -> Tensor:
         # output = word_embedding + positional_embedding
         z = x + nn.Parameter(
@@ -517,6 +548,9 @@ class PositionalEncoding(nn.Module):
 
 
 class FusionLayer(nn.Module):
+    """Feature fusion layer."""
+
+    @override
     def __init__(
         self,
         spatial_out_channels: int,
@@ -560,6 +594,7 @@ class FusionLayer(nn.Module):
 
         self.scale = nn.Parameter(torch.tensor(1.421), requires_grad=True)
 
+    @override
     def forward(self, x: Tensor, txt: Tensor) -> Tensor:
         txt = self.text_project(txt)
 

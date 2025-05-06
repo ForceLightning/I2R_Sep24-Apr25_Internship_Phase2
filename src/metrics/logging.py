@@ -509,6 +509,7 @@ def _grouped_generalized_metric_logging(
         module: The LightningModule instance.
         dice_metric_obj: The dice metric collection object.
         other_metric_obj: The other metric collection object.
+        infarct_metric_obj: The metrics for infarct-related heuristics. Optional.
         prefix: The runtime mode (train, val, test).
 
     """

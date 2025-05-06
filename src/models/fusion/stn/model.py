@@ -1,4 +1,8 @@
+# -*- Coding: utf-8 -*-
+"""Spatial transformer pytorch modules."""
+
 # Standard Library
+from typing import override
 
 # Third-Party
 from einops import repeat
@@ -15,6 +19,9 @@ from .utils import SpatialTransformerType, init_transformer
 # TODO: Include a way to have the motion data drive the transformation of the
 # spatial image(s).
 class SpatialTransformer(nn.Module):
+    """Spatial transformer module."""
+
+    @override
     def __init__(self, in_channels: int, input_is_3d: bool = False) -> None:
         super().__init__()
         # Spatial transformer localisation-network.
@@ -95,6 +102,7 @@ class STN(nn.Module):
             num_param: If we use an affine (s, r, tx, ty) or crop (0.5, 1, tx, ty) transformation.
             N: Number of parallel tracks.
             xdim: Indicator of time series datasets. 1 if timeseries, otherwise 2.
+            **kwargs: Unused keyword arguments.
 
         """
         super().__init__(**kwargs)
@@ -177,12 +185,20 @@ class STN(nn.Module):
                 torch.tensor([1e-5], dtype=torch.float).repeat(self.theta_dim)
             )  # pyright: ignore
 
+    @override
     def forward(self, x: Tensor, x_high_res: Tensor | None = None):
         # Zoom in on the relevant areas with stn
         x, theta = self.forward_localiser(x, x_high_res)
         return x, theta
 
     def forward_localiser(self, x: Tensor, x_high_res: Tensor | None = None):
+        """Localisation step for spatial transformer.
+
+        Args:
+            x: Input tensor.
+            x_high_res: Optional high res version of x to transform on.
+
+        """
         if x_high_res is None:
             x_high_res = x
 
@@ -197,6 +213,12 @@ class STN(nn.Module):
         return x, theta
 
     def compute_theta(self, x: Tensor):
+        """Compute theta parameter through the localisation step.
+
+        Args:
+            x: Input tensor.
+
+        """
         batch_size = x.shape[0]
         xs = self.localisation(x)
         xs = xs.view(batch_size, -1)

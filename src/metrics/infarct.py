@@ -5,7 +5,7 @@
 import logging
 import os
 from dataclasses import dataclass
-from typing import Any, Callable, Literal, Sequence, override
+from typing import Any, Callable, Literal, Self, Sequence, override
 
 # Third-Party
 from tqdm.auto import tqdm
@@ -57,8 +57,7 @@ _DEBUG = False
 
 @dataclass
 class InfarctResults:
-    """
-    Computed infarct results.
+    """Computed infarct results.
 
     Contains the infarct area in pixels, extent of myocardial infarction as a ratio to
     the LV myocardium area, span of the myocardial infarction in radians, and
@@ -71,6 +70,7 @@ class InfarctResults:
         span: Occupying span of the myocardial infarction in radians.
         transmurality: Extent of myocardial infarct as a ratio to its occupying span of
             the LV myocardium.
+
     """
 
     infarct_area: Tensor
@@ -78,7 +78,8 @@ class InfarctResults:
     span: npt.NDArray
     transmurality: npt.NDArray
 
-    def is_close(self, other) -> bool:
+    def is_close(self, other: Self) -> bool:
+        """Check if this result and another result are close."""
         return bool(
             self.infarct_area.isclose(other.infarct_area).all()
             and self.ratio.isclose(other.ratio).all()
@@ -91,6 +92,7 @@ class InfarctResults:
 
         Return:
             Tensor: Tensor of shape (bs, 4). Order of elements is infarct area, ratio, span, and transmurality.
+
         """
         bs = self.span.size
         tensor = torch.zeros((bs, 4), dtype=torch.float32)
@@ -103,7 +105,16 @@ class InfarctResults:
 
 
 class InfarctHeuristics(nn.Module):
+    """Infarct heuristic calculation torch module."""
+
     def __init__(self, lv_index: int = 1, infarct_index: int = 2):
+        """Initialise the infarct heuristic object.
+
+        Args:
+            lv_index: LV myocardium mask index.
+            infarct_index: Myocardial infarct mask index.
+
+        """
         super().__init__()
         self.lv_index = lv_index
         self.infarct_index = infarct_index
@@ -123,6 +134,7 @@ class InfarctHeuristics(nn.Module):
 
         Return:
             InfarctMetrics: Computed metrics.
+
         """
         if lv_index is None:
             lv_index = self.lv_index
@@ -187,6 +199,7 @@ class InfarctMetricBase(torchmetrics.R2Score):
         Warning:
             This will fail in subclasses which call `self.preprocessing` if the tensors
             are not one-hot encoded.
+
         """
         super().update(preds, target)
         self.preds.append(preds)
@@ -231,7 +244,7 @@ class InfarctMetricBase(torchmetrics.R2Score):
                     ax=ax,
                     marker="x",
                     color=".3",
-                    line_kws=dict(color="r"),
+                    line_kws={"color": "r"},
                     fit_reg=True,
                 )
 
@@ -334,6 +347,8 @@ class InfarctVisualisation:
             classification_mode: Segmentation classification mode.
             lv_index: LV myocardium index of mask.
             infarct_index: Myocardial Infarct scar tissue index of mask.
+            **kwargs: Unused keyword arguments.
+
         """
         super().__init__(**kwargs)
         self.classification_mode = classification_mode
@@ -356,6 +371,7 @@ class InfarctVisualisation:
 
         Return:
             Image.Image: Annotated image or raw annotation.
+
         """
         segmentation_mask = segmentation_mask.detach().cpu()
         _k, h, w = segmentation_mask.shape
@@ -493,6 +509,7 @@ class InfarctPredictionWriter(BasePredictionWriter):
             output_samples_to_dirs: Whether to output individual sample predictions to
                 their own directories.
             output: Whether to output anything at all.
+
         """
         super().__init__(write_interval)
         self.lv_myo_index = lv_myo_index
@@ -680,7 +697,7 @@ class InfarctPredictionWriter(BasePredictionWriter):
 
 
 def _apply_shift(shift: int = 0, *args: tuple[float, ...]) -> tuple[int, ...]:
-    res = tuple(map(lambda x: int(round(x * 2**shift)), *args))
+    res = tuple(int(round(x * 2**shift)) for x in args)
     return res
 
 
@@ -728,19 +745,26 @@ def _get_infarct_spans_transmuralities(
         segmentation_mask: One-hot encoded mask.
         lv_index: Mask index of the LV myocardium.
         infarct_index: Mask index of the infarct scar tissue.
+        mvo_index: Mask index of the microvascular obstructions.
 
     Return:
-        tuple[npt.NDArray, npt.NDArray]: Tuple of spans and transmuralities (batched).
+        tuple[list[InfarctSpanResult], npt.NDArray]: Tuple of spans and transmuralities
+            (batched).
+
     """
     spans: list[InfarctSpanResult] = []
     transmuralities: npt.NDArray = np.zeros(segmentation_mask.size(0))
+    num_classes = segmentation_mask.size(1)
     seg_mask = segmentation_mask.detach().cpu().clone()
-    seg_mask[:, infarct_index, ...] = torch.bitwise_or(
-        seg_mask[:, infarct_index, ...], seg_mask[:, mvo_index, ...]
-    )
-    seg_mask[:, lv_index, ...] = torch.bitwise_or(
-        seg_mask[:, lv_index, ...], seg_mask[:, infarct_index, ...]
-    )
+    if num_classes > 3:
+        # GUARD: In case the classification mode is multiclass without MVO.
+        seg_mask[:, infarct_index, ...] = torch.bitwise_or(
+            seg_mask[:, infarct_index, ...], seg_mask[:, mvo_index, ...]
+        )
+    if num_classes > 2:  # GUARD: In case the classification mode is something else.
+        seg_mask[:, lv_index, ...] = torch.bitwise_or(
+            seg_mask[:, lv_index, ...], seg_mask[:, infarct_index, ...]
+        )
     for i, mask in enumerate(seg_mask):
         if mask[infarct_index, :, :].sum() == 0:
             spans.append(InfarctSpanResult(0, 0, 0, 0, (0, 0), 0))
@@ -832,6 +856,7 @@ def _infarct_transmurality(
 
     Return:
         float: Extent of infarct in LV myocardium which spans the infarct region.
+
     """
     # (1) Create the LV mask
     mask = np.zeros_like(shifted_polar_lv_mat, dtype=np.float32)
@@ -864,11 +889,14 @@ def _find_optimal_shift(
     max_iter: int = 10,
     _debug: bool = _DEBUG,
 ) -> int:
-    """Finds the optimal shift required to not bisect the infarct area.
+    """Find the optimal shift required to not bisect the infarct area.
 
     Args:
-        polar_mat: Polar warped binary mask.
+        polar_infarct: Polar warped infarct binary mask.
+        polar_lv: Polar warped LV myocardium binary mask.
         max_iter: Max number of iterations to attempt.
+        _debug: Whether to show debug views.
+
     """
     # (0) Remove the infarct area from the lv myocardium mask.
     height, _ = polar_infarct.shape
@@ -947,11 +975,12 @@ def _get_distances_between_blobs(centroids: cvt.MatLike) -> npt.NDArray[np.float
     """Get the distances between each blob.
 
     Args:
-        Centroids: Array of shape (nblobs, 2) which contains the x, y coordinates of
+        centroids: Array of shape (nblobs, 2) which contains the x, y coordinates of
             each island's centroid.
 
     Return:
         npt.NDArray[np.float32]: Upper triangular matrix of distances.
+
     """
     distances = np.triu(distance.cdist(centroids, centroids)[1:, -1:])
 
@@ -965,13 +994,14 @@ def first_match_condition(
     axis: int,
     invalid_val: int = -1,
 ):
-    """Gets the index of the first match of a condition along an axis.
+    """Get the index of the first match of a condition along an axis.
 
     Args:
         arr: n-dim array.
         cond: Condition or filter function.
         axis: Axis to search along and find the first match for.
         invalid_val: Value to replace invalid values with (e.g. cond filters out all values)
+
     """
     mask = cond(arr)
     return np.where(mask.any(axis=axis), mask.argmax(axis=axis), invalid_val)
@@ -984,13 +1014,14 @@ def last_match_condition(
     axis: int,
     invalid_val: int = -1,
 ):
-    """Gets the index of the last match of a condition along an axis.
+    """Get the index of the last match of a condition along an axis.
 
     Args:
         arr: n-dim array.
         cond: Condition or filter function.
         axis: Axis to search along and find the last match for.
         invalid_val: Value to replace invalid values with (e.g. cond filters out all values)
+
     """
     mask = cond(arr)
     val = arr.shape[axis] - np.flip(mask, axis=axis).argmax(axis=axis) - 1
@@ -1008,6 +1039,7 @@ def smallest_bounding_circle(
 
     Returns:
         tuple[Point2f, float]: Centre and radius of the min enclosing circle.
+
     """
     # Input is uint8 (0, 255).
     canny_output = cv2.Canny(lv_mask, thresh, thresh * 2)
@@ -1098,23 +1130,21 @@ if __name__ == "__main__":
 
     for img, _r, mask, fn in dataloader:
         if any(
-            [
-                f
-                in [
-                    "228_5_0000.nii.tiff",
-                    "195_4_0000.nii.tiff",
-                    "262_6_0000.nii.tiff",
-                    "157_4_0000.nii.tiff",
-                    "157_5_0000.nii.tiff",
-                    "195_3_0000.nii.tiff",
-                    # Fireflies:
-                    # "37_1_0000.nii.tiff",
-                    # "39_2_0000.nii.tiff",
-                    # "89_2_0000.nii.tiff",
-                    # "106_2_0000.nii.tiff",
-                ]
-                for f in fn
+            f
+            in [
+                "228_5_0000.nii.tiff",
+                "195_4_0000.nii.tiff",
+                "262_6_0000.nii.tiff",
+                "157_4_0000.nii.tiff",
+                "157_5_0000.nii.tiff",
+                "195_3_0000.nii.tiff",
+                # Fireflies:
+                # "37_1_0000.nii.tiff",
+                # "39_2_0000.nii.tiff",
+                # "89_2_0000.nii.tiff",
+                # "106_2_0000.nii.tiff",
             ]
+            for f in fn
         ):
             # if (mask == 2).any():
             print(fn)
@@ -1122,7 +1152,7 @@ if __name__ == "__main__":
 
             print(infarct_metrics(one_hot_mask))
 
-            for i, mask in zip(img, one_hot_mask):
+            for i, mask in zip(img, one_hot_mask, strict=False):
                 annotated_img = infarct_viz.viz(i[0], mask)
                 annotated_img.show()
 

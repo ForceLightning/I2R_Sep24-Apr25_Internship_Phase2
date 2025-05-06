@@ -4,6 +4,7 @@ from __future__ import annotations
 
 # Standard Library
 from enum import Enum, auto
+from typing import override
 
 # PyTorch
 import torch
@@ -21,6 +22,15 @@ def init_transformer(
     num_param: int,
     xdim: int | None = None,
 ):
+    """Initialise the spatial transformer.
+
+    Args:
+        transformer_type: Type of spatial transformer.
+        N: Number of parallel tracks.
+        num_param: If we use an affine (s, r, tx, ty) or crop (0.5, 1, tx, ty) transformation.
+        xdim: Indicator of time seeries datasets. 1 if timeseries, otherwise 2.
+
+    """
     match transformer_type:
         case SpatialTransformerType.AFFINE:
             return AffineTransformer(), N * num_param
@@ -33,6 +43,8 @@ def init_transformer(
 
 
 class SpatialTransformerType(Enum):
+    """Enum for spatial transformer type."""
+
     AFFINE = auto()
     """Affine transformer."""
     DIFFEOMORPHIC = auto()
@@ -40,8 +52,11 @@ class SpatialTransformerType(Enum):
 
 
 class AffineTransformer(nn.Module):
+    """Affine spatial transformer."""
+
+    @override
     def forward(self, x: Tensor, params: Tensor, small_image_shape: _size_2_t):
-        affine_params = make_affine_parameters(params)
+        affine_params = _make_affine_parameters(params)
         big_grid = F.affine_grid(affine_params, list(x.size()))
         small_grid = F.interpolate(
             big_grid.permute(0, 3, 1, 2), size=small_image_shape, mode="nearest"
@@ -51,6 +66,9 @@ class AffineTransformer(nn.Module):
 
 
 class DiffeomorphicTransformer(nn.Module):
+    """Diffeomorphic spatial transformer."""
+
+    @override
     def __init__(self, N: int, num_param: int, xdim: int):
         super().__init__()
         device = "gpu" if torch.cuda.is_available() else "cpu"
@@ -65,6 +83,7 @@ class DiffeomorphicTransformer(nn.Module):
         else:
             raise NotImplementedError(f"xdim is not in [1, 2] but is {xdim} instead.")
 
+    @override
     def forward(self, x: Tensor, params: Tensor):
         z: Tensor = self.T.transform_data(
             x, params, outsize=x.shape[2:]
@@ -72,7 +91,7 @@ class DiffeomorphicTransformer(nn.Module):
         return z
 
 
-def make_affine_matrix(
+def _make_affine_matrix(
     theta: Tensor,
     scale_x: Tensor,
     scale_y: Tensor,
@@ -93,13 +112,13 @@ def make_affine_matrix(
     return affine_matrix
 
 
-def make_affine_parameters(params: Tensor):
+def _make_affine_parameters(params: Tensor):
     if params.shape[-1] == 1:  # Only learn rotation
         angle = params[:0]
         scale = torch.ones([params.shape[0]], device=params.device)
         translation_x = torch.zeros([params.shape[0]], device=params.device)
         translation_y = torch.zeros([params.shape[0]], device=params.device)
-        affine_matrix = make_affine_matrix(
+        affine_matrix = _make_affine_matrix(
             angle, scale, scale, translation_x, translation_y
         )
     elif params.shape[-1] == 2:  # Only perform crop - fix scale and rotation
@@ -108,7 +127,7 @@ def make_affine_parameters(params: Tensor):
         scale_y = 0.5 * torch.ones([params.shape[0]], device=params.device)
         translation_x = params[:, 0]
         translation_y = params[:, 1]
-        affine_matrix = make_affine_matrix(
+        affine_matrix = _make_affine_matrix(
             theta, scale_x, scale_y, translation_x, translation_y
         )
     elif params.shape[-1] == 3:  # Crop with learned scale, isotropic, and tx/tx
@@ -117,7 +136,7 @@ def make_affine_parameters(params: Tensor):
         scale_y = params[:, 1]
         translation_x = params[:, 1]
         translation_y = params[:, 2]
-        affine_matrix = make_affine_matrix(
+        affine_matrix = _make_affine_matrix(
             theta, scale_x, scale_y, translation_x, translation_y
         )
     elif params.shape[-1] == 4:  # "Full affine" with isotropic scale.
@@ -126,7 +145,7 @@ def make_affine_parameters(params: Tensor):
         scale_x, scale_y = scale, scale
         translation_x = params[:, 2]
         translation_y = params[:, 3]
-        affine_matrix = make_affine_matrix(
+        affine_matrix = _make_affine_matrix(
             theta, scale_x, scale_y, translation_x, translation_y
         )
     elif params.shape[-1] == 5:  # "Full affine" with anisotropic scale.
@@ -135,7 +154,7 @@ def make_affine_parameters(params: Tensor):
         scale_y = params[:, 2]
         translation_x = params[:, 3]
         translation_y = params[:, 4]
-        affine_matrix = make_affine_matrix(
+        affine_matrix = _make_affine_matrix(
             theta, scale_x, scale_y, translation_x, translation_y
         )
     elif params.shape[-1] == 6:  # Full affine, raw parameters

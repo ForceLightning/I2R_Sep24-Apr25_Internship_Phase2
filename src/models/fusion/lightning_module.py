@@ -56,6 +56,7 @@ logger = logging.getLogger(__name__)
 class FourStreamAttentionLightningModule(CommonModelMixin):
     """LightningModule wrapper for feature fusion guided U-Net with URR."""
 
+    @override
     def __init__(
         self,
         batch_size: int,
@@ -339,7 +340,7 @@ class FourStreamAttentionLightningModule(CommonModelMixin):
     def log_metrics(self, prefix) -> None:
         shared_metric_logging_epoch_end(self, prefix)
 
-    def shared_forward_pass(
+    def _shared_forward_pass(
         self,
         batch: tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, str],
         batch_idx: int,
@@ -473,7 +474,7 @@ class FourStreamAttentionLightningModule(CommonModelMixin):
         batch: tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, str],
         batch_idx: int,
     ):
-        return self.shared_forward_pass(batch, batch_idx, "train")
+        return self._shared_forward_pass(batch, batch_idx, "train")
 
     @torch.no_grad()
     @override
@@ -482,7 +483,7 @@ class FourStreamAttentionLightningModule(CommonModelMixin):
         batch: tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, str],
         batch_idx: int,
     ):
-        return self.shared_forward_pass(batch, batch_idx, "val")
+        return self._shared_forward_pass(batch, batch_idx, "val")
 
     @torch.no_grad()
     @override
@@ -491,7 +492,7 @@ class FourStreamAttentionLightningModule(CommonModelMixin):
         batch: tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, str],
         batch_idx: int,
     ):
-        return self.shared_forward_pass(batch, batch_idx, "test")
+        return self._shared_forward_pass(batch, batch_idx, "test")
 
     @torch.no_grad()
     def _shared_image_logging(
@@ -616,6 +617,10 @@ class FourStreamAttentionLightningModule(CommonModelMixin):
                             strict=True,
                         )
                     ]
+                case _:
+                    raise NotImplementedError(
+                        f"{self.dl_classification_mode} not implemented!"
+                    )
 
             combined_images_with_masks = gt_images_with_masks + pred_images_with_masks
 
@@ -628,6 +633,7 @@ class FourStreamAttentionLightningModule(CommonModelMixin):
             )
 
     @torch.no_grad()
+    @override
     def predict_step(
         self,
         batch: tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, str | list[str]],
@@ -643,6 +649,9 @@ class FourStreamAttentionLightningModule(CommonModelMixin):
 
 
 class ThreeStreamAttentionLightningModule(CommonModelMixin):
+    """LightningModule wrapper for feature fusion guided U-Net with URR."""
+
+    @override
     def __init__(
         self,
         batch_size: int,
@@ -925,7 +934,7 @@ class ThreeStreamAttentionLightningModule(CommonModelMixin):
     def log_metrics(self, prefix) -> None:
         shared_metric_logging_epoch_end(self, prefix)
 
-    def shared_forward_pass(
+    def _shared_forward_pass(
         self,
         batch: tuple[Tensor, Tensor, Tensor, Tensor, Tensor, str],
         batch_idx: int,
@@ -1058,7 +1067,7 @@ class ThreeStreamAttentionLightningModule(CommonModelMixin):
         batch: tuple[Tensor, Tensor, Tensor, Tensor, Tensor, str],
         batch_idx: int,
     ):
-        return self.shared_forward_pass(batch, batch_idx, "train")
+        return self._shared_forward_pass(batch, batch_idx, "train")
 
     @torch.no_grad()
     @override
@@ -1067,7 +1076,7 @@ class ThreeStreamAttentionLightningModule(CommonModelMixin):
         batch: tuple[Tensor, Tensor, Tensor, Tensor, Tensor, str],
         batch_idx: int,
     ):
-        return self.shared_forward_pass(batch, batch_idx, "val")
+        return self._shared_forward_pass(batch, batch_idx, "val")
 
     @torch.no_grad()
     @override
@@ -1076,7 +1085,7 @@ class ThreeStreamAttentionLightningModule(CommonModelMixin):
         batch: tuple[Tensor, Tensor, Tensor, Tensor, Tensor, str],
         batch_idx: int,
     ):
-        return self.shared_forward_pass(batch, batch_idx, "test")
+        return self._shared_forward_pass(batch, batch_idx, "test")
 
     @torch.no_grad()
     def _shared_image_logging(
@@ -1201,6 +1210,10 @@ class ThreeStreamAttentionLightningModule(CommonModelMixin):
                             strict=True,
                         )
                     ]
+                case _:
+                    raise NotImplementedError(
+                        f"{self.dl_classification_mode} not implemented!"
+                    )
 
             combined_images_with_masks = gt_images_with_masks + pred_images_with_masks
 
@@ -1213,6 +1226,7 @@ class ThreeStreamAttentionLightningModule(CommonModelMixin):
             )
 
     @torch.no_grad()
+    @override
     def predict_step(
         self,
         batch: tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, str | list[str]],

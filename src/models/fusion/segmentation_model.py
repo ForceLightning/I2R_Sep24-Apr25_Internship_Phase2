@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Feature fusion model interop with SegmentationModelsPytorch."""
 
 from __future__ import annotations
 
@@ -47,6 +48,7 @@ class FourStreamAttentionUnet(SegmentationModel):
     _default_decoder_channels = [256, 128, 64, 32, 16]
     _default_skip_conn_channels = [2, 5, 10, 20, 40]
 
+    @override
     def __init__(
         self,
         vision_module: FourStreamVisionModule,
@@ -290,6 +292,7 @@ class ThreeStreamAttentionUnet(SegmentationModel):
     _default_decoder_channels = [256, 128, 64, 32, 16]
     _default_skip_conn_channels = [2, 5, 10, 20, 40]
 
+    @override
     def __init__(
         self,
         vision_module: ThreeStreamVisionModule,
