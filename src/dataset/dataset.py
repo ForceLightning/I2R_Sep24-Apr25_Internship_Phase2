@@ -55,6 +55,7 @@ logger = logging.getLogger(__name__)
 class RemoveBlackLevelLiftByMin(v2.Transform):
     """Removes black level lift from input. Use before normalising."""
 
+    @override
     def transform(self, inpt: Any, params: dict[str, Any]):
         if isinstance(inpt, Tensor):
             min = inpt.reshape(*inpt.shape[:-2], -1).min(dim=-1).values
@@ -92,6 +93,7 @@ class RemoveBlackLevelLiftByHistogram(v2.Transform):
 
         return inpt
 
+    @override
     def transform(self, inpt: Any, params: dict[str, Any]):
         if isinstance(inpt, Tensor):
             if inpt.ndim == 3:
@@ -101,6 +103,51 @@ class RemoveBlackLevelLiftByHistogram(v2.Transform):
                     inpt[i] = self._transform_channel_or_img(frame)
 
         return inpt
+
+
+class NormaliseImageFramesByHistogram(v2.Transform):
+    """Normalise the image histogram per frame.
+
+    Ideally, this will remove flicker from the image frames (or may just introduce
+    flicker itself, if this doesn't work.)
+
+    Note:
+    Run this before doing any dtype conversion or ImageNet normalisation. Expects a
+    numpy array or Tensor.
+
+    """
+
+    @override
+    def transform(self, inpt: Any, params: dict[str, Any]):
+        inpt_ndim = inpt.ndim
+        if isinstance(inpt, Tensor):
+            if inpt_ndim == 4:
+                inpt = inpt.permute(0, 2, 3, 1).numpy()
+            elif inpt_ndim == 3:
+                inpt = inpt.permute(1, 2, 0).unsqueeze(0).numpy()
+        elif isinstance(inpt, np.ndarray):
+            pass
+        else:
+            raise NotImplementedError(
+                f"Not implemented for {type(inpt)}, expected Tensor or numpy array instead."
+            )
+
+        assert isinstance(inpt, np.ndarray)
+
+        if inpt.shape[-1] == 3:
+            src = cv2.cvtColor(inpt, cv2.COLOR_RGB2GRAY)
+        else:
+            src = inpt
+
+        for i, img in enumerate(src):
+            src[i] = cv2.equalizeHist(img)
+
+        out = torch.from_numpy(src)
+
+        if inpt_ndim == 3:
+            out.squeeze(0)
+
+        return out
 
 
 class DefaultTransformsMixin:
@@ -132,6 +179,7 @@ class DefaultTransformsMixin:
             [
                 v2.ToImage(),
                 RemoveBlackLevelLiftByHistogram(),
+                NormaliseImageFramesByHistogram(),
                 v2.Resize(image_size, antialias=True),
                 v2.ToDtype(torch.float32, scale=True),
                 v2.Normalize(mean=(0.485, 0.456, 0.406), std=(0.22, 0.224, 0.225)),
@@ -1027,6 +1075,7 @@ class ResidualTwoPlusOneDataset(
                     [
                         v2.ToImage(),
                         RemoveBlackLevelLiftByHistogram(),
+                        NormaliseImageFramesByHistogram(),
                         v2.ToDtype(torch.float32, scale=True),
                         v2.Normalize(
                             mean=(0.485, 0.456, 0.406), std=(0.22, 0.224, 0.225)
@@ -1091,6 +1140,7 @@ class FourStreamDataset(
 ):
     """LGE + Cine Sequence + Cine residuals + Textual reports dataset."""
 
+    @override
     def __init__(
         self,
         lge_dir: str,
@@ -1124,8 +1174,11 @@ class FourStreamDataset(
             mask_dir: The directory containing the masks for the LGE images.
             txt_dir: The directory containing the medical reports.
             idxs_dir: The directory containing the indices for the training and
+            frames: Number of frames to use (out of 30).
+            select_frame_method: How to select those frames.
             validation sets.
-            transform_img: The transform to apply to the images.
+            transform_lge: The transform to apply to the LGE images.
+            transform_cine: The transform to apply to the Cine images.
             transform_mask: The transform to apply to the masks.
             transform_resize: The resize transform to apply to both images and masks.
             transform_together: The transform to apply to both the images and masks.
@@ -1137,6 +1190,7 @@ class FourStreamDataset(
             combine_train_val: Whether to combine the train/val sets.
             residual_mode: The mode of calculating the residual frames.
             image_size: Output image resolution
+            tokenizer: LLM tokenizer to use.
 
         Raises:
             NotImplementedError: If the classification mode is not implemented.
@@ -1581,6 +1635,7 @@ class FourStreamDataset(
                     [
                         v2.ToImage(),
                         RemoveBlackLevelLiftByHistogram(),
+                        NormaliseImageFramesByHistogram(),
                         v2.Resize(image_size, antialias=True),
                         v2.ToDtype(torch.float32, scale=True),
                         v2.Normalize(
@@ -1663,6 +1718,7 @@ class FourStreamDataset(
                     [
                         v2.ToImage(),
                         RemoveBlackLevelLiftByHistogram(),
+                        NormaliseImageFramesByHistogram(),
                         v2.ToDtype(torch.float32, scale=True),
                         v2.Normalize(
                             mean=(0.485, 0.456, 0.406), std=(0.22, 0.224, 0.225)
@@ -1728,6 +1784,7 @@ class ThreeStreamDataset(
 ):
     """LGE + Cine residuals + Text dataset."""
 
+    @override
     def __init__(
         self,
         lge_dir: str,
@@ -2186,6 +2243,7 @@ class ThreeStreamDataset(
                     [
                         v2.ToImage(),
                         RemoveBlackLevelLiftByHistogram(),
+                        NormaliseImageFramesByHistogram(),
                         v2.Resize(image_size, antialias=True),
                         v2.ToDtype(torch.float32, scale=True),
                         v2.Normalize(
@@ -2268,6 +2326,7 @@ class ThreeStreamDataset(
                     [
                         v2.ToImage(),
                         RemoveBlackLevelLiftByHistogram(),
+                        NormaliseImageFramesByHistogram(),
                         v2.ToDtype(torch.float32, scale=True),
                         v2.Normalize(
                             mean=(0.485, 0.456, 0.406), std=(0.22, 0.224, 0.225)
