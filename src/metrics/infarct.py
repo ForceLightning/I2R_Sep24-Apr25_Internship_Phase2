@@ -464,8 +464,8 @@ class InfarctVisualisation:
 
         annotated_img = cv2.ellipse(
             annotated_img,
-            _apply_shift(SHIFT, tuple(span.lv_myo_centre)),
-            _apply_shift(SHIFT, (h / 50, h / 50)),
+            _apply_shift(SHIFT, *span.lv_myo_centre),
+            _apply_shift(SHIFT, h / 50, h / 50),
             0,
             starting_angle,
             ending_angle,
@@ -696,7 +696,7 @@ class InfarctPredictionWriter(BasePredictionWriter):
                                 frame.save(save_path)
 
 
-def _apply_shift(shift: int = 0, *args: tuple[float, ...]) -> tuple[int, ...]:
+def _apply_shift(shift: int = 0, *args: float) -> tuple[int, ...]:
     res = tuple(int(round(x * 2**shift)) for x in args)
     return res
 
