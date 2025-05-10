@@ -19,6 +19,7 @@ from numpy import typing as npt
 # Image Libraries
 import cv2
 from cv2 import IMREAD_COLOR, IMREAD_GRAYSCALE
+from cv2 import typing as cvt
 from PIL import Image
 
 # PyTorch
@@ -120,32 +121,156 @@ class NormaliseImageFramesByHistogram(v2.Transform):
     @override
     def transform(self, inpt: Any, params: dict[str, Any]):
         inpt_ndim = inpt.ndim
+        is_rgb = inpt.shape[-1] == 3
+        src: np.ndarray | None = None
         if isinstance(inpt, Tensor):
             if inpt_ndim == 4:
-                inpt = inpt.permute(0, 2, 3, 1).numpy()
+                src = inpt.permute(0, 2, 3, 1).numpy()
             elif inpt_ndim == 3:
-                inpt = inpt.permute(1, 2, 0).unsqueeze(0).numpy()
+                src = inpt.permute(1, 2, 0).unsqueeze(0).numpy()
         elif isinstance(inpt, np.ndarray):
-            pass
+            src = inpt
         else:
             raise NotImplementedError(
                 f"Not implemented for {type(inpt)}, expected Tensor or numpy array instead."
             )
 
-        assert isinstance(inpt, np.ndarray)
-
-        if inpt.shape[-1] == 3:
-            src = cv2.cvtColor(inpt, cv2.COLOR_RGB2GRAY)
-        else:
-            src = inpt
+        assert src is not None
+        assert isinstance(src, np.ndarray)
 
         for i, img in enumerate(src):
-            src[i] = cv2.equalizeHist(img)
+            if is_rgb:
+                img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+            norm_img: cvt.MatLike = cv2.equalizeHist(img)
+            if is_rgb:
+                norm_img = cv2.cvtColor(norm_img, cv2.COLOR_GRAY2RGB)
+            src[i] = norm_img.reshape(*src[i].shape)
 
         out = torch.from_numpy(src)
 
-        if inpt_ndim == 3:
-            out.squeeze(0)
+        if inpt_ndim == 4:
+            out = out.permute(0, 3, 1, 2)
+        elif inpt_ndim == 3:
+            out = out.squeeze(0).permute(2, 0, 1)
+
+        assert (
+            out.shape == inpt.shape
+        ), f"out shape {out.shape} != inpt shape {inpt.shape}"
+
+        return out
+
+
+class TemporalDenoiseTransform(v2.Transform):
+    """Temporal denoiser."""
+
+    def __init__(
+        self,
+        temporal_window_size: int = 3,
+        template_window_size: int = 7,
+        filter_strength: float = 3,
+        search_window_size: int = 21,
+        *args,
+        **kwargs,
+    ):
+        """Initialise the temporal denoiser transform.
+
+        Args:
+            temporal_window_size: How many frames to use for the denoiser. Should be odd.
+            template_window_size: Size in pixels of the template patch used to compute
+                weights. Should be odd.
+            filter_strength: Parameter regulating filter strength. Bigger `h` value
+                perfectly removes noise but also removes image details.
+            search_window_size: Size in pixels of the window that is used to compute
+                weighted average for given pixel. Should be odd.
+            *args: v2.Transform default args.
+            **kwargs: v2.Transform default kwargs.
+
+        """
+        super().__init__(*args, **kwargs)
+        assert (
+            temporal_window_size % 2 == 1
+        ), f"temporal_window_size must be odd but is {temporal_window_size} instead."
+        assert (
+            template_window_size % 2 == 1
+        ), f"template_window_size must be odd but is {template_window_size} instead."
+        assert (
+            search_window_size % 2 == 1
+        ), f"search_window_size must be odd but is {search_window_size} instead."
+        self.temporal_window_size = temporal_window_size
+        self.template_window_size = template_window_size
+        self.filter_strength = filter_strength
+        self.search_window_size = search_window_size
+
+    @override
+    def transform(self, inpt: Any, params: dict[str, Any]):
+        inpt_ndim = inpt.ndim
+        is_rgb = inpt.shape[-1] == 3
+        src: np.ndarray | None = None
+        if isinstance(inpt, Tensor):
+            if inpt_ndim == 4:
+                src = inpt.permute(0, 2, 3, 1).numpy()
+            elif inpt_ndim == 3:
+                src = inpt.permute(1, 2, 0).unsqueeze(0).numpy()
+        elif isinstance(inpt, np.ndarray):
+            src = inpt
+        else:
+            raise NotImplementedError(
+                f"Not implemented for {type(inpt)}, expected Tensor or numpy array instead."
+            )
+
+        assert (
+            inpt.shape[0] >= self.temporal_window_size
+        ), f"Input video length {inpt.shape[0]} must be >= temporal window size {self.temporal_window_size}"
+
+        assert src is not None
+        assert isinstance(src, np.ndarray)
+
+        inpt_len = src.shape[0]
+
+        assert (
+            inpt_len >= self.temporal_window_size
+        ), f"Input video len must be >= {self.temporal_window_size}, but is {inpt_len} instead."
+
+        # NOTE: This process is terribly slow.
+        for i in range(src.shape[0]):
+            shift = self.temporal_window_size // 2 - i
+            shifted_src = np.roll(src, shift, axis=0)
+            window = shifted_src[: self.temporal_window_size]
+
+            if is_rgb:
+                denoised_img = cv2.fastNlMeansDenoisingColoredMulti(
+                    list(window),
+                    self.temporal_window_size // 2,
+                    self.temporal_window_size,
+                    None,
+                    self.filter_strength,
+                    self.filter_strength,
+                    self.template_window_size,
+                    self.search_window_size,
+                )
+            else:
+                denoised_img = cv2.fastNlMeansDenoisingMulti(
+                    list(window),
+                    self.temporal_window_size // 2,
+                    self.temporal_window_size,
+                    None,
+                    self.filter_strength,
+                    self.template_window_size,
+                    self.search_window_size,
+                )
+
+            src[i] = denoised_img.reshape(*src[i].shape)
+
+        out = torch.from_numpy(src)
+
+        if inpt_ndim == 4:
+            out = out.permute(0, 3, 1, 2)
+        elif inpt_ndim == 3:
+            out = out.squeeze(0).permute(2, 0, 1)
+
+        assert (
+            out.shape == inpt.shape
+        ), f"out shape {out.shape} != inpt shape {inpt.shape}"
 
         return out
 
@@ -180,6 +305,7 @@ class DefaultTransformsMixin:
                 v2.ToImage(),
                 RemoveBlackLevelLiftByHistogram(),
                 NormaliseImageFramesByHistogram(),
+                # TemporalDenoiseTransform(),
                 v2.Resize(image_size, antialias=True),
                 v2.ToDtype(torch.float32, scale=True),
                 v2.Normalize(mean=(0.485, 0.456, 0.406), std=(0.22, 0.224, 0.225)),
@@ -1076,6 +1202,7 @@ class ResidualTwoPlusOneDataset(
                         v2.ToImage(),
                         RemoveBlackLevelLiftByHistogram(),
                         NormaliseImageFramesByHistogram(),
+                        # TemporalDenoiseTransform(),
                         v2.ToDtype(torch.float32, scale=True),
                         v2.Normalize(
                             mean=(0.485, 0.456, 0.406), std=(0.22, 0.224, 0.225)
@@ -1636,6 +1763,7 @@ class FourStreamDataset(
                         v2.ToImage(),
                         RemoveBlackLevelLiftByHistogram(),
                         NormaliseImageFramesByHistogram(),
+                        # TemporalDenoiseTransform(),
                         v2.Resize(image_size, antialias=True),
                         v2.ToDtype(torch.float32, scale=True),
                         v2.Normalize(
@@ -1719,6 +1847,7 @@ class FourStreamDataset(
                         v2.ToImage(),
                         RemoveBlackLevelLiftByHistogram(),
                         NormaliseImageFramesByHistogram(),
+                        # TemporalDenoiseTransform(),
                         v2.ToDtype(torch.float32, scale=True),
                         v2.Normalize(
                             mean=(0.485, 0.456, 0.406), std=(0.22, 0.224, 0.225)
@@ -2244,6 +2373,7 @@ class ThreeStreamDataset(
                         v2.ToImage(),
                         RemoveBlackLevelLiftByHistogram(),
                         NormaliseImageFramesByHistogram(),
+                        # TemporalDenoiseTransform(),
                         v2.Resize(image_size, antialias=True),
                         v2.ToDtype(torch.float32, scale=True),
                         v2.Normalize(
@@ -2327,6 +2457,7 @@ class ThreeStreamDataset(
                         v2.ToImage(),
                         RemoveBlackLevelLiftByHistogram(),
                         NormaliseImageFramesByHistogram(),
+                        # TemporalDenoiseTransform(),
                         v2.ToDtype(torch.float32, scale=True),
                         v2.Normalize(
                             mean=(0.485, 0.456, 0.406), std=(0.22, 0.224, 0.225)
