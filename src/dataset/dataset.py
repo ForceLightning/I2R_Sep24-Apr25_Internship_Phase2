@@ -204,7 +204,7 @@ class TemporalDenoiseTransform(v2.Transform):
     @override
     def transform(self, inpt: Any, params: dict[str, Any]):
         inpt_ndim = inpt.ndim
-        is_rgb = inpt.shape[-1] == 3
+        is_rgb: bool = inpt.shape[-1] == 3
         src: np.ndarray | None = None
         if isinstance(inpt, Tensor):
             if inpt_ndim == 4:
@@ -284,6 +284,7 @@ class DefaultTransformsMixin:
         loading_mode: LoadingMode,
         augment: bool = False,
         image_size: _size_2_t = (224, 224),
+        histogram_equalize: bool = False,
     ) -> tuple[Compose, Compose, Compose]:
         """Get default transformations for the dataset.
 
@@ -294,6 +295,8 @@ class DefaultTransformsMixin:
             loading_mode: The loading mode for the images.
             augment: Whether to augment the images and masks together.
             image_size: Output image resolution.
+            histogram_equalize: Whether to normalise the image using histogram
+            equalisation.
 
         Returns:
             The image, mask, combined, and final resize transformations
@@ -304,7 +307,11 @@ class DefaultTransformsMixin:
             [
                 v2.ToImage(),
                 RemoveBlackLevelLiftByHistogram(),
-                NormaliseImageFramesByHistogram(),
+                (
+                    NormaliseImageFramesByHistogram()
+                    if histogram_equalize
+                    else v2.Identity()
+                ),
                 # TemporalDenoiseTransform(),
                 v2.Resize(image_size, antialias=True),
                 v2.ToDtype(torch.float32, scale=True),
@@ -1021,7 +1028,9 @@ class ResidualTwoPlusOneDataset(
                 )  # H x W x C
                 out_mask = tv_tensors.Mask(lab_mask_one_hot[:, :, 3].bool().long())
                 num_classes = 2
-
+            case ClassificationMode.MULTICLASS_1_2_MODE:
+                num_classes = 3
+                out_mask[out_mask == 3] = 2
             case _:
                 raise NotImplementedError(
                     f"The mode {self.classification_mode.name} is not implemented"
@@ -1099,6 +1108,8 @@ class ResidualTwoPlusOneDataset(
 
             case ClassificationMode.MULTICLASS_MODE:
                 pass
+            case ClassificationMode.MULTICLASS_1_2_MODE:
+                out_mask[out_mask == 3] = 2
             case _:
                 raise NotImplementedError(
                     f"The mode {self.classification_mode.name} is not implemented"
@@ -1185,12 +1196,13 @@ class ResidualTwoPlusOneDataset(
         residual_mode: ResidualMode,
         augment: bool = False,
         image_size: _size_2_t = (224, 224),
+        histogram_equalize: bool = False,
     ) -> tuple[Compose, Compose, Compose, Compose | None]:
         match residual_mode:
             case ResidualMode.SUBTRACT_NEXT_FRAME:
                 transforms_img, transforms_mask, transforms_together = (
                     DefaultTransformsMixin.get_default_transforms(
-                        loading_mode, augment, image_size
+                        loading_mode, augment, image_size, histogram_equalize
                     )
                 )
                 return transforms_img, transforms_mask, transforms_together, None
@@ -1201,7 +1213,11 @@ class ResidualTwoPlusOneDataset(
                     [
                         v2.ToImage(),
                         RemoveBlackLevelLiftByHistogram(),
-                        NormaliseImageFramesByHistogram(),
+                        (
+                            NormaliseImageFramesByHistogram()
+                            if histogram_equalize
+                            else v2.Identity()
+                        ),
                         # TemporalDenoiseTransform(),
                         v2.ToDtype(torch.float32, scale=True),
                         v2.Normalize(

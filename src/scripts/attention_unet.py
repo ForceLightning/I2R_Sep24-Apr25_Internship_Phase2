@@ -51,6 +51,7 @@ class ResidualTwoPlusOneDataModule(L.LightningDataModule):
         combine_train_val: bool = False,
         augment: bool = False,
         dummy_predict: DummyPredictMode = DummyPredictMode.NONE,
+        histogram_equalize: bool = False,
     ):
         """Initialise the Residual TwoPlusOne dataset.
 
@@ -72,6 +73,8 @@ class ResidualTwoPlusOneDataModule(L.LightningDataModule):
             combine_train_val: Whether to combine train/val sets.
             augment: Whether to augment images and masks together.
             dummy_predict: Whether to output the ground truth when prediction.
+            histogram_equalize: Whether to normalise the image using histogram
+            equalisation.
 
         """
         super().__init__()

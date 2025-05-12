@@ -89,18 +89,21 @@ def shared_metric_calculation(
                     masks_preds_one_hot > 0.5,
                     masks,
                 )
-        case ClassificationMode.MULTICLASS_MODE:
+        case (
+            ClassificationMode.MULTICLASS_MODE | ClassificationMode.MULTICLASS_1_2_MODE
+        ):
             # Output: BS x C x H x W
             masks_preds = masks_proba.softmax(dim=1)
             masks_preds_one_hot = F.one_hot(
-                masks_preds.argmax(dim=1), num_classes=4
+                masks_preds.argmax(dim=1), num_classes=module.classes
             ).permute(0, -1, 1, 2)
             module.dice_metrics[prefix].update(masks_preds_one_hot, masks_one_hot)
             module.other_metrics[prefix].update(masks_preds, masks)
-            module.infarct_metrics[prefix].update(
-                masks_preds_one_hot,
-                masks_one_hot,
-            )
+            if prefix == "test":
+                module.infarct_metrics[prefix].update(
+                    masks_preds_one_hot,
+                    masks_one_hot,
+                )
         case ClassificationMode.BINARY_CLASS_3_MODE:
             masks_preds = masks_proba.sigmoid()
             masks_preds_one_hot = masks_preds > 0.5
@@ -166,11 +169,12 @@ def setup_metrics(
         # NOTE: This allows for the metrics to be accessed via the module, and Lightning
         # will handle casting the metrics to the right dtype.
 
-        match module.eval_classification_mode:
+        match module.eval_classification_mode, stage:
             case (
                 ClassificationMode.MULTICLASS_MODE
                 | ClassificationMode.MULTILABEL_MODE
-                | ClassificationMode.MULTICLASS_1_2_MODE
+                | ClassificationMode.MULTICLASS_1_2_MODE,
+                "test",
             ):
                 infarct_dict = _setup_infarct_heuristics(module)
                 infarct_combined = MetricCollection(
@@ -190,7 +194,11 @@ def _setup_dice(
     division_by_zero: float,
 ) -> dict[str, Metric]:
     match eval_classification_mode:
-        case ClassificationMode.MULTICLASS_MODE | ClassificationMode.MULTILABEL_MODE:
+        case (
+            ClassificationMode.MULTICLASS_MODE
+            | ClassificationMode.MULTILABEL_MODE
+            | ClassificationMode.MULTICLASS_1_2_MODE
+        ):
             dice_weighted = (
                 metric
                 if metric
@@ -227,36 +235,42 @@ def _setup_dice(
                 metric_mode=metric_mode,
             )
 
-            dice_class_2_3_weighted = GeneralizedDiceScoreVariant(
-                num_classes=classes,
-                per_class=True,
-                include_background=False,
-                weight_type="linear",
-                weighted_average=True,
-                only_for_classes=[0, 0, 1, 1],
-                return_type="weighted_avg",
-                zero_division=division_by_zero,
-                metric_mode=metric_mode,
-            )
+            if classes == 4:
+                dice_class_2_3_weighted = GeneralizedDiceScoreVariant(
+                    num_classes=classes,
+                    per_class=True,
+                    include_background=False,
+                    weight_type="linear",
+                    weighted_average=True,
+                    only_for_classes=[0, 0, 1, 1],
+                    return_type="weighted_avg",
+                    zero_division=division_by_zero,
+                    metric_mode=metric_mode,
+                )
 
-            dice_class_2_3_macro = GeneralizedDiceScoreVariant(
-                num_classes=classes,
-                per_class=True,
-                include_background=False,
-                weight_type="linear",
-                weighted_average=True,
-                only_for_classes=[0, 0, 1, 1],
-                return_type="macro_avg",
-                zero_division=division_by_zero,
-                metric_mode=metric_mode,
-            )
+                dice_class_2_3_macro = GeneralizedDiceScoreVariant(
+                    num_classes=classes,
+                    per_class=True,
+                    include_background=False,
+                    weight_type="linear",
+                    weighted_average=True,
+                    only_for_classes=[0, 0, 1, 1],
+                    return_type="macro_avg",
+                    zero_division=division_by_zero,
+                    metric_mode=metric_mode,
+                )
 
+                return {
+                    "dice_weighted_avg": dice_weighted,
+                    "dice_macro_avg": dice_macro,
+                    "dice_per_class": dice_classes,
+                    "dice_weighted_class_2_3": dice_class_2_3_weighted,
+                    "dice_macro_class_2_3": dice_class_2_3_macro,
+                }
             return {
                 "dice_weighted_avg": dice_weighted,
                 "dice_macro_avg": dice_macro,
                 "dice_per_class": dice_classes,
-                "dice_weighted_class_2_3": dice_class_2_3_weighted,
-                "dice_macro_class_2_3": dice_class_2_3_macro,
             }
 
         case ClassificationMode.BINARY_CLASS_3_MODE:
@@ -281,7 +295,9 @@ def _setup_jaccard(
     division_by_zero: float,
 ):
     match module.eval_classification_mode:
-        case ClassificationMode.MULTICLASS_MODE:
+        case (
+            ClassificationMode.MULTICLASS_MODE | ClassificationMode.MULTICLASS_1_2_MODE
+        ):
             non_agg_jaccard = MulticlassMJaccardIndex(
                 num_classes=classes,
                 average="none",
@@ -318,7 +334,9 @@ def _setup_precision_recall(
     division_by_zero: float,
 ):
     match module.eval_classification_mode:
-        case ClassificationMode.MULTICLASS_MODE:
+        case (
+            ClassificationMode.MULTICLASS_MODE | ClassificationMode.MULTICLASS_1_2_MODE
+        ):
             recall = (
                 MulticlassMRecall
                 if metric_mode == MetricMode.IGNORE_EMPTY_CLASS
@@ -430,7 +448,9 @@ def shared_metric_logging_epoch_end(module: CommonModelMixin, prefix: str):
     dice_metric_obj = module.dice_metrics[prefix]
     other_metric_obj = module.other_metrics[prefix]
     infarct_metric_obj = (
-        module.infarct_metrics[prefix] if hasattr(module, "infarct_metrics") else None
+        module.infarct_metrics[prefix]
+        if prefix == "test" and hasattr(module, "infarct_metrics")
+        else None
     )
 
     match dice_metric_obj:

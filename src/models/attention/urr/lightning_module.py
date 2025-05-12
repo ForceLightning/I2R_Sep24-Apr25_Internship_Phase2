@@ -244,7 +244,10 @@ class URRResidualAttentionLightningModule(ResidualAttentionLightningModule):
             self.loss = loss
         else:
             match dl_classification_mode:
-                case ClassificationMode.MULTICLASS_MODE:
+                case (
+                    ClassificationMode.MULTICLASS_MODE
+                    | ClassificationMode.MULTICLASS_1_2_MODE
+                ):
                     self.loss = DiceLoss(smp.losses.MULTICLASS_MODE, from_logits=True)
                 case ClassificationMode.MULTILABEL_MODE:
                     self.loss = DiceLoss(smp.losses.MULTILABEL_MODE, from_logits=True)

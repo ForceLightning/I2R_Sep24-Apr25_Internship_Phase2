@@ -188,6 +188,8 @@ class WeightedAverage(nn.Module):
 
     @override
     def forward(self, x: Tensor) -> Tensor:
+        if x.shape[0] == self.in_features:
+            x = x.permute(*[x + 1 for x in range(x.ndim - 1)], 0)
         assert x.shape[-1] == self.in_features, (
             f"Input of shape {x.shape} does not have last dimension "
             + f"matching in_features {self.in_features}"
@@ -271,6 +273,8 @@ class SpatialAttentionBlock(nn.Module):
         b, c, h, w = compress_output.shape
         if self._reduce == "prod":
             res = torch.mul(compress_output, attention_output)
+            if return_o1:
+                return res, compress_output
             return res
 
         compress_output = compress_output.view(1, b, c, h, w)

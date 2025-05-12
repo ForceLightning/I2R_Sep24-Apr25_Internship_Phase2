@@ -577,10 +577,13 @@ class InfarctPredictionWriter(BasePredictionWriter):
 
                     # Blend the annotation with the cine image.
                     masked_frames: list[Image.Image] = []
-                    raw_annotation = self.infarct_viz.viz(
-                        image[0], mask_pred, True
-                    ).convert("RGBA")
-                    raw_annotation = np.array(raw_annotation).astype(float)
+                    try:
+                        raw_annotation = self.infarct_viz.viz(
+                            image[0], mask_pred, True
+                        ).convert("RGBA")
+                        raw_annotation = np.array(raw_annotation).astype(float)
+                    except ValueError:
+                        raw_annotation = np.zeros_like(image, dtype=float)
                     for frame in image:
                         # NOTE: This is a pretty ugly hack to prevent an unsigned
                         # integer underflow.

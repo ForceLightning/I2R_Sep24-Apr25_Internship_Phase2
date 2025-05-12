@@ -28,6 +28,7 @@ dependencies = [
     "ml-collections>=1.0.0",
     "scikit-learn>=1.6.1",
     "blend-modes>=2.2.0",
+    "dotenv>=0.9.9",
 ]
 
 [dependency-groups]

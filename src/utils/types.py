@@ -56,6 +56,23 @@ class ClassificationMode(Enum):
     """The model is trained to predict the LV myocardium and scar tissue (MI)
         regions."""
 
+    def num_classes(self) -> int:
+        """Get the number of classes assosciated with the classification mode.
+
+        Return:
+            int: Number of classes.
+
+        """
+        match self:
+            case (
+                ClassificationMode.MULTICLASS_MODE | ClassificationMode.MULTILABEL_MODE
+            ):
+                return 4
+            case ClassificationMode.MULTICLASS_1_2_MODE:
+                return 3
+            case ClassificationMode.BINARY_CLASS_3_MODE:
+                return 1
+
 
 class ResidualMode(Enum):
     """The residual frame calculation mode for the model."""

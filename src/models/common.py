@@ -89,7 +89,7 @@ class CommonModelMixin(L.LightningModule):
                     "hp/val/precision_class_3": 0,
                     "hp/val/recall_class_3": 0,
                 }
-            else:
+            elif self.classes == 4:
                 params = {
                     # (1) Validation Loss
                     "hp/val_loss": 0,
@@ -122,6 +122,38 @@ class CommonModelMixin(L.LightningModule):
                     "hp/val/infarct_span_r2": 0,
                     "hp/val/infarct_transmurality_r2": 0,
                 }
+            else:
+                params = {
+                    # (1) Validation Loss
+                    "hp/val_loss": 0,
+                    # (2) Dice score
+                    "hp/val/dice_macro_avg": 0,
+                    "hp/val/dice_weighted_avg": 0,
+                    "hp/val/dice_class_1": 0,
+                    "hp/val/dice_class_2": 0,
+                    "hp/val/dice_class_3": 0,
+                    # (3) Jaccard Index
+                    "hp/val/jaccard_macro_avg": 0,
+                    "hp/val/jaccard_class_1": 0,
+                    "hp/val/jaccard_class_2": 0,
+                    "hp/val/jaccard_class_3": 0,
+                    # (4) Precision
+                    "hp/val/precision_macro_avg": 0,
+                    "hp/val/precision_class_1": 0,
+                    "hp/val/precision_class_2": 0,
+                    "hp/val/precision_class_3": 0,
+                    # (5) Recall
+                    "hp/val/recall_macro_avg": 0,
+                    "hp/val/recall_class_1": 0,
+                    "hp/val/recall_class_2": 0,
+                    "hp/val/recall_class_3": 0,
+                    # (6) Infarct heuristics
+                    "hp/val/infarct_area_r2": 0,
+                    "hp/val/infarct_ratio_r2": 0,
+                    "hp/val/infarct_span_r2": 0,
+                    "hp/val/infarct_transmurality_r2": 0,
+                }
+
             self.logger.log_hyperparams(
                 self.hparams, params  # pyright: ignore[reportArgumentType]
             )

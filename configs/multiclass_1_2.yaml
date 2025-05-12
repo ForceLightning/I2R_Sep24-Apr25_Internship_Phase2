@@ -1,0 +1,8 @@
+# lightning.pytorch==2.5.0
+model:
+  classes: 3
+model_checkpoint_dice_macro_class_2_3:
+  save_last: false
+  save_top_k: 0
+dl_classification_mode: MULTICLASS_1_2_MODE
+eval_classification_mode: MULTICLASS_1_2_MODE

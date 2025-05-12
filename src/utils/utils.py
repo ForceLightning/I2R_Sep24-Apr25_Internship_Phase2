@@ -242,9 +242,13 @@ def configure_optimizers(
                     f"Scheduler of type {module.scheduler} not implemented"
                 )
     else:
-        scheduler = {
-            "scheduler": module.scheduler(optimizer, **module.scheduler_kwargs)
-        }
+        match module.scheduler:
+            case type():
+                scheduler = {
+                    "scheduler": module.scheduler(optimizer, **module.scheduler_kwargs)
+                }
+            case LRScheduler():
+                scheduler = {"scheduler": module.scheduler}
     return {"optimizer": optimizer, "lr_scheduler": scheduler}
 
 
