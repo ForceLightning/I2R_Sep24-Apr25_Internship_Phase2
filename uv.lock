@@ -691,6 +691,7 @@ dependencies = [
     { name = "lightning", extra = ["pytorch-extra"] },
     { name = "ml-collections" },
     { name = "numpy" },
+    { name = "optuna-integration", extra = ["pytorch-lightning"] },
     { name = "pillow" },
     { name = "rich" },
     { name = "scikit-learn" },
@@ -741,6 +742,7 @@ requires-dist = [
     { name = "lightning", extras = ["pytorch-extra"] },
     { name = "ml-collections", specifier = ">=1.0.0" },
     { name = "numpy" },
+    { name = "optuna-integration", extras = ["pytorch-lightning"], specifier = ">=4.3.0" },
     { name = "pillow" },
     { name = "rich" },
     { name = "scikit-learn", specifier = ">=1.6.1" },
@@ -1547,6 +1549,23 @@ dependencies = [
     { name = "scikit-learn" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/2f/3e/5b4bfa03413b12d6456da63d67173396c5a562b427fbc75a4ebb2efd1d31/optuna-fast-fanova-0.0.4.tar.gz", hash = "sha256:fba6f5133225903facd94f12b09c729544062b804edf0d7b7f0d521762dfe45d", size = 30769 }
+
+[[package]]
+name = "optuna-integration"
+version = "4.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "optuna" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/bd/0d/cef182fc1629f5ee902e349b5129924d2b4f37c4ea17ee6ead092b43b3fc/optuna_integration-4.3.0.tar.gz", hash = "sha256:3f7038f3cba84f00e9229078f0ea8dca8983fa2079e1d0457d5082d034829ff9", size = 85870 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c6/9b/70808bac453d37fc630e4dbdcb2d4d543673438b8a7b15146e936b89bcce/optuna_integration-4.3.0-py3-none-any.whl", hash = "sha256:c4d0c955fd2fc11b2dd32eb33d1ded0c0f23ad52232e31592620671ece2f08a8", size = 98468 },
+]
+
+[package.optional-dependencies]
+pytorch-lightning = [
+    { name = "lightning" },
+]
 
 [[package]]
 name = "packaging"

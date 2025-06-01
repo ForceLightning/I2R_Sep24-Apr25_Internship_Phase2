@@ -11,6 +11,7 @@ import sys
 # Scientific Libraries
 import optuna
 from optuna.samplers import TPESampler
+from optuna_integration import PyTorchLightningPruningCallback
 
 # Image Libraries
 import cv2
@@ -104,6 +105,7 @@ def objective(trial: optuna.trial.Trial) -> float:
         "classification_mode",
         ["MULTICLASS_MODE", "MULTICLASS_1_2_MODE"],
     )
+    learning_rate = trial.suggest_float("lr", low=1e-5, high=1e-3, log=True)
 
     version = "urr_{encoder_name}_{classification_mode}_{loss}_g_{attention_reduction}_{residual_mode}_alpha{alpha:.2f}_beta{beta:.2f}"
 
@@ -131,7 +133,7 @@ def objective(trial: optuna.trial.Trial) -> float:
         num_frames=10,
         optimizer="adamw",
         scheduler="cosine_anneal",
-        learning_rate=3e-4,
+        learning_rate=learning_rate,
         attention_reduction=attention_reduction,
         total_epochs=NUM_EPOCHS,
         alpha=alpha,
@@ -167,6 +169,7 @@ def objective(trial: optuna.trial.Trial) -> float:
         DeviceStatsMonitor(None),
         LearningRateMonitor("epoch", False, False),
         BetterProgressBar(),
+        PyTorchLightningPruningCallback(trial, monitor="loss/val"),
     ]
 
     tensorboard_logger = None

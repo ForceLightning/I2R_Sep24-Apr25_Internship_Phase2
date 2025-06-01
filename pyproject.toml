@@ -29,6 +29,7 @@ dependencies = [
     "scikit-learn>=1.6.1",
     "blend-modes>=2.2.0",
     "dotenv>=0.9.9",
+    "optuna-integration[pytorch-lightning]>=4.3.0",
 ]
 
 [dependency-groups]
