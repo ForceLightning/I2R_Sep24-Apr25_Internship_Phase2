@@ -76,10 +76,7 @@ WORKDIR /opt/opencv-python
 RUN git checkout 86
 
 # Build OpenCV
-RUN --mount=type=cache,target=/opt/opencv-python/dist \
-    --mount=type=cache,target=/opt/opencv-python/_skbuild \
-    --mount=type=cache,target=/opt/ccache/ \
-    set -ex \
+RUN set -ex \
     && ENABLE_HEADLESS=1 ENABLE_CONTRIB=1 \
         CMAKE_ARGS="-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DWITH_CUDA=ON -DWITH_CUDNN=ON -DWITH_MKL=ON -DMKL_USE_MULTITHREAD=ON -DPYTHON3_NUMPY_INCLUDE_DIRS=/code/.venv/lib/python3.12/site-packages/numpy/_core/include" \
         MAKEFLAGS="-j$(nproc)" \
@@ -92,7 +89,6 @@ RUN apt-get -qq autoremove \
 WORKDIR /code
 RUN uv remove opencv-contrib-python-headless --group opencv-custom-build
 # RUN uv add --group opencv-custom-build "opencv-contrib-python-headless @ opencv_contrib_python_headless-4.11.0.86-cp312-cp312-linux_x86_64.whl" -v
-RUN --mount=type=cache,target=/opt/opencv-python/dist \
-    --mount=type=cache,target=/opt/opencv-python/_skbuild \
-    uv pip install "opencv-contrib-python-headless @ /opt/opencv-python/dist/opencv_contrib_python_headless-4.11.0.86-cp312-cp312-linux_x86_64.whl"
+COPY /opt/opencv-python/dist/opencv_contrib_python_headless-4.11.0.86-cp312-cp312-linux_x86_64.whl* .
+RUN uv add "opencv-contrib-python-headless @ /opt/opencv-python/dist/opencv_contrib_python_headless-4.11.0.86-cp312-cp312-linux_x86_64.whl" --group opencv-custom-build
 ENV DOCKERZIED=1
