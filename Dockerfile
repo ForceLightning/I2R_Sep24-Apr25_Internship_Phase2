@@ -92,5 +92,7 @@ RUN apt-get -qq autoremove \
 WORKDIR /code
 RUN uv remove opencv-contrib-python-headless --group opencv-custom-build
 # RUN uv add --group opencv-custom-build "opencv-contrib-python-headless @ opencv_contrib_python_headless-4.11.0.86-cp312-cp312-linux_x86_64.whl" -v
-RUN uv pip install "opencv-contrib-python-headless @ /opt/opencv-python/dist/opencv_contrib_python_headless-4.11.0.86-cp312-cp312-linux_x86_64.whl"
+RUN --mount=type=cache,target=/opt/opencv-python/dist \
+    --mount=type=cache,target=/opt/opencv-python/_skbuild \
+    uv pip install "opencv-contrib-python-headless @ /opt/opencv-python/dist/opencv_contrib_python_headless-4.11.0.86-cp312-cp312-linux_x86_64.whl"
 ENV DOCKERZIED=1
