@@ -3,7 +3,9 @@ ARG PYTHON_VERSION=3.12
 
 # (1): Install base nvidia cuda container.
 FROM ${BASE_IMAGE} AS dev-base
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         build-essential \
         ca-certificates \
         ccache \
@@ -26,7 +28,8 @@ ENV PATH="/root/.local/bin/:$PATH"
 
 RUN uv python install 3.12
 RUN /usr/sbin/update-ccache-symlinks
-RUN mkdir /opt/ccache && ccache --set-config=cache_dir=/opt/ccache
+RUN mkdir /opt/ccache 
+RUN --mount=type=cache,target=/opt/ccache/ ccache --set-config=cache_dir=/opt/ccache
 
 # (3.1): Setup work directory for project.
 ARG USER_TZ="Asia/Singapore"
@@ -42,14 +45,16 @@ COPY ./uv.lock ./uv.lock
 # (3.2): Install dependencies
 RUN uv python pin 3.12
 RUN uv venv --python 3.12
-RUN uv sync --all-extras --no-group opencv-custom-build
+RUN uv sync --all-extras
 RUN . ./.venv/bin/activate
 
 # (4): Setup build process for OpenCV with CUDA support.
 ARG OPENCV_VERSION=4.11.0.86
 ARG DEBIAN_FRONTEND=noninteractive
 WORKDIR /opt/
-RUN set -ex \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    set -ex \
     && apt-get -qq update \
     && apt-get install -y --no-install-recommends \
         wget unzip \
@@ -71,8 +76,11 @@ WORKDIR /opt/opencv-python
 RUN git checkout 86
 
 # Build OpenCV
-RUN set -ex \
-        && ENABLE_HEADLESS=1 ENABLE_CONTRIB=1 \
+RUN --mount=type=cache,target=/opt/opencv-python/dist \
+    --mount=type=cache,target=/opt/opencv-python/_skbuild \
+    --mount=type=cache,target=/opt/ccache/ \
+    set -ex \
+    && ENABLE_HEADLESS=1 ENABLE_CONTRIB=1 \
         CMAKE_ARGS="-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DWITH_CUDA=ON -DWITH_CUDNN=ON -DWITH_MKL=ON -DMKL_USE_MULTITHREAD=ON -DPYTHON3_NUMPY_INCLUDE_DIRS=/code/.venv/lib/python3.12/site-packages/numpy/_core/include" \
         MAKEFLAGS="-j$(nproc)" \
         uv build --wheel .
