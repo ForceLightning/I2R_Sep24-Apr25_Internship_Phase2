@@ -204,6 +204,15 @@ wheels = [
 ]
 
 [[package]]
+name = "bottle"
+version = "0.13.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f5/3b/efa9540213c71be3500e14592c5823bd3f9ddd881d306e01b5dd490ddab5/bottle-0.13.3.tar.gz", hash = "sha256:1c23aeb30aa8a13f39c60c0da494530ddd5de3da235bc431b818a50d999de49f", size = 98555 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7b/b1/a6d4ef30ebfa0f62aedd437d81130075afc32266f7f6baf2cddf4b41ac2a/bottle-0.13.3-py2.py3-none-any.whl", hash = "sha256:551709073d750d2e88ade05915f0d5dbbbcb8e1d82573fbe85a0635eb842ab07", size = 104151 },
+]
+
+[[package]]
 name = "certifi"
 version = "2025.1.31"
 source = { registry = "https://pypi.org/simple" }
@@ -615,6 +624,18 @@ wheels = [
 ]
 
 [[package]]
+name = "gunicorn"
+version = "23.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "packaging" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/34/72/9614c465dc206155d93eff0ca20d42e1e35afc533971379482de953521a4/gunicorn-23.0.0.tar.gz", hash = "sha256:f014447a0101dc57e294f6c18ca6b40227a4c90e9bdb586042628030cba004ec", size = 375031 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cb/7d/6dac2a6e1eba33ee43f318edbed4ff29151a49b5d37f080aad1e6469bca4/gunicorn-23.0.0-py3-none-any.whl", hash = "sha256:ec400d38950de4dfd418cff8328b2c8faed0edb0d517d3394e457c317908ca4d", size = 85029 },
+]
+
+[[package]]
 name = "hjson"
 version = "3.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -688,7 +709,10 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "gunicorn" },
     { name = "optuna" },
+    { name = "optuna-dashboard" },
+    { name = "optuna-fast-fanova" },
     { name = "pytest" },
 ]
 docs = [
@@ -696,9 +720,6 @@ docs = [
     { name = "sphinx-autodoc-typehints" },
     { name = "sphinx-autodoc2" },
     { name = "sphinx-rtd-theme" },
-]
-opencv-custom-build = [
-    { name = "opencv-contrib-python-headless" },
 ]
 prototyping = [
     { name = "matplotlib" },
@@ -738,7 +759,10 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "gunicorn", specifier = ">=23.0.0" },
     { name = "optuna", specifier = ">=4.2.1" },
+    { name = "optuna-dashboard", specifier = ">=0.18.0" },
+    { name = "optuna-fast-fanova", specifier = ">=0.0.4" },
     { name = "pytest", specifier = ">=8.3.4" },
 ]
 docs = [
@@ -747,7 +771,6 @@ docs = [
     { name = "sphinx-autodoc2" },
     { name = "sphinx-rtd-theme" },
 ]
-opencv-custom-build = [{ name = "opencv-contrib-python-headless", path = "../opencv-python/dist/opencv_contrib_python_headless-4.10.0.84-cp312-cp312-linux_x86_64.whl" }]
 prototyping = [
     { name = "matplotlib" },
     { name = "seaborn" },
@@ -1467,12 +1490,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/e3/94/1843518e420fa3ed6919835845df698c7e27e183cb997394e4a670973a65/omegaconf-2.3.0-py3-none-any.whl", hash = "sha256:7b4df175cdb08ba400f45cae3bdcae7ba8365db4d165fc65fd04b050ab63b46b", size = 79500 },
 ]
 
-[[package]]
-name = "opencv-contrib-python-headless"
-version = "4.10.0.84"
-dependencies = [
-    { name = "numpy" },
-]
 [package.metadata]
 requires-dist = [
     { name = "numpy", marker = "python_full_version < '3.7'", specifier = ">=1.13.3" },
@@ -1504,6 +1521,32 @@ sdist = { url = "https://files.pythonhosted.org/packages/98/23/d9710e7116e23d042
 wheels = [
     { url = "https://files.pythonhosted.org/packages/28/09/c4d329f7969443cdd4d482048ca406b6f61cda3c8e99ace71feaec7c8734/optuna-4.2.1-py3-none-any.whl", hash = "sha256:6d38199013441d3f70fac27136e05c0188c5f4ec3848db708ac311cbdeb30dbf", size = 383562 },
 ]
+
+[[package]]
+name = "optuna-dashboard"
+version = "0.18.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "bottle" },
+    { name = "optuna" },
+    { name = "packaging" },
+    { name = "scikit-learn" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ab/ef/cdfd144458e1598a5b67e291b9947032b72f095d76b2f5bb3ad0e37fcdaa/optuna_dashboard-0.18.0.tar.gz", hash = "sha256:be77394279efe2fb45ee63e5fe5622007ef0f06d47117e9b9c36e67716777dfd", size = 8335304 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/fa/4a/3c55b8c49d0d096a8e97674fd505aaf38f9f3c743b2f89b8ca198210eb1f/optuna_dashboard-0.18.0-py3-none-any.whl", hash = "sha256:49f64d5750838fa59bceedcebf3359c1758eb74d1aa0aaab990bd9ce9ffb0638", size = 8356100 },
+]
+
+[[package]]
+name = "optuna-fast-fanova"
+version = "0.0.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "optuna" },
+    { name = "scikit-learn" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/2f/3e/5b4bfa03413b12d6456da63d67173396c5a562b427fbc75a4ebb2efd1d31/optuna-fast-fanova-0.0.4.tar.gz", hash = "sha256:fba6f5133225903facd94f12b09c729544062b804edf0d7b7f0d521762dfe45d", size = 30769 }
 
 [[package]]
 name = "packaging"

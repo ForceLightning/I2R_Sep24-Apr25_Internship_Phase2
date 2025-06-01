@@ -225,8 +225,15 @@ if __name__ == "__main__":
         optuna.pruners.MedianPruner() if args.pruning else optuna.pruners.NopPruner()
     )
     sampler = TPESampler(multivariate=True, group=True)
-    study = optuna.create_study(sampler=sampler, direction="minimize", pruner=pruner)
+    study = optuna.create_study(
+        storage="sqlite:///db.sqlite3",  # Persistence
+        sampler=sampler,
+        direction="minimize",
+        pruner=pruner,
+        study_name="URR Residual U-Net hyperparameters",
+    )
 
+    # Logging
     stdout_handler = logging.StreamHandler(stream=sys.stdout)
     if os.getenv("DOCKERIZED", "0") != "0":
         # OPTIM: Prevent saving logs to file if in a docker container.
@@ -239,6 +246,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=15, format=LOGGING_FORMAT, handlers=handlers)
     logger = logging.getLogger(__name__)
+    optuna.logging.get_logger("optuna").addHandler(stdout_handler)
 
     # WARNING: This should continue to run even after encountering most errors, which
     # may not be the wisest decision but it can also function as a test suite for
@@ -258,3 +266,5 @@ if __name__ == "__main__":
             torch.cuda.CudaError,
         ],
     )
+
+    logger.info("Best value: %s, (params: %s)", study.best_value, study.best_params)
