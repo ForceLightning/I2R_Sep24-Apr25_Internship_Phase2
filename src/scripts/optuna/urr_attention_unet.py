@@ -164,7 +164,7 @@ def objective(trial: optuna.trial.Trial) -> float:
         classification_mode=classification_mode,
     )
 
-    save_dir = "./checkpoints/infarct/urr-residual-attention/lightning_logs"
+    save_dir = "./checkpoints/infarct/urr-residual-attention/"
     callbacks = [
         DeviceStatsMonitor(None),
         LearningRateMonitor("epoch", False, False),
