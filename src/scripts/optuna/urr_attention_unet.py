@@ -211,22 +211,7 @@ def objective(trial: optuna.trial.Trial) -> tuple[float, float, float, float, fl
 
     trainer.fit(model, datamodule=datamodule)
 
-    metrics = tuple(
-        [
-            trainer.callback_metrics[x].item()
-            for x in [
-                "val/dice_macro_avg",
-                "val/infarct_area_r2",
-                "val/infarct_ratio_r2",
-                "val/infarct_span_r2",
-                "val/infarct_transmurality_r2",
-            ]
-        ]
-    )
-
-    assert len(metrics) == 5
-
-    return metrics
+    return trainer.callback_metrics["val/dice_macro_avg"].item()
 
 
 if __name__ == "__main__":
@@ -246,9 +231,9 @@ if __name__ == "__main__":
     study = optuna.create_study(
         storage="sqlite:///db.sqlite3",  # Persistence
         sampler=sampler,
-        directions=["maximise", "maximise", "maximise", "maximise", "maximise"],
+        direction="maximize",
         pruner=pruner,
-        study_name="URR Residual U-Net hyperparameters maximise",
+        study_name="URR Residual U-Net hyperparameters (maximise dice)",
         load_if_exists=True,
     )
 
