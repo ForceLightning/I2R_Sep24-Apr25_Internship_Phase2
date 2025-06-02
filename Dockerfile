@@ -45,7 +45,7 @@ COPY ./uv.lock ./uv.lock
 # (3.2): Install dependencies
 RUN uv python pin 3.12
 RUN uv venv --python 3.12
-RUN uv sync --all-extras
+RUN uv sync --all-extras --all-groups
 RUN . ./.venv/bin/activate
 
 # (4): Setup build process for OpenCV with CUDA support.
@@ -90,5 +90,5 @@ WORKDIR /code
 RUN uv remove opencv-contrib-python-headless --group opencv-custom-build
 # RUN uv add --group opencv-custom-build "opencv-contrib-python-headless @ opencv_contrib_python_headless-4.11.0.86-cp312-cp312-linux_x86_64.whl" -v
 COPY /opt/opencv-python/dist/opencv_contrib_python_headless-4.11.0.86-cp312-cp312-linux_x86_64.whl* .
-RUN uv add "opencv-contrib-python-headless @ /opt/opencv-python/dist/opencv_contrib_python_headless-4.11.0.86-cp312-cp312-linux_x86_64.whl" --group opencv-custom-build
+RUN uv pip install "opencv-contrib-python-headless @ /opt/opencv-python/dist/opencv_contrib_python_headless-4.11.0.86-cp312-cp312-linux_x86_64.whl"
 ENV DOCKERZIED=1

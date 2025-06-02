@@ -588,6 +588,7 @@ class ResidualAttentionLightningModule(CommonModelMixin):
                 case (
                     ClassificationMode.MULTICLASS_MODE
                     | ClassificationMode.MULTILABEL_MODE
+                    | ClassificationMode.MULTICLASS_1_2_MODE
                 ):
                     pred_images_with_masks = [
                         draw_segmentation_masks(
@@ -684,52 +685,61 @@ class ResidualAttentionLightningModule(CommonModelMixin):
         masks = masks.to(self.device.type).long()
 
         masks_preds: Tensor
-        if self.dummy_predict == DummyPredictMode.GROUND_TRUTH:
-            if self.eval_classification_mode == ClassificationMode.MULTICLASS_MODE:
-                masks_preds = (
-                    F.one_hot(masks, num_classes=self.classes)
-                    .permute(0, -1, 1, 2)
-                    .bool()
-                )
-            elif (
-                self.eval_classification_mode == ClassificationMode.BINARY_CLASS_3_MODE
-            ):
-                masks_preds = torch.cat([torch.ones_like(masks) - masks, masks], dim=1)
-            else:
-                masks_preds = masks.bool()
-        elif self.dummy_predict == DummyPredictMode.BLANK:
-            if self.eval_classification_mode == ClassificationMode.MULTICLASS_MODE:
-                masks_preds = (
-                    F.one_hot(torch.zeros_like(masks), num_classes=self.classes)
-                    .permute(0, -1, 1, 2)
-                    .bool()
-                )
-            elif (
-                self.eval_classification_mode == ClassificationMode.BINARY_CLASS_3_MODE
-            ):
-                masks_preds = torch.zeros_like(masks)
-            else:
-                masks_preds = torch.zeros_like(masks).bool()
-        else:
-            assert isinstance(self.model, nn.Module)
+        match self.dummy_predict:
+            case DummyPredictMode.GROUND_TRUTH:
+                match self.eval_classification_mode:
+                    case (
+                        ClassificationMode.MULTICLASS_MODE
+                        | ClassificationMode.MULTICLASS_1_2_MODE
+                    ):
+                        masks_preds = (
+                            F.one_hot(masks, num_classes=self.classes)
+                            .permute(0, -1, 1, 2)
+                            .bool()
+                        )
+                    case ClassificationMode.BINARY_CLASS_3_MODE:
+                        masks_preds = torch.cat(
+                            [torch.ones_like(masks) - masks, masks], dim=1
+                        )
+                    case _:
+                        masks_preds = masks.bool()
+            case DummyPredictMode.BLANK:
+                match self.eval_classification_mode:
+                    case (
+                        ClassificationMode.MULTICLASS_MODE
+                        | ClassificationMode.MULTICLASS_1_2_MODE
+                    ):
+                        masks_preds = (
+                            F.one_hot(torch.zeros_like(masks), num_classes=self.classes)
+                            .permute(0, -1, 1, 2)
+                            .bool()
+                        )
+                    case ClassificationMode.BINARY_CLASS_3_MODE:
+                        masks_preds = torch.zeros_like(masks)
+                    case _:
+                        masks_preds = torch.zeros_like(masks).bool()
+            case _:
+                assert isinstance(self.model, nn.Module)
 
-            masks_proba: Tensor = self.model(images_input, res_input)
+        masks_proba: Tensor = self.model(images_input, res_input)
 
-            if self.eval_classification_mode == ClassificationMode.MULTICLASS_MODE:
+        match self.eval_classification_mode:
+            case (
+                ClassificationMode.MULTICLASS_MODE
+                | ClassificationMode.MULTICLASS_1_2_MODE
+            ):
                 masks_preds = masks_proba.argmax(dim=1)
                 masks_preds = (
                     F.one_hot(masks_preds, num_classes=self.classes)
                     .permute(0, -1, 1, 2)
                     .bool()
                 )
-            elif (
-                self.eval_classification_mode == ClassificationMode.BINARY_CLASS_3_MODE
-            ):
+            case ClassificationMode.BINARY_CLASS_3_MODE:
                 masks_preds = (masks_proba.sigmoid() > 0.5).long()
                 masks_preds = torch.cat(
                     [torch.ones_like(masks_preds) - masks_preds], dim=1
                 )
-            else:
+            case _:
                 masks_preds = masks_proba.sigmoid() > 0.5
 
         return masks_preds.detach().cpu(), images.detach().cpu(), fn
