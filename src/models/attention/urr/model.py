@@ -41,6 +41,7 @@ class RegionRefiner(nn.Module):
             mdim_global: Channel dimension of the last layer of the decoder's output.
             mdim_local: Channel dimension to use for the region refinement.
             classes: Number of segmentation classes.
+            attn_reduce: Attention reduction type.
 
         """
         super().__init__()

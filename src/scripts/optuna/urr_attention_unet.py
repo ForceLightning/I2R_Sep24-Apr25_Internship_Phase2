@@ -51,7 +51,7 @@ BATCH_SIZE = int(os.environ.get("BATCH_SIZE", 2))
 logger = logging.getLogger(__name__)
 
 
-def objective(trial: optuna.trial.Trial) -> float:
+def objective(trial: optuna.trial.Trial) -> tuple[float, float, float, float, float]:
     """Tune hyperparameters.
 
     Specifically, we tune for:
@@ -211,7 +211,22 @@ def objective(trial: optuna.trial.Trial) -> float:
 
     trainer.fit(model, datamodule=datamodule)
 
-    return trainer.callback_metrics["loss/val"].item()
+    metrics = tuple(
+        [
+            trainer.callback_metrics[x].item()
+            for x in [
+                "val/dice_macro_avg",
+                "val/infarct_area_r2",
+                "val/infarct_ratio_r2",
+                "val/infarct_span_r2",
+                "val/infarct_transmurality_r2",
+            ]
+        ]
+    )
+
+    assert len(metrics) == 5
+
+    return metrics
 
 
 if __name__ == "__main__":
@@ -231,9 +246,9 @@ if __name__ == "__main__":
     study = optuna.create_study(
         storage="sqlite:///db.sqlite3",  # Persistence
         sampler=sampler,
-        direction="minimize",
+        directions=["maximise", "maximise", "maximise", "maximise", "maximise"],
         pruner=pruner,
-        study_name="URR Residual U-Net hyperparameters",
+        study_name="URR Residual U-Net hyperparameters maximise",
         load_if_exists=True,
     )
 
