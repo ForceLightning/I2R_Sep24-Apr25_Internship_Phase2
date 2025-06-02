@@ -200,7 +200,7 @@ class URRResidualAttentionLightningModule(ResidualAttentionLightningModule):
                             0.05,
                             0.15,
                             0.75,
-                        ],
+                        ][:classes],
                     ).to(self.device.type)
                     self.loss = nn.CrossEntropyLoss(weight=class_weights)
                 case "focal":
@@ -212,7 +212,7 @@ class URRResidualAttentionLightningModule(ResidualAttentionLightningModule):
                             0.1,
                             0.15,
                             0.7,
-                        ],
+                        ][:classes],
                     ).to(self.device.type)
                     self.loss = (
                         WeightedDiceLoss(
