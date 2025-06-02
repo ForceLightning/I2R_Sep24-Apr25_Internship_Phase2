@@ -550,7 +550,7 @@ def _grouped_generalized_metric_logging(
             "val/infarct_area_r2",
             "val/infarct_ratio_r2",
             "val/infarct_span_r2",
-            "val_infarct_transmurality_r2",
+            "val/infarct_transmurality_r2",
         ]:
             results_new[f"hp/{k}"] = v
 
