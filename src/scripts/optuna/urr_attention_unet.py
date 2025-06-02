@@ -234,6 +234,7 @@ if __name__ == "__main__":
         direction="minimize",
         pruner=pruner,
         study_name="URR Residual U-Net hyperparameters",
+        load_if_exists=True,
     )
 
     # Logging
