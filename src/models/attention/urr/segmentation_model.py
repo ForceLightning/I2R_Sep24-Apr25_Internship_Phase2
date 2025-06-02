@@ -278,7 +278,7 @@ class URRResidualAttentionUnet(ResidualAttentionUnet):
 
         # NOTE: This is to help with reproducibility during ablation studies.
         with torch.random.fork_rng(devices=("cpu", "cuda:0")):
-            region_refiner = RegionRefiner(7, 16, 32, self.classes)
+            region_refiner = RegionRefiner(7, 16, 32, self.classes, self.reduce)
 
         self.decoder = URRDecoder(
             decoder, segmentation_head, region_refiner, classes, uncertainty_mode
@@ -500,7 +500,7 @@ class URRResidualAttentionUnetPlusPlus(URRResidualAttentionUnet):
         )
         # NOTE: This is to help with reproducibility during ablation studies.
         with torch.random.fork_rng(devices=("cpu", "cuda:0")):
-            region_refiner = RegionRefiner(7, 16, 32, self.classes)
+            region_refiner = RegionRefiner(7, 16, 32, self.classes, self.reduce)
 
         self.decoder = URRDecoder(
             decoder, segmentation_head, region_refiner, classes, uncertainty_mode

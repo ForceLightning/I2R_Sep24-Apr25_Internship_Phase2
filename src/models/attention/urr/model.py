@@ -16,6 +16,9 @@ from torch.nn import functional as F
 # State-of-the-Art (SOTA) code
 from thirdparty.AFB_URR.model.AFB_URR import ResBlock
 
+# First party imports
+from models.attention.utils import REDUCE_TYPES
+
 # Local folders
 from .utils import calc_uncertainty
 
@@ -24,7 +27,12 @@ class RegionRefiner(nn.Module):
     """Region Refinement adapted from AFB-URR."""
 
     def __init__(
-        self, local_size: int, mdim_global: int, mdim_local: int, classes: int
+        self,
+        local_size: int,
+        mdim_global: int,
+        mdim_local: int,
+        classes: int,
+        attn_reduce: REDUCE_TYPES = "sum",
     ):
         """Initialise the RegionRefiner module.
 
@@ -40,11 +48,16 @@ class RegionRefiner(nn.Module):
         self.mdim_global = mdim_global
         self.mdim_local = mdim_local
         self.classes = classes
+        self.attn_reduce = attn_reduce
 
         self.local_avg = nn.AvgPool2d(local_size, stride=1, padding=local_size // 2)
         self.local_max = nn.MaxPool2d(local_size, stride=1, padding=local_size // 2)
         self.local_conv_fm = nn.Conv2d(
-            128, mdim_local, kernel_size=3, padding=1, stride=1
+            256 if self.attn_reduce == "cat" else 128,
+            mdim_local,
+            kernel_size=3,
+            padding=1,
+            stride=1,
         )
         self.local_res_mm = ResBlock(mdim_local, mdim_local)
         self.local_pred2 = nn.Conv2d(mdim_local, 2, kernel_size=3, padding=1, stride=1)
