@@ -219,6 +219,8 @@ class URRResidualAttentionLightningModule(ResidualAttentionLightningModule):
                             classes, "multiclass", class_weights, from_logits=True
                         )
                         if dl_classification_mode == ClassificationMode.MULTICLASS_MODE
+                        or dl_classification_mode
+                        == ClassificationMode.MULTICLASS_1_2_MODE
                         else WeightedDiceLoss(
                             classes, "multilabel", class_weights, from_logits=True
                         )
@@ -583,7 +585,11 @@ class URRResidualAttentionLightningModule(ResidualAttentionLightningModule):
 
         masks_preds: Tensor
         if self.dummy_predict == DummyPredictMode.GROUND_TRUTH:
-            if self.eval_classification_mode == ClassificationMode.MULTICLASS_MODE:
+            if (
+                self.eval_classification_mode == ClassificationMode.MULTICLASS_MODE
+                or self.eval_classification_mode
+                == ClassificationMode.MULTICLASS_1_2_MODE
+            ):
                 masks_preds = (
                     F.one_hot(masks, num_classes=self.classes)
                     .permute(0, -1, 1, 2)
@@ -598,7 +604,11 @@ class URRResidualAttentionLightningModule(ResidualAttentionLightningModule):
 
             final_uncertainty = torch.zeros_like(masks_preds)[:, 1, :, :]
         elif self.dummy_predict == DummyPredictMode.BLANK:
-            if self.eval_classification_mode == ClassificationMode.MULTICLASS_MODE:
+            if (
+                self.eval_classification_mode == ClassificationMode.MULTICLASS_MODE
+                or self.eval_classification_mode
+                == ClassificationMode.MULTICLASS_1_2_MODE
+            ):
                 masks_preds = (
                     F.one_hot(torch.zeros_like(masks), num_classes=self.classes)
                     .permute(0, -1, 1, 2)
@@ -621,7 +631,11 @@ class URRResidualAttentionLightningModule(ResidualAttentionLightningModule):
                 images_input, res_input
             )
 
-            if self.eval_classification_mode == ClassificationMode.MULTICLASS_MODE:
+            if (
+                self.eval_classification_mode == ClassificationMode.MULTICLASS_MODE
+                or self.eval_classification_mode
+                == ClassificationMode.MULTICLASS_1_2_MODE
+            ):
                 masks_preds = masks_proba.argmax(dim=1)
                 masks_preds = (
                     F.one_hot(masks_preds, num_classes=self.classes)
