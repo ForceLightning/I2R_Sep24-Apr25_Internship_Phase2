@@ -41,3 +41,4 @@ docs/build/**
 
 # Logs
 logs
+db.sqlite3

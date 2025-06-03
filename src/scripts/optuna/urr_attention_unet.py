@@ -47,11 +47,12 @@ NUM_EPOCHS = int(os.environ.get("NUM_EPOCHS", "50"))
 IS_CHECKPOINTING = bool(os.environ.get("IS_CHECKPOINTING", "True"))
 NUM_STEPS = -1 if IS_CHECKPOINTING else 1  # For testing whether this runs at all.
 NUM_TRIALS = int(os.environ.get("NUM_TRIALS", 60))
-BATCH_SIZE = int(os.environ.get("BATCH_SIZE", 2))
+BATCH_SIZE = int(os.environ.get("BATCH_SIZE", 4))
+OBJECTIVE_VALUE = "val/dice_macro_avg"  # What the optimizer/pruner will look at.
 logger = logging.getLogger(__name__)
 
 
-def objective(trial: optuna.trial.Trial) -> tuple[float, float, float, float, float]:
+def objective(trial: optuna.trial.Trial) -> float:
     """Tune hyperparameters.
 
     Specifically, we tune for:
@@ -169,7 +170,7 @@ def objective(trial: optuna.trial.Trial) -> tuple[float, float, float, float, fl
         DeviceStatsMonitor(None),
         LearningRateMonitor("epoch", False, False),
         BetterProgressBar(),
-        PyTorchLightningPruningCallback(trial, monitor="loss/val"),
+        PyTorchLightningPruningCallback(trial, monitor=OBJECTIVE_VALUE),
     ]
 
     tensorboard_logger = None
@@ -211,7 +212,7 @@ def objective(trial: optuna.trial.Trial) -> tuple[float, float, float, float, fl
 
     trainer.fit(model, datamodule=datamodule)
 
-    return trainer.callback_metrics["val/dice_macro_avg"].item()
+    return trainer.callback_metrics[OBJECTIVE_VALUE].item()
 
 
 if __name__ == "__main__":
@@ -225,7 +226,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     pruner = (
-        optuna.pruners.MedianPruner() if args.pruning else optuna.pruners.NopPruner()
+        optuna.pruners.MedianPruner(n_warmup_steps=NUM_EPOCHS // 10 - 1)
+        if args.pruning
+        else optuna.pruners.NopPruner()
     )
     sampler = TPESampler(multivariate=True, group=True)
     study = optuna.create_study(
@@ -233,7 +236,7 @@ if __name__ == "__main__":
         sampler=sampler,
         direction="maximize",
         pruner=pruner,
-        study_name="URR Residual U-Net hyperparameters (maximise dice)",
+        study_name="URR Residual U-Net hyperparameters (maximise dice + prune)",
         load_if_exists=True,
     )
 
