@@ -49,6 +49,7 @@ NUM_STEPS = -1 if IS_CHECKPOINTING else 1  # For testing whether this runs at al
 NUM_TRIALS = int(os.environ.get("NUM_TRIALS", 60))
 BATCH_SIZE = int(os.environ.get("BATCH_SIZE", 4))
 OBJECTIVE_VALUE = "val/dice_macro_avg"  # What the optimizer/pruner will look at.
+DEVICES = int(os.environ.get("DEVICES", 1))
 logger = logging.getLogger(__name__)
 
 
@@ -203,11 +204,13 @@ def objective(trial: optuna.trial.Trial) -> float:
         max_steps=NUM_STEPS,
         plugins=plugins,
         callbacks=callbacks,
-        devices=1,
+        devices=DEVICES,
         accelerator="auto",
         strategy="auto",
         num_nodes=1,
-        accumulate_grad_batches=utils.get_accumulate_grad_batches(1, model.batch_size),
+        accumulate_grad_batches=utils.get_accumulate_grad_batches(
+            DEVICES, model.batch_size
+        ),
     )
 
     trainer.fit(model, datamodule=datamodule)
