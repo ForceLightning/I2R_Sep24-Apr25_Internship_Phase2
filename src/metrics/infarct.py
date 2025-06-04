@@ -202,8 +202,8 @@ class InfarctMetricBase(torchmetrics.R2Score):
 
         """
         super().update(preds, target)
-        self.preds.append(preds)
-        self.targets.append(target)
+        self.preds.append(preds.detach().cpu())
+        self.targets.append(target.detach().cpu())
 
     def preprocessing(self, preds: Tensor, target: Tensor) -> tuple[Tensor, Tensor]:
         if preds.ndim == 3 and target.ndim == 3:
