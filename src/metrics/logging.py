@@ -78,17 +78,19 @@ def shared_metric_calculation(
                     masks_preds_one_hot > 0.5, masks_one_hot
                 )
                 module.other_metrics[prefix].update(masks_preds_one_hot, masks_one_hot)
-                module.infarct_metrics[prefix].update(
-                    masks_preds_one_hot > 0.5,
-                    masks_one_hot,
-                )
+                if prefix != "train":
+                    module.infarct_metrics[prefix].update(
+                        masks_preds_one_hot > 0.5,
+                        masks_one_hot,
+                    )
             else:
                 module.dice_metrics[prefix].update(masks_preds_one_hot > 0.5, masks)
                 module.other_metrics[prefix].update(masks_preds_one_hot, masks)
-                module.infarct_metrics[prefix].update(
-                    masks_preds_one_hot > 0.5,
-                    masks,
-                )
+                if prefix != "train":
+                    module.infarct_metrics[prefix].update(
+                        masks_preds_one_hot > 0.5,
+                        masks,
+                    )
         case (
             ClassificationMode.MULTICLASS_MODE | ClassificationMode.MULTICLASS_1_2_MODE
         ):
@@ -99,10 +101,11 @@ def shared_metric_calculation(
             ).permute(0, -1, 1, 2)
             module.dice_metrics[prefix].update(masks_preds_one_hot, masks_one_hot)
             module.other_metrics[prefix].update(masks_preds, masks)
-            module.infarct_metrics[prefix].update(
-                masks_preds_one_hot,
-                masks_one_hot,
-            )
+            if prefix != "train":
+                module.infarct_metrics[prefix].update(
+                    masks_preds_one_hot,
+                    masks_one_hot,
+                )
         case ClassificationMode.BINARY_CLASS_3_MODE:
             masks_preds = masks_proba.sigmoid()
             masks_preds_one_hot = masks_preds > 0.5
@@ -168,11 +171,12 @@ def setup_metrics(
         # NOTE: This allows for the metrics to be accessed via the module, and Lightning
         # will handle casting the metrics to the right dtype.
 
-        match module.eval_classification_mode:
+        match module.eval_classification_mode, stage:
             case (
                 ClassificationMode.MULTICLASS_MODE
                 | ClassificationMode.MULTILABEL_MODE
-                | ClassificationMode.MULTICLASS_1_2_MODE
+                | ClassificationMode.MULTICLASS_1_2_MODE,
+                "val" | "test",
             ):
                 infarct_dict = _setup_infarct_heuristics(module)
                 infarct_combined = MetricCollection(
@@ -446,7 +450,9 @@ def shared_metric_logging_epoch_end(module: CommonModelMixin, prefix: str):
     dice_metric_obj = module.dice_metrics[prefix]
     other_metric_obj = module.other_metrics[prefix]
     infarct_metric_obj = (
-        module.infarct_metrics[prefix] if hasattr(module, "infarct_metrics") else None
+        module.infarct_metrics[prefix]
+        if prefix != "train" and hasattr(module, "infarct_metrics")
+        else None
     )
 
     match dice_metric_obj:
