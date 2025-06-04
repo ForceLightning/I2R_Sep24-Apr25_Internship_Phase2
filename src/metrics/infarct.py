@@ -269,12 +269,14 @@ class InfarctArea(InfarctMetricBase):
         _b, w, h, _k = target.shape
         preds_infarct_area = preds_infarct_area / (w * h)
         target_infarct_area = target_infarct_area / (w * h)
+
         super().update(preds_infarct_area, target_infarct_area)
 
 
 class InfarctAreaRatio(InfarctMetricBase):
     """Computes the R² value of scar tissue area as a % of LV myocardium area."""
 
+    @override
     def update(self, preds: Tensor, target: Tensor) -> None:
         preds, target = self.preprocessing(preds, target)
 
@@ -292,22 +294,28 @@ class InfarctAreaRatio(InfarctMetricBase):
 class InfarctSpan(InfarctMetricBase):
     """Computes the R² value of the infarct region as a span of the LV myocardium in radians."""
 
+    @override
     def update(self, preds: Tensor, target: Tensor) -> None:
         preds, target = self.preprocessing(preds, target)
 
-        preds_spans, _ = _get_infarct_spans_transmuralities(
-            preds, self.lv_index, self.infarct_index, _debug=False
-        )
         target_spans, _ = _get_infarct_spans_transmuralities(
             target, self.lv_index, self.infarct_index, _debug=False
         )
 
-        preds_spans = torch.from_numpy(
-            np.array([x.span for x in preds_spans]) * 2 * torch.pi
-        )
         target_spans = torch.from_numpy(
             np.array([x.span for x in target_spans]) * 2 * torch.pi
         )
+
+        try:
+            preds_spans, _ = _get_infarct_spans_transmuralities(
+                preds, self.lv_index, self.infarct_index, _debug=False
+            )
+            preds_spans = torch.from_numpy(
+                np.array([x.span for x in preds_spans]) * 2 * torch.pi
+            )
+        except Exception as e:
+            preds_spans = torch.zeros_like(target_spans)
+            logger.exception("%s", str(e), exc_info=e, stack_info=True)
 
         super().update(preds_spans, target_spans)
 
@@ -318,15 +326,20 @@ class InfarctTransmuralities(InfarctMetricBase):
     def update(self, preds: Tensor, target: Tensor) -> None:
         preds, target = self.preprocessing(preds, target)
 
-        _, preds_trans = _get_infarct_spans_transmuralities(
-            preds, self.lv_index, self.infarct_index, _debug=False
-        )
         _, target_trans = _get_infarct_spans_transmuralities(
             target, self.lv_index, self.infarct_index, _debug=False
         )
 
-        preds_trans = torch.from_numpy(preds_trans)
         target_trans = torch.from_numpy(target_trans)
+
+        try:
+            _, preds_trans = _get_infarct_spans_transmuralities(
+                preds, self.lv_index, self.infarct_index, _debug=False
+            )
+            preds_trans = torch.from_numpy(preds_trans)
+        except Exception as e:
+            preds_trans = torch.zeros_like(target_trans)
+            logger.exception("%s", str(e), exc_info=e, stack_info=True)
 
         super().update(preds_trans, target_trans)
 

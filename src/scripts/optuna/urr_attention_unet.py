@@ -11,6 +11,7 @@ import sys
 # Scientific Libraries
 import optuna
 from optuna.samplers import TPESampler
+from optuna.storages import RDBStorage, RetryFailedTrialCallback
 from optuna_integration import PyTorchLightningPruningCallback
 
 # Image Libraries
@@ -234,8 +235,14 @@ if __name__ == "__main__":
         else optuna.pruners.NopPruner()
     )
     sampler = TPESampler(multivariate=True, group=True)
+
+    storage = RDBStorage(
+        url="sqlite:///db.sqlite3",
+        failed_trial_callback=RetryFailedTrialCallback(max_retry=1),
+    )
+
     study = optuna.create_study(
-        storage="sqlite:///db.sqlite3",  # Persistence
+        storage=storage if IS_CHECKPOINTING else None,  # Persistence
         sampler=sampler,
         direction="maximize",
         pruner=pruner,
