@@ -315,7 +315,7 @@ class InfarctSpan(InfarctMetricBase):
             )
         except Exception as e:
             preds_spans = torch.zeros_like(target_spans)
-            logger.exception("%s", str(e), exc_info=e, stack_info=True)
+            logger.debug("%s", str(e), exc_info=e, stack_info=True)
 
         super().update(preds_spans, target_spans)
 
@@ -339,7 +339,7 @@ class InfarctTransmuralities(InfarctMetricBase):
             preds_trans = torch.from_numpy(preds_trans)
         except Exception as e:
             preds_trans = torch.zeros_like(target_trans)
-            logger.exception("%s", str(e), exc_info=e, stack_info=True)
+            logger.debug("%s", str(e), exc_info=e, stack_info=True)
 
         super().update(preds_trans, target_trans)
 

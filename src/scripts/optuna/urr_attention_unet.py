@@ -238,7 +238,7 @@ if __name__ == "__main__":
 
     storage = RDBStorage(
         url="sqlite:///db.sqlite3",
-        failed_trial_callback=RetryFailedTrialCallback(max_retry=1),
+        failed_trial_callback=RetryFailedTrialCallback(max_retry=2),
     )
 
     study = optuna.create_study(
