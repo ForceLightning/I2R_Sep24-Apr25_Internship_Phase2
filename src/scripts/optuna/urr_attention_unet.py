@@ -51,14 +51,14 @@ NUM_STEPS = -1 if IS_CHECKPOINTING else 1  # For testing whether this runs at al
 NUM_TRIALS = int(os.environ.get("NUM_TRIALS", 60))
 BATCH_SIZE = int(os.environ.get("BATCH_SIZE", 2))
 OBJECTIVE_VALUE = "val/dice_macro_avg"  # What the optimizer/pruner will look at.
-MULTIOBJECTIVE_VARIABLES = [  # If using multiobjective.
-    "val/dice_macro_avg",
-    "val/infarct_area_r2",
-    "val/infarct_ratio_r2",
-    "val/infarct_span_r2",
-    "val/infarct_transmurality_r2",
-    "val/hausdorff_distance",
-]
+MULTIOBJECTIVE_VARIABLES = {  # If using multiobjective.
+    "val/dice_macro_avg": "maximize",
+    "val/infarct_area_r2": "maximize",
+    "val/infarct_ratio_r2": "maximize",
+    "val/infarct_span_r2": "maximize",
+    "val/infarct_transmurality_r2": "maximize",
+    "val/hausdorff_distance": "minimize",
+}
 USE_MULTIOBJECTIVE = bool(os.environ.get("USE_MULTIOBJECTIVE", False))
 COMBINE_TRAIN_VAL = bool(os.environ.get("COMBINE_TRAIN_VAL", False))
 DEVICES = int(os.environ.get("DEVICES", 1))
@@ -236,7 +236,10 @@ def objective(trial: optuna.trial.Trial) -> float | Sequence[float]:
 
     if USE_MULTIOBJECTIVE:
         values = tuple(
-            [trainer.callback_metrics[x].item() for x in MULTIOBJECTIVE_VARIABLES]
+            [
+                trainer.callback_metrics[x].item()
+                for x in sorted(MULTIOBJECTIVE_VARIABLES.keys())
+            ]
         )
     else:
         values = trainer.callback_metrics[OBJECTIVE_VALUE].item()
@@ -266,7 +269,7 @@ if __name__ == "__main__":
         failed_trial_callback=RetryFailedTrialCallback(max_retry=2),
     )
 
-    study_name = "[{objective_type}] URR Residual U-Net hyperparameters (maximise dice{use_pruning})".format(
+    study_name = "[{objective_type}] URR Res U-Net hyperparameters (maximise dice{use_pruning}) - fix".format(
         objective_type="Multiobjective" if USE_MULTIOBJECTIVE else "Regular",
         use_pruning=" + pruning" if args.pruning and not USE_MULTIOBJECTIVE else "",
     )
@@ -286,7 +289,11 @@ if __name__ == "__main__":
         **kwargs,
     )
 
-    metric_names = MULTIOBJECTIVE_VARIABLES if USE_MULTIOBJECTIVE else [OBJECTIVE_VALUE]
+    metric_names = (
+        sorted(MULTIOBJECTIVE_VARIABLES.keys())
+        if USE_MULTIOBJECTIVE
+        else [OBJECTIVE_VALUE]
+    )
 
     study.set_metric_names(metric_names)
 
