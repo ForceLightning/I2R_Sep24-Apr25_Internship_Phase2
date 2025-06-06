@@ -7,6 +7,7 @@ import argparse
 import logging
 import os
 import sys
+from collections.abc import Sequence
 
 # Scientific Libraries
 import optuna
@@ -48,13 +49,23 @@ NUM_EPOCHS = int(os.environ.get("NUM_EPOCHS", "50"))
 IS_CHECKPOINTING = bool(os.environ.get("IS_CHECKPOINTING", "True"))
 NUM_STEPS = -1 if IS_CHECKPOINTING else 1  # For testing whether this runs at all.
 NUM_TRIALS = int(os.environ.get("NUM_TRIALS", 60))
-BATCH_SIZE = int(os.environ.get("BATCH_SIZE", 4))
+BATCH_SIZE = int(os.environ.get("BATCH_SIZE", 2))
 OBJECTIVE_VALUE = "val/dice_macro_avg"  # What the optimizer/pruner will look at.
+MULTIOBJECTIVE_VARIABLES = [  # If using multiobjective.
+    "val/dice_macro_avg",
+    "val/infarct_area_r2",
+    "val/infarct_ratio_r2",
+    "val/infarct_span_r2",
+    "val/infarct_transmurality_r2",
+    "val/hausdorff_distance",
+]
+USE_MULTIOBJECTIVE = bool(os.environ.get("USE_MULTIOBJECTIVE", False))
+COMBINE_TRAIN_VAL = bool(os.environ.get("COMBINE_TRAIN_VAL", False))
 DEVICES = int(os.environ.get("DEVICES", 1))
 logger = logging.getLogger(__name__)
 
 
-def objective(trial: optuna.trial.Trial) -> float:
+def objective(trial: optuna.trial.Trial) -> float | Sequence[float]:
     """Tune hyperparameters.
 
     Specifically, we tune for:
@@ -74,6 +85,7 @@ def objective(trial: optuna.trial.Trial) -> float:
 
     trial: Optuna trial object
     """
+    L.seed_everything(0, True)
     # Model hyperparameters
     loss = trial.suggest_categorical(
         "loss", ["cross_entropy", "focal", "weighted_dice", None]
@@ -88,7 +100,7 @@ def objective(trial: optuna.trial.Trial) -> float:
     single_attention_instance = trial.suggest_categorical(
         "single_attention_instance", [True, False]
     )
-    alpha = trial.suggest_float("alpha", 0.0, 1.0)
+    alpha = trial.suggest_float("alpha", 0.8, 1.0)
     beta = 1.0 - alpha
     residual_mode = trial.suggest_categorical(
         "residual_mode", ["SUBTRACT_NEXT_FRAME", "OPTICAL_FLOW_CPU"]
@@ -108,7 +120,7 @@ def objective(trial: optuna.trial.Trial) -> float:
         "classification_mode",
         ["MULTICLASS_MODE", "MULTICLASS_1_2_MODE"],
     )
-    learning_rate = trial.suggest_float("lr", low=1e-5, high=1e-3, log=True)
+    learning_rate = trial.suggest_float("lr", low=1e-4, high=3e-3, log=True)
 
     version = "urr_{encoder_name}_{classification_mode}_{loss}_g_{attention_reduction}_{residual_mode}_alpha{alpha:.2f}_beta{beta:.2f}"
 
@@ -162,7 +174,7 @@ def objective(trial: optuna.trial.Trial) -> float:
         residual_mode=residual_mode,
         num_workers=8,
         loading_mode=LoadingMode.GREYSCALE,
-        combine_train_val=True,
+        combine_train_val=COMBINE_TRAIN_VAL,
         histogram_equalize=histogram_equalisation,
         classification_mode=classification_mode,
     )
@@ -172,8 +184,12 @@ def objective(trial: optuna.trial.Trial) -> float:
         DeviceStatsMonitor(None),
         LearningRateMonitor("epoch", False, False),
         BetterProgressBar(),
-        PyTorchLightningPruningCallback(trial, monitor=OBJECTIVE_VALUE),
     ]
+
+    if not USE_MULTIOBJECTIVE:
+        callbacks.append(
+            PyTorchLightningPruningCallback(trial, monitor=OBJECTIVE_VALUE)
+        )
 
     tensorboard_logger = None
     plugins: list[_PLUGIN_INPUT] | None = None
@@ -196,7 +212,9 @@ def objective(trial: optuna.trial.Trial) -> float:
             ),
         ]
         plugins = [AsyncCheckpointIO(None)]
-        tensorboard_logger = TensorBoardLogger(save_dir=save_dir, version=version)
+        tensorboard_logger = TensorBoardLogger(
+            save_dir=save_dir, default_hp_metric=False, version=version
+        )
 
     trainer = L.Trainer(
         logger=tensorboard_logger,
@@ -216,7 +234,14 @@ def objective(trial: optuna.trial.Trial) -> float:
 
     trainer.fit(model, datamodule=datamodule)
 
-    return trainer.callback_metrics[OBJECTIVE_VALUE].item()
+    if USE_MULTIOBJECTIVE:
+        values = tuple(
+            [trainer.callback_metrics[x].item() for x in MULTIOBJECTIVE_VARIABLES]
+        )
+    else:
+        values = trainer.callback_metrics[OBJECTIVE_VALUE].item()
+
+    return values
 
 
 if __name__ == "__main__":
@@ -241,13 +266,24 @@ if __name__ == "__main__":
         failed_trial_callback=RetryFailedTrialCallback(max_retry=2),
     )
 
+    study_name = "[{objective_type}] URR Residual U-Net hyperparameters (maximise dice{use_pruning})".format(
+        objective_type="Multiobjective" if USE_MULTIOBJECTIVE else "Regular",
+        use_pruning=" + pruning" if args.pruning and not USE_MULTIOBJECTIVE else "",
+    )
+
+    kwargs = (
+        {"direction": "maximize"}
+        if not USE_MULTIOBJECTIVE
+        else {"directions": ["maximize"] * len(MULTIOBJECTIVE_VARIABLES)}
+    )
+
     study = optuna.create_study(
         storage=storage if IS_CHECKPOINTING else None,  # Persistence
         sampler=sampler,
-        direction="maximize",
         pruner=pruner,
-        study_name="URR Residual U-Net hyperparameters (maximise dice + prune)",
+        study_name=study_name,
         load_if_exists=True,
+        **kwargs,
     )
 
     # Logging

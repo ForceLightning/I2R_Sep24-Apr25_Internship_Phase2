@@ -207,25 +207,28 @@ class InfarctMetricBase(torchmetrics.R2Score):
 
     def preprocessing(self, preds: Tensor, target: Tensor) -> tuple[Tensor, Tensor]:
         if preds.ndim == 3 and target.ndim == 3:
-            preds = preds.unsqueeze(0)
-            target = target.unsqueeze(0)
+            preds_pp = preds.unsqueeze(0)
+            target_pp = target.unsqueeze(0)
+        else:
+            preds_pp = preds.clone()
+            target_pp = target.clone()
 
         assert (
-            preds.max() <= 1 and target.max() <= 1
+            preds_pp.max() <= 1 and target_pp.max() <= 1
         ), "Input tensors must be one-hot encoded."
 
         match self.classification_mode:
             case ClassificationMode.MULTICLASS_1_2_MODE:
-                for y in [preds, target]:
+                for y in [preds_pp, target_pp]:
                     y[:, 1, ...] = torch.bitwise_or(y[:, 1, ...], y[:, 2, ...])
             case ClassificationMode.MULTICLASS_MODE:
-                for y in [preds, target]:
+                for y in [preds_pp, target_pp]:
                     y[:, 2, ...] = torch.bitwise_or(y[:, 2, ...], y[:, 3, ...])
                     y[:, 1, ...] = torch.bitwise_or(y[:, 1, ...], y[:, 2, ...])
             case _:
                 pass
 
-        return preds, target
+        return preds_pp, target_pp
 
     @override
     def plot(self, val: Tensor | Sequence[Tensor] | None = None, ax=None):
