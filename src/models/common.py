@@ -39,6 +39,8 @@ class CommonModelMixin(L.LightningModule):
     """A collection of dice score variants."""
     other_metrics: dict[str, MetricCollection]
     """A collection of other metrics (recall, precision, jaccard)."""
+    hausdorff_metrics: dict[str, MetricCollection]
+    """Just hausdorff distance metrics."""
     infarct_metrics: dict[str, MetricCollection]
     """A collection of infarct-related clinical heuristics."""
     model: nn.Module
@@ -88,6 +90,7 @@ class CommonModelMixin(L.LightningModule):
                     "hp/val/jaccard_class_3": 0,
                     "hp/val/precision_class_3": 0,
                     "hp/val/recall_class_3": 0,
+                    "hp/val/hausdorff_distance": 0,
                 }
             elif self.classes == 4:
                 params = {
@@ -121,6 +124,8 @@ class CommonModelMixin(L.LightningModule):
                     "hp/val/infarct_ratio_r2": 0,
                     "hp/val/infarct_span_r2": 0,
                     "hp/val/infarct_transmurality_r2": 0,
+                    # (7) Hausdorff distance
+                    "hp/val/hausdorff_distance": 0,
                 }
             else:
                 params = {
@@ -152,6 +157,8 @@ class CommonModelMixin(L.LightningModule):
                     "hp/val/infarct_ratio_r2": 0,
                     "hp/val/infarct_span_r2": 0,
                     "hp/val/infarct_transmurality_r2": 0,
+                    # (7) Hausdorff distance
+                    "hp/val/hausdorff_distance": 0,
                 }
 
             self.logger.log_hyperparams(

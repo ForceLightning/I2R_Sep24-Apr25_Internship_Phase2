@@ -26,6 +26,7 @@ from torchmetrics.classification import (
 
 # First party imports
 from metrics.dice import GeneralizedDiceScoreVariant
+from metrics.hausdorff import HausdorffDistanceVariant
 from metrics.infarct import (
     InfarctArea,
     InfarctAreaRatio,
@@ -78,6 +79,9 @@ def shared_metric_calculation(
                     masks_preds_one_hot > 0.5, masks_one_hot
                 )
                 module.other_metrics[prefix].update(masks_preds_one_hot, masks_one_hot)
+                module.hausdorff_metrics[prefix].update(
+                    masks_preds_one_hot > 0.5, masks_one_hot
+                )
                 if prefix != "train":
                     module.infarct_metrics[prefix].update(
                         masks_preds_one_hot > 0.5,
@@ -91,6 +95,9 @@ def shared_metric_calculation(
                         masks_preds_one_hot > 0.5,
                         masks,
                     )
+                module.hausdorff_metrics[prefix].update(
+                    masks_preds_one_hot > 0.5, masks_one_hot
+                )
         case (
             ClassificationMode.MULTICLASS_MODE | ClassificationMode.MULTICLASS_1_2_MODE
         ):
@@ -106,11 +113,13 @@ def shared_metric_calculation(
                     masks_preds_one_hot,
                     masks_one_hot,
                 )
+            module.hausdorff_metrics[prefix].update(masks_preds_one_hot, masks_one_hot)
         case ClassificationMode.BINARY_CLASS_3_MODE:
             masks_preds = masks_proba.sigmoid()
             masks_preds_one_hot = masks_preds > 0.5
             module.dice_metrics[prefix].update(masks_preds, masks_one_hot)
             module.other_metrics[prefix].update(masks_preds, masks)
+            module.hausdorff_metrics[prefix].update(masks_preds_one_hot, masks_one_hot)
         case _:
             raise NotImplementedError(
                 f"The mode {module.eval_classification_mode.name} is not implemented."
@@ -151,6 +160,16 @@ def setup_metrics(
         )
         module.__setattr__(f"{stage}_dice_combined", dice_combined)
         module.dice_metrics[stage] = dice_combined
+
+        # (2) Setup Hausdorff distance collection.
+        hausdorff_dict = _setup_hausdorff(
+            module, classes, metric_mode, division_by_zero
+        )
+        hausdorff = MetricCollection(
+            hausdorff_dict, prefix=f"{stage}/", compute_groups=True
+        )
+        module.__setattr__(f"{stage}_hausdorff", hausdorff)
+        module.hausdorff_metrics[stage] = hausdorff
 
         # (2) Setup Jaccard Index, Precision, and Recall collection.
         jaccard_combined_dict = _setup_jaccard(
@@ -404,6 +423,31 @@ def _setup_precision_recall(
     }
 
 
+def _setup_hausdorff(
+    module: CommonModelMixin,
+    classes: int,
+    _metric_mode: MetricMode,
+    _division_by_zero: float,
+) -> dict[str, Metric]:
+    match module.eval_classification_mode:
+        case ClassificationMode.MULTICLASS_MODE | ClassificationMode.MULTILABEL_MODE:
+            return {
+                "hausdorff_distance": HausdorffDistanceVariant(
+                    classes, [3], "euclidean", directed=True, input_format="one-hot"
+                )
+            }
+        case ClassificationMode.MULTICLASS_1_2_MODE:
+            return {
+                "hausdorff_distance": HausdorffDistanceVariant(
+                    classes, [1, 2], "euclidean", directed=True, input_format="one-hot"
+                )
+            }
+        case _:
+            raise NotImplementedError(
+                f"The mode {module.eval_classification_mode.name} is not implemented for Hausdorff distance."
+            )
+
+
 def _setup_infarct_heuristics(module: CommonModelMixin):
 
     match module.eval_classification_mode:
@@ -449,6 +493,7 @@ def shared_metric_logging_epoch_end(module: CommonModelMixin, prefix: str):
     """
     dice_metric_obj = module.dice_metrics[prefix]
     other_metric_obj = module.other_metrics[prefix]
+    hausdorff_metric_obj = module.hausdorff_metrics[prefix]
     infarct_metric_obj = (
         module.infarct_metrics[prefix]
         if prefix != "train" and hasattr(module, "infarct_metrics")
@@ -463,6 +508,7 @@ def shared_metric_logging_epoch_end(module: CommonModelMixin, prefix: str):
                 module,
                 dice_metric_obj,
                 other_metric_obj,
+                hausdorff_metric_obj,
                 infarct_metric_obj,
                 prefix,
                 module.show_r2_plots,
@@ -521,6 +567,7 @@ def _grouped_generalized_metric_logging(
     module: CommonModelMixin,
     dice_metric_obj: MetricCollection,
     other_metric_obj: MetricCollection,
+    hausdorff_metric_obj: MetricCollection,
     infarct_metric_obj: MetricCollection | None,
     prefix: str,
     _show_plots: bool = False,
@@ -531,16 +578,18 @@ def _grouped_generalized_metric_logging(
         module: The LightningModule instance.
         dice_metric_obj: The dice metric collection object.
         other_metric_obj: The other metric collection object.
+        hausdorff_metric_obj: The hausdorff distance metric object.
         infarct_metric_obj: The metrics for infarct-related heuristics. Optional.
         prefix: The runtime mode (train, val, test).
 
     """
     dice_results: dict[str, Tensor] = dice_metric_obj.compute()
     other_results: dict[str, Tensor] = other_metric_obj.compute()
+    hausdorff_results: dict[str, torch.Tensor] = hausdorff_metric_obj.compute()
     infarct_results: dict[str, Tensor] = (
         infarct_metric_obj.compute() if infarct_metric_obj is not None else {}
     )
-    results = dice_results | other_results | infarct_results
+    results = dice_results | other_results | infarct_results | hausdorff_results
     results_new: dict[str, Tensor] = {}
     # (1) Log only validation metrics in hyperparameter tab.
     for k, v in results.items():
