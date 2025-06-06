@@ -286,6 +286,10 @@ if __name__ == "__main__":
         **kwargs,
     )
 
+    metric_names = MULTIOBJECTIVE_VARIABLES if USE_MULTIOBJECTIVE else [OBJECTIVE_VALUE]
+
+    study.set_metric_names(metric_names)
+
     # Logging
     stdout_handler = logging.StreamHandler(stream=sys.stdout)
     if os.getenv("DOCKERIZED", "0") != "0":
