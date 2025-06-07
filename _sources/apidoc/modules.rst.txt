@@ -1,0 +1,12 @@
+src
+===
+
+.. toctree::
+   :maxdepth: 4
+
+   cli
+   dataset
+   metrics
+   models
+   scripts
+   utils

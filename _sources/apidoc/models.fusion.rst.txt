@@ -1,0 +1,45 @@
+models.fusion package
+=====================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   models.fusion.stn
+
+Submodules
+----------
+
+models.fusion.lightning\_module module
+--------------------------------------
+
+.. automodule:: models.fusion.lightning_module
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.fusion.model module
+--------------------------
+
+.. automodule:: models.fusion.model
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.fusion.segmentation\_model module
+----------------------------------------
+
+.. automodule:: models.fusion.segmentation_model
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: models.fusion
+   :members:
+   :show-inheritance:
+   :undoc-members:

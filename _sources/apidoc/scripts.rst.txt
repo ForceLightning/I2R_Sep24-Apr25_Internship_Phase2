@@ -1,0 +1,85 @@
+scripts package
+===============
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   scripts.optuna
+
+Submodules
+----------
+
+scripts.attention\_unet module
+------------------------------
+
+.. automodule:: scripts.attention_unet
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+scripts.cine module
+-------------------
+
+.. automodule:: scripts.cine
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+scripts.four\_stream module
+---------------------------
+
+.. automodule:: scripts.four_stream
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+scripts.lge module
+------------------
+
+.. automodule:: scripts.lge
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+scripts.three\_stream module
+----------------------------
+
+.. automodule:: scripts.three_stream
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+scripts.tscsenet module
+-----------------------
+
+.. automodule:: scripts.tscsenet
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+scripts.two\_plus\_one module
+-----------------------------
+
+.. automodule:: scripts.two_plus_one
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+scripts.urr\_attention\_unet module
+-----------------------------------
+
+.. automodule:: scripts.urr_attention_unet
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: scripts
+   :members:
+   :show-inheritance:
+   :undoc-members:
