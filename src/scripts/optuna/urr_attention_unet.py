@@ -269,7 +269,7 @@ if __name__ == "__main__":
         failed_trial_callback=RetryFailedTrialCallback(max_retry=2),
     )
 
-    study_name = "[{objective_type}] URR Res U-Net hyperparameters (maximise dice{use_pruning}) - fix".format(
+    study_name = "[{objective_type}] URR Res U-Net hyperparameters (maximise dice{use_pruning}) - fix2".format(
         objective_type="Multiobjective" if USE_MULTIOBJECTIVE else "Regular",
         use_pruning=" + pruning" if args.pruning and not USE_MULTIOBJECTIVE else "",
     )
@@ -277,7 +277,12 @@ if __name__ == "__main__":
     kwargs = (
         {"direction": "maximize"}
         if not USE_MULTIOBJECTIVE
-        else {"directions": ["maximize"] * len(MULTIOBJECTIVE_VARIABLES)}
+        else {
+            "directions": [
+                MULTIOBJECTIVE_VARIABLES[key]
+                for key in sorted(MULTIOBJECTIVE_VARIABLES.keys())
+            ]
+        }
     )
 
     study = optuna.create_study(
