@@ -1,0 +1,619 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>utils package &mdash; I2R Sep 2024-Apr 2025 Internship Phase 2 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            I2R Sep 2024-Apr 2025 Internship Phase 2
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">utils package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-utils.global_progress_bar">utils.global_progress_bar module</a><ul>
+<li><a class="reference internal" href="#utils.global_progress_bar.RemainingTimeColumn"><code class="docutils literal notranslate"><span class="pre">RemainingTimeColumn</span></code></a><ul>
+<li><a class="reference internal" href="#utils.global_progress_bar.RemainingTimeColumn.max_refresh"><code class="docutils literal notranslate"><span class="pre">RemainingTimeColumn.max_refresh</span></code></a></li>
+<li><a class="reference internal" href="#utils.global_progress_bar.RemainingTimeColumn.render"><code class="docutils literal notranslate"><span class="pre">RemainingTimeColumn.render()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#utils.global_progress_bar.BetterProgressBar"><code class="docutils literal notranslate"><span class="pre">BetterProgressBar</span></code></a><ul>
+<li><a class="reference internal" href="#utils.global_progress_bar.BetterProgressBar.configure_columns"><code class="docutils literal notranslate"><span class="pre">BetterProgressBar.configure_columns()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-utils.logging">utils.logging module</a></li>
+<li><a class="reference internal" href="#module-utils.prediction_writer">utils.prediction_writer module</a><ul>
+<li><a class="reference internal" href="#utils.prediction_writer.MaskImageWriter"><code class="docutils literal notranslate"><span class="pre">MaskImageWriter</span></code></a><ul>
+<li><a class="reference internal" href="#utils.prediction_writer.MaskImageWriter.write_on_epoch_end"><code class="docutils literal notranslate"><span class="pre">MaskImageWriter.write_on_epoch_end()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#utils.prediction_writer.get_output_dir_from_ckpt_path"><code class="docutils literal notranslate"><span class="pre">get_output_dir_from_ckpt_path()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-utils.types">utils.types module</a><ul>
+<li><a class="reference internal" href="#utils.types.InverseNormalize"><code class="docutils literal notranslate"><span class="pre">InverseNormalize</span></code></a></li>
+<li><a class="reference internal" href="#utils.types.ClassificationMode"><code class="docutils literal notranslate"><span class="pre">ClassificationMode</span></code></a><ul>
+<li><a class="reference internal" href="#utils.types.ClassificationMode.MULTICLASS_MODE"><code class="docutils literal notranslate"><span class="pre">ClassificationMode.MULTICLASS_MODE</span></code></a></li>
+<li><a class="reference internal" href="#utils.types.ClassificationMode.MULTILABEL_MODE"><code class="docutils literal notranslate"><span class="pre">ClassificationMode.MULTILABEL_MODE</span></code></a></li>
+<li><a class="reference internal" href="#utils.types.ClassificationMode.BINARY_CLASS_3_MODE"><code class="docutils literal notranslate"><span class="pre">ClassificationMode.BINARY_CLASS_3_MODE</span></code></a></li>
+<li><a class="reference internal" href="#utils.types.ClassificationMode.MULTICLASS_1_2_MODE"><code class="docutils literal notranslate"><span class="pre">ClassificationMode.MULTICLASS_1_2_MODE</span></code></a></li>
+<li><a class="reference internal" href="#utils.types.ClassificationMode.num_classes"><code class="docutils literal notranslate"><span class="pre">ClassificationMode.num_classes()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#utils.types.ResidualMode"><code class="docutils literal notranslate"><span class="pre">ResidualMode</span></code></a><ul>
+<li><a class="reference internal" href="#utils.types.ResidualMode.SUBTRACT_NEXT_FRAME"><code class="docutils literal notranslate"><span class="pre">ResidualMode.SUBTRACT_NEXT_FRAME</span></code></a></li>
+<li><a class="reference internal" href="#utils.types.ResidualMode.OPTICAL_FLOW_CPU"><code class="docutils literal notranslate"><span class="pre">ResidualMode.OPTICAL_FLOW_CPU</span></code></a></li>
+<li><a class="reference internal" href="#utils.types.ResidualMode.OPTICAL_FLOW_GPU"><code class="docutils literal notranslate"><span class="pre">ResidualMode.OPTICAL_FLOW_GPU</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#utils.types.LoadingMode"><code class="docutils literal notranslate"><span class="pre">LoadingMode</span></code></a><ul>
+<li><a class="reference internal" href="#utils.types.LoadingMode.RGB"><code class="docutils literal notranslate"><span class="pre">LoadingMode.RGB</span></code></a></li>
+<li><a class="reference internal" href="#utils.types.LoadingMode.GREYSCALE"><code class="docutils literal notranslate"><span class="pre">LoadingMode.GREYSCALE</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#utils.types.ModelType"><code class="docutils literal notranslate"><span class="pre">ModelType</span></code></a><ul>
+<li><a class="reference internal" href="#utils.types.ModelType.UNET"><code class="docutils literal notranslate"><span class="pre">ModelType.UNET</span></code></a></li>
+<li><a class="reference internal" href="#utils.types.ModelType.UNET_PLUS_PLUS"><code class="docutils literal notranslate"><span class="pre">ModelType.UNET_PLUS_PLUS</span></code></a></li>
+<li><a class="reference internal" href="#utils.types.ModelType.TRANS_UNET"><code class="docutils literal notranslate"><span class="pre">ModelType.TRANS_UNET</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#utils.types.MetricMode"><code class="docutils literal notranslate"><span class="pre">MetricMode</span></code></a><ul>
+<li><a class="reference internal" href="#utils.types.MetricMode.INCLUDE_EMPTY_CLASS"><code class="docutils literal notranslate"><span class="pre">MetricMode.INCLUDE_EMPTY_CLASS</span></code></a></li>
+<li><a class="reference internal" href="#utils.types.MetricMode.IGNORE_EMPTY_CLASS"><code class="docutils literal notranslate"><span class="pre">MetricMode.IGNORE_EMPTY_CLASS</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#utils.types.DummyPredictMode"><code class="docutils literal notranslate"><span class="pre">DummyPredictMode</span></code></a><ul>
+<li><a class="reference internal" href="#utils.types.DummyPredictMode.NONE"><code class="docutils literal notranslate"><span class="pre">DummyPredictMode.NONE</span></code></a></li>
+<li><a class="reference internal" href="#utils.types.DummyPredictMode.GROUND_TRUTH"><code class="docutils literal notranslate"><span class="pre">DummyPredictMode.GROUND_TRUTH</span></code></a></li>
+<li><a class="reference internal" href="#utils.types.DummyPredictMode.BLANK"><code class="docutils literal notranslate"><span class="pre">DummyPredictMode.BLANK</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-utils.utils">utils.utils module</a><ul>
+<li><a class="reference internal" href="#utils.utils.LightningGradualWarmupScheduler"><code class="docutils literal notranslate"><span class="pre">LightningGradualWarmupScheduler</span></code></a><ul>
+<li><a class="reference internal" href="#utils.utils.LightningGradualWarmupScheduler.step"><code class="docutils literal notranslate"><span class="pre">LightningGradualWarmupScheduler.step()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#utils.utils.get_classification_mode"><code class="docutils literal notranslate"><span class="pre">get_classification_mode()</span></code></a></li>
+<li><a class="reference internal" href="#utils.utils.get_residual_mode"><code class="docutils literal notranslate"><span class="pre">get_residual_mode()</span></code></a></li>
+<li><a class="reference internal" href="#utils.utils.get_loading_mode"><code class="docutils literal notranslate"><span class="pre">get_loading_mode()</span></code></a></li>
+<li><a class="reference internal" href="#utils.utils.get_checkpoint_filename"><code class="docutils literal notranslate"><span class="pre">get_checkpoint_filename()</span></code></a></li>
+<li><a class="reference internal" href="#utils.utils.get_best_weighted_avg_dice_filename"><code class="docutils literal notranslate"><span class="pre">get_best_weighted_avg_dice_filename()</span></code></a></li>
+<li><a class="reference internal" href="#utils.utils.get_best_macro_avg_dice_class_2_3_filename"><code class="docutils literal notranslate"><span class="pre">get_best_macro_avg_dice_class_2_3_filename()</span></code></a></li>
+<li><a class="reference internal" href="#utils.utils.get_last_checkpoint_filename"><code class="docutils literal notranslate"><span class="pre">get_last_checkpoint_filename()</span></code></a></li>
+<li><a class="reference internal" href="#utils.utils.get_version_name"><code class="docutils literal notranslate"><span class="pre">get_version_name()</span></code></a></li>
+<li><a class="reference internal" href="#utils.utils.configure_optimizers"><code class="docutils literal notranslate"><span class="pre">configure_optimizers()</span></code></a></li>
+<li><a class="reference internal" href="#utils.utils.get_transforms"><code class="docutils literal notranslate"><span class="pre">get_transforms()</span></code></a></li>
+<li><a class="reference internal" href="#utils.utils.get_accumulate_grad_batches"><code class="docutils literal notranslate"><span class="pre">get_accumulate_grad_batches()</span></code></a></li>
+<li><a class="reference internal" href="#utils.utils.get_model_type"><code class="docutils literal notranslate"><span class="pre">get_model_type()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">I2R Sep 2024-Apr 2025 Internship Phase 2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">utils package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/apidoc/utils.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="utils-package">
+<h1>utils package<a class="headerlink" href="#utils-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-utils.global_progress_bar">
+<span id="utils-global-progress-bar-module"></span><h2>utils.global_progress_bar module<a class="headerlink" href="#module-utils.global_progress_bar" title="Link to this heading"></a></h2>
+<p>A rich progress bar that estimates the total time remaining.</p>
+<p>Taken from <a class="reference external" href="https://github.com/Lightning-AI/pytorch-lightning/issues/3009">https://github.com/Lightning-AI/pytorch-lightning/issues/3009</a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="utils.global_progress_bar.RemainingTimeColumn">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.global_progress_bar.</span></span><span class="sig-name descname"><span class="pre">RemainingTimeColumn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Style</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.global_progress_bar.RemainingTimeColumn" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ProgressColumn</span></code></p>
+<p>Show total remaining time in training.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="utils.global_progress_bar.RemainingTimeColumn.max_refresh">
+<span class="sig-name descname"><span class="pre">max_refresh</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.0</span></em><a class="headerlink" href="#utils.global_progress_bar.RemainingTimeColumn.max_refresh" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.global_progress_bar.RemainingTimeColumn.render">
+<span class="sig-name descname"><span class="pre">render</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Text</span></span></span><a class="headerlink" href="#utils.global_progress_bar.RemainingTimeColumn.render" title="Link to this definition"></a></dt>
+<dd><p>Should return a renderable object.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="utils.global_progress_bar.BetterProgressBar">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.global_progress_bar.</span></span><span class="sig-name descname"><span class="pre">BetterProgressBar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">refresh_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leave</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theme</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">RichProgressBarTheme</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">RichProgressBarTheme(description='',</span> <span class="pre">progress_bar='#6206E0',</span> <span class="pre">progress_bar_finished='#6206E0',</span> <span class="pre">progress_bar_pulse='#6206E0',</span> <span class="pre">batch_progress='',</span> <span class="pre">time='dim',</span> <span class="pre">processing_speed='dim</span> <span class="pre">underline',</span> <span class="pre">metrics='italic',</span> <span class="pre">metrics_text_delimiter='</span> <span class="pre">',</span> <span class="pre">metrics_format='.3f')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">console_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.global_progress_bar.BetterProgressBar" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.callbacks.RichProgressBar.html#lightning.pytorch.callbacks.RichProgressBar" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">RichProgressBar</span></code></a></p>
+<p>A progress bar that estimates the total time remaining.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.global_progress_bar.BetterProgressBar.configure_columns">
+<span class="sig-name descname"><span class="pre">configure_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainer</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a></span></span><a class="headerlink" href="#utils.global_progress_bar.BetterProgressBar.configure_columns" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-utils.logging">
+<span id="utils-logging-module"></span><h2>utils.logging module<a class="headerlink" href="#module-utils.logging" title="Link to this heading"></a></h2>
+<p>CLI logging defaults.</p>
+</section>
+<section id="module-utils.prediction_writer">
+<span id="utils-prediction-writer-module"></span><h2>utils.prediction_writer module<a class="headerlink" href="#module-utils.prediction_writer" title="Link to this heading"></a></h2>
+<p>Module for writing the predicted images with masks to the output directory.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="utils.prediction_writer.MaskImageWriter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.prediction_writer.</span></span><span class="sig-name descname"><span class="pre">MaskImageWriter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loading_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#utils.types.LoadingMode" title="utils.types.LoadingMode"><span class="pre">LoadingMode</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Literal" title="(in Python v3.12)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'batch'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'epoch'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'batch_and_epoch'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'epoch'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inv_transform</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#utils.types.InverseNormalize" title="utils.types.InverseNormalize"><span class="pre">InverseNormalize</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">InverseNormalize(mean=[-2.117902994155884,</span> <span class="pre">-2.0357131958007812,</span> <span class="pre">-1.8044434785842896],</span> <span class="pre">std=[4.366810321807861,</span> <span class="pre">4.464283466339111,</span> <span class="pre">4.444442272186279],</span> <span class="pre">inplace=False)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Literal" title="(in Python v3.12)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'apng'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'tiff'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'gif'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'webp'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'png'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gif'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw_masks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uncertainty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drawn_classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0,</span> <span class="pre">1,</span> <span class="pre">2,</span> <span class="pre">3)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.prediction_writer.MaskImageWriter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.callbacks.BasePredictionWriter.html#lightning.pytorch.callbacks.BasePredictionWriter" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">BasePredictionWriter</span></code></a></p>
+<p>Writes the predicted images with masks to the output directory.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.prediction_writer.MaskImageWriter.write_on_epoch_end">
+<span class="sig-name descname"><span class="pre">write_on_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer" title="(in PyTorch Lightning v2.5.0.post0)"><span class="pre">Trainer</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pl_module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.core.LightningModule.html#lightning.pytorch.core.LightningModule" title="(in PyTorch Lightning v2.5.0.post0)"><span class="pre">LightningModule</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">predictions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.pytorch.org/docs/2.6/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/2.6/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.pytorch.org/docs/2.6/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/2.6/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.pytorch.org/docs/2.6/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/2.6/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/2.6/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.pytorch.org/docs/2.6/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/2.6/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/2.6/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#list" title="(in Python v3.12)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_indices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.12/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#utils.prediction_writer.MaskImageWriter.write_on_epoch_end" title="Link to this definition"></a></dt>
+<dd><p>Save the predicted images with masks to the output directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trainer</strong> – The trainer object.</p></li>
+<li><p><strong>pl_module</strong> – The lightning module.</p></li>
+<li><p><strong>predictions</strong> – The predictions from the model.</p></li>
+<li><p><strong>batch_indices</strong> – The indices of the batch.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.prediction_writer.get_output_dir_from_ckpt_path">
+<span class="sig-prename descclassname"><span class="pre">utils.prediction_writer.</span></span><span class="sig-name descname"><span class="pre">get_output_dir_from_ckpt_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ckpt_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.prediction_writer.get_output_dir_from_ckpt_path" title="Link to this definition"></a></dt>
+<dd><p>Get the output directory from the checkpoint path.</p>
+</dd></dl>
+
+</section>
+<section id="module-utils.types">
+<span id="utils-types-module"></span><h2>utils.types module<a class="headerlink" href="#module-utils.types" title="Link to this heading"></a></h2>
+<p>Helper module containing type and class definitions.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="utils.types.InverseNormalize">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.types.</span></span><span class="sig-name descname"><span class="pre">InverseNormalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mean</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Sequence" title="(in Python v3.12)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.types.InverseNormalize" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.pytorch.org/vision/0.21/generated/torchvision.transforms.v2.Normalize.html#torchvision.transforms.v2.Normalize" title="(in Torchvision v0.21)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Normalize</span></code></a></p>
+<p>Inverses the normalization and returns the reconstructed images in the input.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="utils.types.ClassificationMode">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.types.</span></span><span class="sig-name descname"><span class="pre">ClassificationMode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.types.ClassificationMode" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.12/library/enum.html#enum.Enum" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<p>The classification mode for the model.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="utils.types.ClassificationMode.MULTICLASS_MODE">
+<span class="sig-name descname"><span class="pre">MULTICLASS_MODE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#utils.types.ClassificationMode.MULTICLASS_MODE" title="Link to this definition"></a></dt>
+<dd><p>The model is trained to predict a single class for each pixel.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="utils.types.ClassificationMode.MULTILABEL_MODE">
+<span class="sig-name descname"><span class="pre">MULTILABEL_MODE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#utils.types.ClassificationMode.MULTILABEL_MODE" title="Link to this definition"></a></dt>
+<dd><p>The model is trained to predict multiple classes for each pixel.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="utils.types.ClassificationMode.BINARY_CLASS_3_MODE">
+<span class="sig-name descname"><span class="pre">BINARY_CLASS_3_MODE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#utils.types.ClassificationMode.BINARY_CLASS_3_MODE" title="Link to this definition"></a></dt>
+<dd><p>The model is trained to predict a single class for a binary
+classification task for each pixel.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="utils.types.ClassificationMode.MULTICLASS_1_2_MODE">
+<span class="sig-name descname"><span class="pre">MULTICLASS_1_2_MODE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#utils.types.ClassificationMode.MULTICLASS_1_2_MODE" title="Link to this definition"></a></dt>
+<dd><p>The model is trained to predict the LV myocardium and scar tissue (MI)
+regions.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.types.ClassificationMode.num_classes">
+<span class="sig-name descname"><span class="pre">num_classes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#utils.types.ClassificationMode.num_classes" title="Link to this definition"></a></dt>
+<dd><p>Get the number of classes assosciated with the classification mode.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Number of classes.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="utils.types.ResidualMode">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.types.</span></span><span class="sig-name descname"><span class="pre">ResidualMode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.types.ResidualMode" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.12/library/enum.html#enum.Enum" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<p>The residual frame calculation mode for the model.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="utils.types.ResidualMode.SUBTRACT_NEXT_FRAME">
+<span class="sig-name descname"><span class="pre">SUBTRACT_NEXT_FRAME</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#utils.types.ResidualMode.SUBTRACT_NEXT_FRAME" title="Link to this definition"></a></dt>
+<dd><p>Subtracts the next frame from the current frame.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="utils.types.ResidualMode.OPTICAL_FLOW_CPU">
+<span class="sig-name descname"><span class="pre">OPTICAL_FLOW_CPU</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#utils.types.ResidualMode.OPTICAL_FLOW_CPU" title="Link to this definition"></a></dt>
+<dd><p>Calculates the optical flow using the CPU.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="utils.types.ResidualMode.OPTICAL_FLOW_GPU">
+<span class="sig-name descname"><span class="pre">OPTICAL_FLOW_GPU</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#utils.types.ResidualMode.OPTICAL_FLOW_GPU" title="Link to this definition"></a></dt>
+<dd><p>Calculates the optical flow using the GPU.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="utils.types.LoadingMode">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.types.</span></span><span class="sig-name descname"><span class="pre">LoadingMode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.types.LoadingMode" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.12/library/enum.html#enum.Enum" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<p>Determines the image loading mode for the dataset.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="utils.types.LoadingMode.RGB">
+<span class="sig-name descname"><span class="pre">RGB</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#utils.types.LoadingMode.RGB" title="Link to this definition"></a></dt>
+<dd><p>The images are loaded in RGB mode.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="utils.types.LoadingMode.GREYSCALE">
+<span class="sig-name descname"><span class="pre">GREYSCALE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#utils.types.LoadingMode.GREYSCALE" title="Link to this definition"></a></dt>
+<dd><p>The images are loaded in greyscale mode.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="utils.types.ModelType">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.types.</span></span><span class="sig-name descname"><span class="pre">ModelType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.types.ModelType" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.12/library/enum.html#enum.Enum" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<p>Model architecture types.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="utils.types.ModelType.UNET">
+<span class="sig-name descname"><span class="pre">UNET</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#utils.types.ModelType.UNET" title="Link to this definition"></a></dt>
+<dd><p>U-Net architecture.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="utils.types.ModelType.UNET_PLUS_PLUS">
+<span class="sig-name descname"><span class="pre">UNET_PLUS_PLUS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#utils.types.ModelType.UNET_PLUS_PLUS" title="Link to this definition"></a></dt>
+<dd><p>UNet++ architecture.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="utils.types.ModelType.TRANS_UNET">
+<span class="sig-name descname"><span class="pre">TRANS_UNET</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#utils.types.ModelType.TRANS_UNET" title="Link to this definition"></a></dt>
+<dd><p>TransUNet architecture.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="utils.types.MetricMode">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.types.</span></span><span class="sig-name descname"><span class="pre">MetricMode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.types.MetricMode" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.12/library/enum.html#enum.Enum" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<p>Metric calculation mode.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="utils.types.MetricMode.INCLUDE_EMPTY_CLASS">
+<span class="sig-name descname"><span class="pre">INCLUDE_EMPTY_CLASS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#utils.types.MetricMode.INCLUDE_EMPTY_CLASS" title="Link to this definition"></a></dt>
+<dd><p>Includes samples with no instances of class.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="utils.types.MetricMode.IGNORE_EMPTY_CLASS">
+<span class="sig-name descname"><span class="pre">IGNORE_EMPTY_CLASS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#utils.types.MetricMode.IGNORE_EMPTY_CLASS" title="Link to this definition"></a></dt>
+<dd><p>Ignores samples with no instances of class for metrics for that class.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="utils.types.DummyPredictMode">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.types.</span></span><span class="sig-name descname"><span class="pre">DummyPredictMode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.types.DummyPredictMode" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.12/library/enum.html#enum.Enum" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<p>Dummy prediction mode.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="utils.types.DummyPredictMode.NONE">
+<span class="sig-name descname"><span class="pre">NONE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#utils.types.DummyPredictMode.NONE" title="Link to this definition"></a></dt>
+<dd><p>No-op.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="utils.types.DummyPredictMode.GROUND_TRUTH">
+<span class="sig-name descname"><span class="pre">GROUND_TRUTH</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#utils.types.DummyPredictMode.GROUND_TRUTH" title="Link to this definition"></a></dt>
+<dd><p>Outputs the ground truth masks.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="utils.types.DummyPredictMode.BLANK">
+<span class="sig-name descname"><span class="pre">BLANK</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#utils.types.DummyPredictMode.BLANK" title="Link to this definition"></a></dt>
+<dd><p>Outputs only the images.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-utils.utils">
+<span id="utils-utils-module"></span><h2>utils.utils module<a class="headerlink" href="#module-utils.utils" title="Link to this heading"></a></h2>
+<p>Utility functions for the project.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="utils.utils.LightningGradualWarmupScheduler">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.utils.</span></span><span class="sig-name descname"><span class="pre">LightningGradualWarmupScheduler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.pytorch.org/docs/2.6/optim.html#torch.optim.Optimizer" title="(in PyTorch v2.6)"><span class="pre">Optimizer</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiplier</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_epoch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">after_scheduler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.utils.LightningGradualWarmupScheduler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.pytorch.org/docs/2.6/generated/torch.optim.lr_scheduler.LRScheduler.html#torch.optim.lr_scheduler.LRScheduler" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">LRScheduler</span></code></a></p>
+<p>Gradually warm-up(increasing) learning rate in optimizer.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.utils.LightningGradualWarmupScheduler.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#utils.utils.LightningGradualWarmupScheduler.step" title="Link to this definition"></a></dt>
+<dd><p>Perform a step.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.utils.get_classification_mode">
+<span class="sig-prename descclassname"><span class="pre">utils.utils.</span></span><span class="sig-name descname"><span class="pre">get_classification_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#utils.types.ClassificationMode" title="utils.types.ClassificationMode"><span class="pre">ClassificationMode</span></a></span></span><a class="headerlink" href="#utils.utils.get_classification_mode" title="Link to this definition"></a></dt>
+<dd><p>Get the classification mode from a string input.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mode</strong> – The classification mode</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.12/library/exceptions.html#KeyError" title="(in Python v3.12)"><strong>KeyError</strong></a> – If the mode is not an implemented mode.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.utils.get_residual_mode">
+<span class="sig-prename descclassname"><span class="pre">utils.utils.</span></span><span class="sig-name descname"><span class="pre">get_residual_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#utils.types.ResidualMode" title="utils.types.ResidualMode"><span class="pre">ResidualMode</span></a></span></span><a class="headerlink" href="#utils.utils.get_residual_mode" title="Link to this definition"></a></dt>
+<dd><p>Get the residual calculation mode from a string input.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mode</strong> – The residual calculation mode.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.12/library/exceptions.html#KeyError" title="(in Python v3.12)"><strong>KeyError</strong></a> – If the mode is not an implemented mode.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.utils.get_loading_mode">
+<span class="sig-prename descclassname"><span class="pre">utils.utils.</span></span><span class="sig-name descname"><span class="pre">get_loading_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#utils.types.LoadingMode" title="utils.types.LoadingMode"><span class="pre">LoadingMode</span></a></span></span><a class="headerlink" href="#utils.utils.get_loading_mode" title="Link to this definition"></a></dt>
+<dd><p>Get the classification mode from a string input.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mode</strong> – The classification mode</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.12/library/exceptions.html#KeyError" title="(in Python v3.12)"><strong>KeyError</strong></a> – If the mode is not an implemented mode.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.utils.get_checkpoint_filename">
+<span class="sig-prename descclassname"><span class="pre">utils.utils.</span></span><span class="sig-name descname"><span class="pre">get_checkpoint_filename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#utils.utils.get_checkpoint_filename" title="Link to this definition"></a></dt>
+<dd><p>Get the checkpoint filename with the version name if it exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>version</strong> – The version name of the model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.utils.get_best_weighted_avg_dice_filename">
+<span class="sig-prename descclassname"><span class="pre">utils.utils.</span></span><span class="sig-name descname"><span class="pre">get_best_weighted_avg_dice_filename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#utils.utils.get_best_weighted_avg_dice_filename" title="Link to this definition"></a></dt>
+<dd><p>Get the filename for the best weighted average dice score.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>version</strong> – The version name of the model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.utils.get_best_macro_avg_dice_class_2_3_filename">
+<span class="sig-prename descclassname"><span class="pre">utils.utils.</span></span><span class="sig-name descname"><span class="pre">get_best_macro_avg_dice_class_2_3_filename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></span><a class="headerlink" href="#utils.utils.get_best_macro_avg_dice_class_2_3_filename" title="Link to this definition"></a></dt>
+<dd><p>Get the filename for the best macro average dice score for class 2 &amp; 3.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>version</strong> – The version name of the model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.utils.get_last_checkpoint_filename">
+<span class="sig-prename descclassname"><span class="pre">utils.utils.</span></span><span class="sig-name descname"><span class="pre">get_last_checkpoint_filename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#utils.utils.get_last_checkpoint_filename" title="Link to this definition"></a></dt>
+<dd><p>Get the filename for the last checkpoint.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>version</strong> – The version name of the model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.utils.get_version_name">
+<span class="sig-prename descclassname"><span class="pre">utils.utils.</span></span><span class="sig-name descname"><span class="pre">get_version_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ckpt_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#utils.utils.get_version_name" title="Link to this definition"></a></dt>
+<dd><p>Get the version name from the checkpoint path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ckpt_path</strong> – The path to the checkpoint.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.utils.configure_optimizers">
+<span class="sig-prename descclassname"><span class="pre">utils.utils.</span></span><span class="sig-name descname"><span class="pre">configure_optimizers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="models.html#models.common.CommonModelMixin" title="models.common.CommonModelMixin"><span class="pre">CommonModelMixin</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/docs/2.6/optim.html#torch.optim.Optimizer" title="(in PyTorch v2.6)"><span class="pre">Optimizer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#utils.utils.configure_optimizers" title="Link to this definition"></a></dt>
+<dd><p>Configure the optimizer and learning rate scheduler for the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>module</strong> – The LightningModule instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.utils.get_transforms">
+<span class="sig-prename descclassname"><span class="pre">utils.utils.</span></span><span class="sig-name descname"><span class="pre">get_transforms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loading_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#utils.types.LoadingMode" title="utils.types.LoadingMode"><span class="pre">LoadingMode</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">augment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.pytorch.org/vision/0.21/generated/torchvision.transforms.v2.Compose.html#torchvision.transforms.v2.Compose" title="(in Torchvision v0.21)"><span class="pre">Compose</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/vision/0.21/generated/torchvision.transforms.v2.Compose.html#torchvision.transforms.v2.Compose" title="(in Torchvision v0.21)"><span class="pre">Compose</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.pytorch.org/vision/0.21/generated/torchvision.transforms.v2.Compose.html#torchvision.transforms.v2.Compose" title="(in Torchvision v0.21)"><span class="pre">Compose</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#utils.utils.get_transforms" title="Link to this definition"></a></dt>
+<dd><p>Get default transformations for all datasets.</p>
+<p>The default implementation resizes the images to (224, 224), casts them to float32,
+normalises them, and sets them to greyscale if the loading mode is not RGB.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>loading_mode</strong> – The loading mode for the images.</p></li>
+<li><p><strong>augment</strong> – Whether to augment the images and masks together.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The image, mask, combined, and final resize transformations</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.utils.get_accumulate_grad_batches">
+<span class="sig-prename descclassname"><span class="pre">utils.utils.</span></span><span class="sig-name descname"><span class="pre">get_accumulate_grad_batches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">devices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#utils.utils.get_accumulate_grad_batches" title="Link to this definition"></a></dt>
+<dd><p>Get the number of batches to accumulate the gradients.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>devices</strong> – Number of devices for training.</p></li>
+<li><p><strong>batch_size</strong> – The batch size for training.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The number of batches to accumulate the gradients</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.12/library/exceptions.html#AssertionError" title="(in Python v3.12)"><strong>AssertionError</strong></a> – If effective batch size of 8 not divisible by batch size * devices</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.utils.get_model_type">
+<span class="sig-prename descclassname"><span class="pre">utils.utils.</span></span><span class="sig-name descname"><span class="pre">get_model_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enum_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#utils.types.ModelType" title="utils.types.ModelType"><span class="pre">ModelType</span></a></span></span><a class="headerlink" href="#utils.utils.get_model_type" title="Link to this definition"></a></dt>
+<dd><p>Get enum from input string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>enum_str</strong> – String to match with enum.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Resultant enum variant.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.12/library/exceptions.html#KeyError" title="(in Python v3.12)"><strong>KeyError</strong></a> – If the variant requested is not found.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-utils">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-utils" title="Link to this heading"></a></h2>
+<p>Contains the utility functions and classes for the project.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Christopher Kok, Yu Yang.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

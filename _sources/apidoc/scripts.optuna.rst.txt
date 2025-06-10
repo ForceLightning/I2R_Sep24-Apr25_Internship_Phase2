@@ -1,0 +1,21 @@
+scripts.optuna package
+======================
+
+Submodules
+----------
+
+scripts.optuna.urr\_attention\_unet module
+------------------------------------------
+
+.. automodule:: scripts.optuna.urr_attention_unet
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: scripts.optuna
+   :members:
+   :show-inheritance:
+   :undoc-members:

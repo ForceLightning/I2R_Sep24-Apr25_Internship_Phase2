@@ -1,0 +1,1246 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scripts package &mdash; I2R Sep 2024-Apr 2025 Internship Phase 2 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            I2R Sep 2024-Apr 2025 Internship Phase 2
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">scripts package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-scripts.attention_unet">scripts.attention_unet module</a><ul>
+<li><a class="reference internal" href="#scripts.attention_unet.ResidualTwoPlusOneDataModule"><code class="docutils literal notranslate"><span class="pre">ResidualTwoPlusOneDataModule</span></code></a><ul>
+<li><a class="reference internal" href="#scripts.attention_unet.ResidualTwoPlusOneDataModule.setup"><code class="docutils literal notranslate"><span class="pre">ResidualTwoPlusOneDataModule.setup()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.attention_unet.ResidualTwoPlusOneDataModule.train_dataloader"><code class="docutils literal notranslate"><span class="pre">ResidualTwoPlusOneDataModule.train_dataloader()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.attention_unet.ResidualTwoPlusOneDataModule.val_dataloader"><code class="docutils literal notranslate"><span class="pre">ResidualTwoPlusOneDataModule.val_dataloader()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.attention_unet.ResidualTwoPlusOneDataModule.test_dataloader"><code class="docutils literal notranslate"><span class="pre">ResidualTwoPlusOneDataModule.test_dataloader()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.attention_unet.ResidualTwoPlusOneDataModule.predict_dataloader"><code class="docutils literal notranslate"><span class="pre">ResidualTwoPlusOneDataModule.predict_dataloader()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#scripts.attention_unet.ResidualAttentionCLI"><code class="docutils literal notranslate"><span class="pre">ResidualAttentionCLI</span></code></a><ul>
+<li><a class="reference internal" href="#scripts.attention_unet.ResidualAttentionCLI.before_instantiate_classes"><code class="docutils literal notranslate"><span class="pre">ResidualAttentionCLI.before_instantiate_classes()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.attention_unet.ResidualAttentionCLI.add_arguments_to_parser"><code class="docutils literal notranslate"><span class="pre">ResidualAttentionCLI.add_arguments_to_parser()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-scripts.cine">scripts.cine module</a><ul>
+<li><a class="reference internal" href="#scripts.cine.CineBaselineDataModule"><code class="docutils literal notranslate"><span class="pre">CineBaselineDataModule</span></code></a><ul>
+<li><a class="reference internal" href="#scripts.cine.CineBaselineDataModule.setup"><code class="docutils literal notranslate"><span class="pre">CineBaselineDataModule.setup()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.cine.CineBaselineDataModule.train_dataloader"><code class="docutils literal notranslate"><span class="pre">CineBaselineDataModule.train_dataloader()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.cine.CineBaselineDataModule.val_dataloader"><code class="docutils literal notranslate"><span class="pre">CineBaselineDataModule.val_dataloader()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.cine.CineBaselineDataModule.test_dataloader"><code class="docutils literal notranslate"><span class="pre">CineBaselineDataModule.test_dataloader()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.cine.CineBaselineDataModule.predict_dataloader"><code class="docutils literal notranslate"><span class="pre">CineBaselineDataModule.predict_dataloader()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#scripts.cine.CineCLI"><code class="docutils literal notranslate"><span class="pre">CineCLI</span></code></a><ul>
+<li><a class="reference internal" href="#scripts.cine.CineCLI.add_arguments_to_parser"><code class="docutils literal notranslate"><span class="pre">CineCLI.add_arguments_to_parser()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-scripts.four_stream">scripts.four_stream module</a><ul>
+<li><a class="reference internal" href="#scripts.four_stream.FourStreamDataModule"><code class="docutils literal notranslate"><span class="pre">FourStreamDataModule</span></code></a><ul>
+<li><a class="reference internal" href="#scripts.four_stream.FourStreamDataModule.setup"><code class="docutils literal notranslate"><span class="pre">FourStreamDataModule.setup()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.four_stream.FourStreamDataModule.train_dataloader"><code class="docutils literal notranslate"><span class="pre">FourStreamDataModule.train_dataloader()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.four_stream.FourStreamDataModule.val_dataloader"><code class="docutils literal notranslate"><span class="pre">FourStreamDataModule.val_dataloader()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.four_stream.FourStreamDataModule.test_dataloader"><code class="docutils literal notranslate"><span class="pre">FourStreamDataModule.test_dataloader()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.four_stream.FourStreamDataModule.predict_dataloader"><code class="docutils literal notranslate"><span class="pre">FourStreamDataModule.predict_dataloader()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#scripts.four_stream.FourStreamAttentionCLI"><code class="docutils literal notranslate"><span class="pre">FourStreamAttentionCLI</span></code></a><ul>
+<li><a class="reference internal" href="#scripts.four_stream.FourStreamAttentionCLI.before_instantiate_classes"><code class="docutils literal notranslate"><span class="pre">FourStreamAttentionCLI.before_instantiate_classes()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.four_stream.FourStreamAttentionCLI.add_arguments_to_parser"><code class="docutils literal notranslate"><span class="pre">FourStreamAttentionCLI.add_arguments_to_parser()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-scripts.lge">scripts.lge module</a><ul>
+<li><a class="reference internal" href="#scripts.lge.LGEBaselineDataModule"><code class="docutils literal notranslate"><span class="pre">LGEBaselineDataModule</span></code></a><ul>
+<li><a class="reference internal" href="#scripts.lge.LGEBaselineDataModule.setup"><code class="docutils literal notranslate"><span class="pre">LGEBaselineDataModule.setup()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.lge.LGEBaselineDataModule.train_dataloader"><code class="docutils literal notranslate"><span class="pre">LGEBaselineDataModule.train_dataloader()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.lge.LGEBaselineDataModule.val_dataloader"><code class="docutils literal notranslate"><span class="pre">LGEBaselineDataModule.val_dataloader()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.lge.LGEBaselineDataModule.test_dataloader"><code class="docutils literal notranslate"><span class="pre">LGEBaselineDataModule.test_dataloader()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.lge.LGEBaselineDataModule.predict_dataloader"><code class="docutils literal notranslate"><span class="pre">LGEBaselineDataModule.predict_dataloader()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#scripts.lge.LGECLI"><code class="docutils literal notranslate"><span class="pre">LGECLI</span></code></a><ul>
+<li><a class="reference internal" href="#scripts.lge.LGECLI.multi_frame"><code class="docutils literal notranslate"><span class="pre">LGECLI.multi_frame</span></code></a></li>
+<li><a class="reference internal" href="#scripts.lge.LGECLI.add_arguments_to_parser"><code class="docutils literal notranslate"><span class="pre">LGECLI.add_arguments_to_parser()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-scripts.three_stream">scripts.three_stream module</a><ul>
+<li><a class="reference internal" href="#scripts.three_stream.ThreeStreamDataModule"><code class="docutils literal notranslate"><span class="pre">ThreeStreamDataModule</span></code></a><ul>
+<li><a class="reference internal" href="#scripts.three_stream.ThreeStreamDataModule.setup"><code class="docutils literal notranslate"><span class="pre">ThreeStreamDataModule.setup()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.three_stream.ThreeStreamDataModule.train_dataloader"><code class="docutils literal notranslate"><span class="pre">ThreeStreamDataModule.train_dataloader()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.three_stream.ThreeStreamDataModule.val_dataloader"><code class="docutils literal notranslate"><span class="pre">ThreeStreamDataModule.val_dataloader()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.three_stream.ThreeStreamDataModule.test_dataloader"><code class="docutils literal notranslate"><span class="pre">ThreeStreamDataModule.test_dataloader()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.three_stream.ThreeStreamDataModule.predict_dataloader"><code class="docutils literal notranslate"><span class="pre">ThreeStreamDataModule.predict_dataloader()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#scripts.three_stream.ThreeStreamAttentionCLI"><code class="docutils literal notranslate"><span class="pre">ThreeStreamAttentionCLI</span></code></a><ul>
+<li><a class="reference internal" href="#scripts.three_stream.ThreeStreamAttentionCLI.before_instantiate_classes"><code class="docutils literal notranslate"><span class="pre">ThreeStreamAttentionCLI.before_instantiate_classes()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.three_stream.ThreeStreamAttentionCLI.add_arguments_to_parser"><code class="docutils literal notranslate"><span class="pre">ThreeStreamAttentionCLI.add_arguments_to_parser()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-scripts.tscsenet">scripts.tscsenet module</a><ul>
+<li><a class="reference internal" href="#scripts.tscsenet.TSCSECLI"><code class="docutils literal notranslate"><span class="pre">TSCSECLI</span></code></a><ul>
+<li><a class="reference internal" href="#scripts.tscsenet.TSCSECLI.add_arguments_to_parser"><code class="docutils literal notranslate"><span class="pre">TSCSECLI.add_arguments_to_parser()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-scripts.two_plus_one">scripts.two_plus_one module</a><ul>
+<li><a class="reference internal" href="#scripts.two_plus_one.TwoPlusOneDataModule"><code class="docutils literal notranslate"><span class="pre">TwoPlusOneDataModule</span></code></a><ul>
+<li><a class="reference internal" href="#scripts.two_plus_one.TwoPlusOneDataModule.setup"><code class="docutils literal notranslate"><span class="pre">TwoPlusOneDataModule.setup()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.two_plus_one.TwoPlusOneDataModule.train_dataloader"><code class="docutils literal notranslate"><span class="pre">TwoPlusOneDataModule.train_dataloader()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.two_plus_one.TwoPlusOneDataModule.val_dataloader"><code class="docutils literal notranslate"><span class="pre">TwoPlusOneDataModule.val_dataloader()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.two_plus_one.TwoPlusOneDataModule.test_dataloader"><code class="docutils literal notranslate"><span class="pre">TwoPlusOneDataModule.test_dataloader()</span></code></a></li>
+<li><a class="reference internal" href="#scripts.two_plus_one.TwoPlusOneDataModule.predict_dataloader"><code class="docutils literal notranslate"><span class="pre">TwoPlusOneDataModule.predict_dataloader()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#scripts.two_plus_one.TwoPlusOneCLI"><code class="docutils literal notranslate"><span class="pre">TwoPlusOneCLI</span></code></a><ul>
+<li><a class="reference internal" href="#scripts.two_plus_one.TwoPlusOneCLI.add_arguments_to_parser"><code class="docutils literal notranslate"><span class="pre">TwoPlusOneCLI.add_arguments_to_parser()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-scripts.urr_attention_unet">scripts.urr_attention_unet module</a></li>
+<li><a class="reference internal" href="#module-scripts">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">I2R Sep 2024-Apr 2025 Internship Phase 2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">scripts package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/apidoc/scripts.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="scripts-package">
+<h1>scripts package<a class="headerlink" href="#scripts-package" title="Link to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="scripts.optuna.html">scripts.optuna package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="scripts.optuna.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scripts.optuna.html#scripts-optuna-urr-attention-unet-module">scripts.optuna.urr_attention_unet module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scripts.optuna.html#module-scripts.optuna">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-scripts.attention_unet">
+<span id="scripts-attention-unet-module"></span><h2>scripts.attention_unet module<a class="headerlink" href="#module-scripts.attention_unet" title="Link to this heading"></a></h2>
+<p>Attention-based U-Net on residual frame information.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="scripts.attention_unet.ResidualTwoPlusOneDataModule">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scripts.attention_unet.</span></span><span class="sig-name descname"><span class="pre">ResidualTwoPlusOneDataModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'data/train_val/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'data/test/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indices_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'data/indices/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frames</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Tuple" title="(in Python v3.12)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(224,</span> <span class="pre">224)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">select_frame_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Literal" title="(in Python v3.12)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'consecutive'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'specific'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'specific'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classification_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="utils.html#utils.types.ClassificationMode" title="utils.types.ClassificationMode"><span class="pre">ClassificationMode</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ClassificationMode.MULTICLASS_MODE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">residual_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="utils.html#utils.types.ResidualMode" title="utils.types.ResidualMode"><span class="pre">ResidualMode</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ResidualMode.SUBTRACT_NEXT_FRAME</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loading_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="utils.html#utils.types.LoadingMode" title="utils.types.LoadingMode"><span class="pre">LoadingMode</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">LoadingMode.RGB</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">combine_train_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">augment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dummy_predict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="utils.html#utils.types.DummyPredictMode" title="utils.types.DummyPredictMode"><span class="pre">DummyPredictMode</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DummyPredictMode.NONE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">histogram_equalize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.attention_unet.ResidualTwoPlusOneDataModule" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.core.LightningDataModule.html#lightning.pytorch.core.LightningDataModule" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">LightningDataModule</span></code></a></p>
+<p>Datamodule for the Residual TwoPlusOne dataset.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.attention_unet.ResidualTwoPlusOneDataModule.setup">
+<span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stage</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.attention_unet.ResidualTwoPlusOneDataModule.setup" title="Link to this definition"></a></dt>
+<dd><p>Set up datamodule components.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.attention_unet.ResidualTwoPlusOneDataModule.train_dataloader">
+<span class="sig-name descname"><span class="pre">train_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.attention_unet.ResidualTwoPlusOneDataModule.train_dataloader" title="Link to this definition"></a></dt>
+<dd><p>An iterable or collection of iterables specifying training samples.</p>
+<p>For more information about multiple dataloaders, see this <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/data/iterables.html#multiple-dataloaders" title="(in PyTorch Lightning v2.5.0.post0)"><span class="xref std std-ref">section</span></a>.</p>
+<p>The dataloader you return will not be reloaded unless you set
+<a href="#id1"><span class="problematic" id="id2">:paramref:`~lightning.pytorch.trainer.trainer.Trainer.reload_dataloaders_every_n_epochs`</span></a> to
+a positive integer.</p>
+<p>For data processing use the following pattern:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>download in <code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p>process and split in <a class="reference internal" href="#scripts.attention_unet.ResidualTwoPlusOneDataModule.setup" title="scripts.attention_unet.ResidualTwoPlusOneDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+</div></blockquote>
+<p>However, the above are only necessary for distributed processing.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>do not assign state in prepare_data</p>
+</div>
+<ul class="simple">
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.fit" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p><a class="reference internal" href="#scripts.attention_unet.ResidualTwoPlusOneDataModule.setup" title="scripts.attention_unet.ResidualTwoPlusOneDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lightning tries to add the correct sampler for distributed and arbitrary hardware.
+There is no need to set it yourself.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.attention_unet.ResidualTwoPlusOneDataModule.val_dataloader">
+<span class="sig-name descname"><span class="pre">val_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.attention_unet.ResidualTwoPlusOneDataModule.val_dataloader" title="Link to this definition"></a></dt>
+<dd><p>An iterable or collection of iterables specifying validation samples.</p>
+<p>For more information about multiple dataloaders, see this <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/data/iterables.html#multiple-dataloaders" title="(in PyTorch Lightning v2.5.0.post0)"><span class="xref std std-ref">section</span></a>.</p>
+<p>The dataloader you return will not be reloaded unless you set
+<a href="#id3"><span class="problematic" id="id4">:paramref:`~lightning.pytorch.trainer.trainer.Trainer.reload_dataloaders_every_n_epochs`</span></a> to
+a positive integer.</p>
+<p>It’s recommended that all data downloads and preparation happen in <code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code>.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.fit" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a></p></li>
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.validate" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">validate()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p><a class="reference internal" href="#scripts.attention_unet.ResidualTwoPlusOneDataModule.setup" title="scripts.attention_unet.ResidualTwoPlusOneDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lightning tries to add the correct sampler for distributed and arbitrary hardware
+There is no need to set it yourself.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you don’t need a validation dataset and a <code class="xref py py-meth docutils literal notranslate"><span class="pre">validation_step()</span></code>, you don’t need to
+implement this method.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.attention_unet.ResidualTwoPlusOneDataModule.test_dataloader">
+<span class="sig-name descname"><span class="pre">test_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.attention_unet.ResidualTwoPlusOneDataModule.test_dataloader" title="Link to this definition"></a></dt>
+<dd><p>An iterable or collection of iterables specifying test samples.</p>
+<p>For more information about multiple dataloaders, see this <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/data/iterables.html#multiple-dataloaders" title="(in PyTorch Lightning v2.5.0.post0)"><span class="xref std std-ref">section</span></a>.</p>
+<p>For data processing use the following pattern:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>download in <code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p>process and split in <a class="reference internal" href="#scripts.attention_unet.ResidualTwoPlusOneDataModule.setup" title="scripts.attention_unet.ResidualTwoPlusOneDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+</div></blockquote>
+<p>However, the above are only necessary for distributed processing.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>do not assign state in prepare_data</p>
+</div>
+<ul class="simple">
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.test" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">test()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p><a class="reference internal" href="#scripts.attention_unet.ResidualTwoPlusOneDataModule.setup" title="scripts.attention_unet.ResidualTwoPlusOneDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lightning tries to add the correct sampler for distributed and arbitrary hardware.
+There is no need to set it yourself.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you don’t need a test dataset and a <code class="xref py py-meth docutils literal notranslate"><span class="pre">test_step()</span></code>, you don’t need to implement
+this method.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.attention_unet.ResidualTwoPlusOneDataModule.predict_dataloader">
+<span class="sig-name descname"><span class="pre">predict_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.attention_unet.ResidualTwoPlusOneDataModule.predict_dataloader" title="Link to this definition"></a></dt>
+<dd><p>An iterable or collection of iterables specifying prediction samples.</p>
+<p>For more information about multiple dataloaders, see this <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/data/iterables.html#multiple-dataloaders" title="(in PyTorch Lightning v2.5.0.post0)"><span class="xref std std-ref">section</span></a>.</p>
+<p>It’s recommended that all data downloads and preparation happen in <code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code>.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.predict" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">predict()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p><a class="reference internal" href="#scripts.attention_unet.ResidualTwoPlusOneDataModule.setup" title="scripts.attention_unet.ResidualTwoPlusOneDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lightning tries to add the correct sampler for distributed and arbitrary hardware
+There is no need to set it yourself.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A <a class="reference external" href="https://docs.pytorch.org/docs/2.6/data.html#torch.utils.data.DataLoader" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.utils.data.DataLoader</span></code></a> or a sequence of them specifying prediction samples.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="scripts.attention_unet.ResidualAttentionCLI">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scripts.attention_unet.</span></span><span class="sig-name descname"><span class="pre">ResidualAttentionCLI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.attention_unet.ResidualAttentionCLI" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="cli.html#cli.common.I2RInternshipCommonCLI" title="cli.common.I2RInternshipCommonCLI"><code class="xref py py-class docutils literal notranslate"><span class="pre">I2RInternshipCommonCLI</span></code></a></p>
+<p>CLI class for Residual Attention task.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.attention_unet.ResidualAttentionCLI.before_instantiate_classes">
+<span class="sig-name descname"><span class="pre">before_instantiate_classes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.12/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#scripts.attention_unet.ResidualAttentionCLI.before_instantiate_classes" title="Link to this definition"></a></dt>
+<dd><p>Run some code before instantiating the classes.</p>
+<p>Sets the torch multiprocessing mode depending on the optical flow method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.attention_unet.ResidualAttentionCLI.add_arguments_to_parser">
+<span class="sig-name descname"><span class="pre">add_arguments_to_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.cli.LightningArgumentParser.html#lightning.pytorch.cli.LightningArgumentParser" title="(in PyTorch Lightning v2.5.0.post0)"><span class="pre">LightningArgumentParser</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.attention_unet.ResidualAttentionCLI.add_arguments_to_parser" title="Link to this definition"></a></dt>
+<dd><p>Add extra arguments to CLI parser.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-scripts.cine">
+<span id="scripts-cine-module"></span><h2>scripts.cine module<a class="headerlink" href="#module-scripts.cine" title="Link to this heading"></a></h2>
+<p>Cine Baseline model training script.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="scripts.cine.CineBaselineDataModule">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scripts.cine.</span></span><span class="sig-name descname"><span class="pre">CineBaselineDataModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frames</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'data/train_val/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'data/test/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indices_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'data/indices/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Tuple" title="(in Python v3.12)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(224,</span> <span class="pre">224)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classification_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="utils.html#utils.types.ClassificationMode" title="utils.types.ClassificationMode"><span class="pre">ClassificationMode</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ClassificationMode.MULTICLASS_MODE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loading_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="utils.html#utils.types.LoadingMode" title="utils.types.LoadingMode"><span class="pre">LoadingMode</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">LoadingMode.RGB</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">combine_train_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">augment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dummy_predict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="utils.html#utils.types.DummyPredictMode" title="utils.types.DummyPredictMode"><span class="pre">DummyPredictMode</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DummyPredictMode.NONE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">select_frame_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Literal" title="(in Python v3.12)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'consecutive'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'specific'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'consecutive'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.cine.CineBaselineDataModule" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.core.LightningDataModule.html#lightning.pytorch.core.LightningDataModule" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">LightningDataModule</span></code></a></p>
+<p>DataModule for the Cine baseline implementation.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.cine.CineBaselineDataModule.setup">
+<span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stage</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.cine.CineBaselineDataModule.setup" title="Link to this definition"></a></dt>
+<dd><p>Called at the beginning of fit (train + validate), validate, test, or predict. This is a good hook when you
+need to build models dynamically or adjust something about them. This hook is called on every process when
+using DDP.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>stage</strong> – either <code class="docutils literal notranslate"><span class="pre">'fit'</span></code>, <code class="docutils literal notranslate"><span class="pre">'validate'</span></code>, <code class="docutils literal notranslate"><span class="pre">'test'</span></code>, or <code class="docutils literal notranslate"><span class="pre">'predict'</span></code></p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">LitModel</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l1</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">prepare_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">download_data</span><span class="p">()</span>
+        <span class="n">tokenize</span><span class="p">()</span>
+
+        <span class="c1"># don&#39;t do this</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">something</span> <span class="o">=</span> <span class="k">else</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.cine.CineBaselineDataModule.train_dataloader">
+<span class="sig-name descname"><span class="pre">train_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.cine.CineBaselineDataModule.train_dataloader" title="Link to this definition"></a></dt>
+<dd><p>Get the training dataloader.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.cine.CineBaselineDataModule.val_dataloader">
+<span class="sig-name descname"><span class="pre">val_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.cine.CineBaselineDataModule.val_dataloader" title="Link to this definition"></a></dt>
+<dd><p>An iterable or collection of iterables specifying validation samples.</p>
+<p>For more information about multiple dataloaders, see this <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/data/iterables.html#multiple-dataloaders" title="(in PyTorch Lightning v2.5.0.post0)"><span class="xref std std-ref">section</span></a>.</p>
+<p>The dataloader you return will not be reloaded unless you set
+<a href="#id5"><span class="problematic" id="id6">:paramref:`~lightning.pytorch.trainer.trainer.Trainer.reload_dataloaders_every_n_epochs`</span></a> to
+a positive integer.</p>
+<p>It’s recommended that all data downloads and preparation happen in <code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code>.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.fit" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a></p></li>
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.validate" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">validate()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p><a class="reference internal" href="#scripts.cine.CineBaselineDataModule.setup" title="scripts.cine.CineBaselineDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lightning tries to add the correct sampler for distributed and arbitrary hardware
+There is no need to set it yourself.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you don’t need a validation dataset and a <code class="xref py py-meth docutils literal notranslate"><span class="pre">validation_step()</span></code>, you don’t need to
+implement this method.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.cine.CineBaselineDataModule.test_dataloader">
+<span class="sig-name descname"><span class="pre">test_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.cine.CineBaselineDataModule.test_dataloader" title="Link to this definition"></a></dt>
+<dd><p>An iterable or collection of iterables specifying test samples.</p>
+<p>For more information about multiple dataloaders, see this <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/data/iterables.html#multiple-dataloaders" title="(in PyTorch Lightning v2.5.0.post0)"><span class="xref std std-ref">section</span></a>.</p>
+<p>For data processing use the following pattern:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>download in <code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p>process and split in <a class="reference internal" href="#scripts.cine.CineBaselineDataModule.setup" title="scripts.cine.CineBaselineDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+</div></blockquote>
+<p>However, the above are only necessary for distributed processing.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>do not assign state in prepare_data</p>
+</div>
+<ul class="simple">
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.test" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">test()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p><a class="reference internal" href="#scripts.cine.CineBaselineDataModule.setup" title="scripts.cine.CineBaselineDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lightning tries to add the correct sampler for distributed and arbitrary hardware.
+There is no need to set it yourself.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you don’t need a test dataset and a <code class="xref py py-meth docutils literal notranslate"><span class="pre">test_step()</span></code>, you don’t need to implement
+this method.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.cine.CineBaselineDataModule.predict_dataloader">
+<span class="sig-name descname"><span class="pre">predict_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.cine.CineBaselineDataModule.predict_dataloader" title="Link to this definition"></a></dt>
+<dd><p>An iterable or collection of iterables specifying prediction samples.</p>
+<p>For more information about multiple dataloaders, see this <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/data/iterables.html#multiple-dataloaders" title="(in PyTorch Lightning v2.5.0.post0)"><span class="xref std std-ref">section</span></a>.</p>
+<p>It’s recommended that all data downloads and preparation happen in <code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code>.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.predict" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">predict()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p><a class="reference internal" href="#scripts.cine.CineBaselineDataModule.setup" title="scripts.cine.CineBaselineDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lightning tries to add the correct sampler for distributed and arbitrary hardware
+There is no need to set it yourself.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A <a class="reference external" href="https://docs.pytorch.org/docs/2.6/data.html#torch.utils.data.DataLoader" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.utils.data.DataLoader</span></code></a> or a sequence of them specifying prediction samples.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="scripts.cine.CineCLI">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scripts.cine.</span></span><span class="sig-name descname"><span class="pre">CineCLI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.cine.CineCLI" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="cli.html#cli.common.I2RInternshipCommonCLI" title="cli.common.I2RInternshipCommonCLI"><code class="xref py py-class docutils literal notranslate"><span class="pre">I2RInternshipCommonCLI</span></code></a></p>
+<p>CLI class for cine CMR task.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.cine.CineCLI.add_arguments_to_parser">
+<span class="sig-name descname"><span class="pre">add_arguments_to_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.cli.LightningArgumentParser.html#lightning.pytorch.cli.LightningArgumentParser" title="(in PyTorch Lightning v2.5.0.post0)"><span class="pre">LightningArgumentParser</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.12/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#scripts.cine.CineCLI.add_arguments_to_parser" title="Link to this definition"></a></dt>
+<dd><p>Set the default arguments and add the arguments to the parser.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-scripts.four_stream">
+<span id="scripts-four-stream-module"></span><h2>scripts.four_stream module<a class="headerlink" href="#module-scripts.four_stream" title="Link to this heading"></a></h2>
+<p>Four stream feature fusion attention-based U-Net on residual frame information.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="scripts.four_stream.FourStreamDataModule">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scripts.four_stream.</span></span><span class="sig-name descname"><span class="pre">FourStreamDataModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'data/train_val'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'data/test'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indices_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'data/indices'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frames</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Tuple" title="(in Python v3.12)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(224,</span> <span class="pre">224)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">select_frame_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Literal" title="(in Python v3.12)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'consecutive'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'specific'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'specific'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classification_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="utils.html#utils.types.ClassificationMode" title="utils.types.ClassificationMode"><span class="pre">ClassificationMode</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ClassificationMode.BINARY_CLASS_3_MODE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">residual_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="utils.html#utils.types.ResidualMode" title="utils.types.ResidualMode"><span class="pre">ResidualMode</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ResidualMode.SUBTRACT_NEXT_FRAME</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loading_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="utils.html#utils.types.LoadingMode" title="utils.types.LoadingMode"><span class="pre">LoadingMode</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">LoadingMode.GREYSCALE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">combine_train_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">augment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dummy_predict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="utils.html#utils.types.DummyPredictMode" title="utils.types.DummyPredictMode"><span class="pre">DummyPredictMode</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DummyPredictMode.NONE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dummy_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.four_stream.FourStreamDataModule" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.core.LightningDataModule.html#lightning.pytorch.core.LightningDataModule" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">LightningDataModule</span></code></a></p>
+<p>Lightning datamodule for the four stream task.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.four_stream.FourStreamDataModule.setup">
+<span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stage</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.four_stream.FourStreamDataModule.setup" title="Link to this definition"></a></dt>
+<dd><p>Called at the beginning of fit (train + validate), validate, test, or predict. This is a good hook when you
+need to build models dynamically or adjust something about them. This hook is called on every process when
+using DDP.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>stage</strong> – either <code class="docutils literal notranslate"><span class="pre">'fit'</span></code>, <code class="docutils literal notranslate"><span class="pre">'validate'</span></code>, <code class="docutils literal notranslate"><span class="pre">'test'</span></code>, or <code class="docutils literal notranslate"><span class="pre">'predict'</span></code></p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">LitModel</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l1</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">prepare_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">download_data</span><span class="p">()</span>
+        <span class="n">tokenize</span><span class="p">()</span>
+
+        <span class="c1"># don&#39;t do this</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">something</span> <span class="o">=</span> <span class="k">else</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.four_stream.FourStreamDataModule.train_dataloader">
+<span class="sig-name descname"><span class="pre">train_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.four_stream.FourStreamDataModule.train_dataloader" title="Link to this definition"></a></dt>
+<dd><p>An iterable or collection of iterables specifying training samples.</p>
+<p>For more information about multiple dataloaders, see this <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/data/iterables.html#multiple-dataloaders" title="(in PyTorch Lightning v2.5.0.post0)"><span class="xref std std-ref">section</span></a>.</p>
+<p>The dataloader you return will not be reloaded unless you set
+<a href="#id7"><span class="problematic" id="id8">:paramref:`~lightning.pytorch.trainer.trainer.Trainer.reload_dataloaders_every_n_epochs`</span></a> to
+a positive integer.</p>
+<p>For data processing use the following pattern:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>download in <code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p>process and split in <a class="reference internal" href="#scripts.four_stream.FourStreamDataModule.setup" title="scripts.four_stream.FourStreamDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+</div></blockquote>
+<p>However, the above are only necessary for distributed processing.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>do not assign state in prepare_data</p>
+</div>
+<ul class="simple">
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.fit" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p><a class="reference internal" href="#scripts.four_stream.FourStreamDataModule.setup" title="scripts.four_stream.FourStreamDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lightning tries to add the correct sampler for distributed and arbitrary hardware.
+There is no need to set it yourself.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.four_stream.FourStreamDataModule.val_dataloader">
+<span class="sig-name descname"><span class="pre">val_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.four_stream.FourStreamDataModule.val_dataloader" title="Link to this definition"></a></dt>
+<dd><p>An iterable or collection of iterables specifying validation samples.</p>
+<p>For more information about multiple dataloaders, see this <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/data/iterables.html#multiple-dataloaders" title="(in PyTorch Lightning v2.5.0.post0)"><span class="xref std std-ref">section</span></a>.</p>
+<p>The dataloader you return will not be reloaded unless you set
+<a href="#id9"><span class="problematic" id="id10">:paramref:`~lightning.pytorch.trainer.trainer.Trainer.reload_dataloaders_every_n_epochs`</span></a> to
+a positive integer.</p>
+<p>It’s recommended that all data downloads and preparation happen in <code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code>.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.fit" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a></p></li>
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.validate" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">validate()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p><a class="reference internal" href="#scripts.four_stream.FourStreamDataModule.setup" title="scripts.four_stream.FourStreamDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lightning tries to add the correct sampler for distributed and arbitrary hardware
+There is no need to set it yourself.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you don’t need a validation dataset and a <code class="xref py py-meth docutils literal notranslate"><span class="pre">validation_step()</span></code>, you don’t need to
+implement this method.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.four_stream.FourStreamDataModule.test_dataloader">
+<span class="sig-name descname"><span class="pre">test_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.four_stream.FourStreamDataModule.test_dataloader" title="Link to this definition"></a></dt>
+<dd><p>An iterable or collection of iterables specifying test samples.</p>
+<p>For more information about multiple dataloaders, see this <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/data/iterables.html#multiple-dataloaders" title="(in PyTorch Lightning v2.5.0.post0)"><span class="xref std std-ref">section</span></a>.</p>
+<p>For data processing use the following pattern:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>download in <code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p>process and split in <a class="reference internal" href="#scripts.four_stream.FourStreamDataModule.setup" title="scripts.four_stream.FourStreamDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+</div></blockquote>
+<p>However, the above are only necessary for distributed processing.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>do not assign state in prepare_data</p>
+</div>
+<ul class="simple">
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.test" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">test()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p><a class="reference internal" href="#scripts.four_stream.FourStreamDataModule.setup" title="scripts.four_stream.FourStreamDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lightning tries to add the correct sampler for distributed and arbitrary hardware.
+There is no need to set it yourself.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you don’t need a test dataset and a <code class="xref py py-meth docutils literal notranslate"><span class="pre">test_step()</span></code>, you don’t need to implement
+this method.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.four_stream.FourStreamDataModule.predict_dataloader">
+<span class="sig-name descname"><span class="pre">predict_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.four_stream.FourStreamDataModule.predict_dataloader" title="Link to this definition"></a></dt>
+<dd><p>An iterable or collection of iterables specifying prediction samples.</p>
+<p>For more information about multiple dataloaders, see this <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/data/iterables.html#multiple-dataloaders" title="(in PyTorch Lightning v2.5.0.post0)"><span class="xref std std-ref">section</span></a>.</p>
+<p>It’s recommended that all data downloads and preparation happen in <code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code>.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.predict" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">predict()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p><a class="reference internal" href="#scripts.four_stream.FourStreamDataModule.setup" title="scripts.four_stream.FourStreamDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lightning tries to add the correct sampler for distributed and arbitrary hardware
+There is no need to set it yourself.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A <a class="reference external" href="https://docs.pytorch.org/docs/2.6/data.html#torch.utils.data.DataLoader" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.utils.data.DataLoader</span></code></a> or a sequence of them specifying prediction samples.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="scripts.four_stream.FourStreamAttentionCLI">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scripts.four_stream.</span></span><span class="sig-name descname"><span class="pre">FourStreamAttentionCLI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.four_stream.FourStreamAttentionCLI" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="cli.html#cli.common.I2RInternshipCommonCLI" title="cli.common.I2RInternshipCommonCLI"><code class="xref py py-class docutils literal notranslate"><span class="pre">I2RInternshipCommonCLI</span></code></a></p>
+<p>CLI class for 4-stream task.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.four_stream.FourStreamAttentionCLI.before_instantiate_classes">
+<span class="sig-name descname"><span class="pre">before_instantiate_classes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.12/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#scripts.four_stream.FourStreamAttentionCLI.before_instantiate_classes" title="Link to this definition"></a></dt>
+<dd><p>Set the last checkpoint name.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.four_stream.FourStreamAttentionCLI.add_arguments_to_parser">
+<span class="sig-name descname"><span class="pre">add_arguments_to_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.cli.LightningArgumentParser.html#lightning.pytorch.cli.LightningArgumentParser" title="(in PyTorch Lightning v2.5.0.post0)"><span class="pre">LightningArgumentParser</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.four_stream.FourStreamAttentionCLI.add_arguments_to_parser" title="Link to this definition"></a></dt>
+<dd><p>Add extra arguments to CLI parser.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-scripts.lge">
+<span id="scripts-lge-module"></span><h2>scripts.lge module<a class="headerlink" href="#module-scripts.lge" title="Link to this heading"></a></h2>
+<p>LGE Baseline model training script.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="scripts.lge.LGEBaselineDataModule">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scripts.lge.</span></span><span class="sig-name descname"><span class="pre">LGEBaselineDataModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'data/train_val/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'data/test/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indices_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'data/indices/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Tuple" title="(in Python v3.12)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(224,</span> <span class="pre">224)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classification_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="utils.html#utils.types.ClassificationMode" title="utils.types.ClassificationMode"><span class="pre">ClassificationMode</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ClassificationMode.MULTICLASS_MODE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loading_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="utils.html#utils.types.LoadingMode" title="utils.types.LoadingMode"><span class="pre">LoadingMode</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">LoadingMode.RGB</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">combine_train_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">augment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dummy_predict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="utils.html#utils.types.DummyPredictMode" title="utils.types.DummyPredictMode"><span class="pre">DummyPredictMode</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DummyPredictMode.NONE</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.lge.LGEBaselineDataModule" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.core.LightningDataModule.html#lightning.pytorch.core.LightningDataModule" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">LightningDataModule</span></code></a></p>
+<p>LGE MRI image data module.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.lge.LGEBaselineDataModule.setup">
+<span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stage</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.lge.LGEBaselineDataModule.setup" title="Link to this definition"></a></dt>
+<dd><p>Called at the beginning of fit (train + validate), validate, test, or predict. This is a good hook when you
+need to build models dynamically or adjust something about them. This hook is called on every process when
+using DDP.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>stage</strong> – either <code class="docutils literal notranslate"><span class="pre">'fit'</span></code>, <code class="docutils literal notranslate"><span class="pre">'validate'</span></code>, <code class="docutils literal notranslate"><span class="pre">'test'</span></code>, or <code class="docutils literal notranslate"><span class="pre">'predict'</span></code></p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">LitModel</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l1</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">prepare_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">download_data</span><span class="p">()</span>
+        <span class="n">tokenize</span><span class="p">()</span>
+
+        <span class="c1"># don&#39;t do this</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">something</span> <span class="o">=</span> <span class="k">else</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.lge.LGEBaselineDataModule.train_dataloader">
+<span class="sig-name descname"><span class="pre">train_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.lge.LGEBaselineDataModule.train_dataloader" title="Link to this definition"></a></dt>
+<dd><p>An iterable or collection of iterables specifying training samples.</p>
+<p>For more information about multiple dataloaders, see this <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/data/iterables.html#multiple-dataloaders" title="(in PyTorch Lightning v2.5.0.post0)"><span class="xref std std-ref">section</span></a>.</p>
+<p>The dataloader you return will not be reloaded unless you set
+<a href="#id11"><span class="problematic" id="id12">:paramref:`~lightning.pytorch.trainer.trainer.Trainer.reload_dataloaders_every_n_epochs`</span></a> to
+a positive integer.</p>
+<p>For data processing use the following pattern:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>download in <code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p>process and split in <a class="reference internal" href="#scripts.lge.LGEBaselineDataModule.setup" title="scripts.lge.LGEBaselineDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+</div></blockquote>
+<p>However, the above are only necessary for distributed processing.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>do not assign state in prepare_data</p>
+</div>
+<ul class="simple">
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.fit" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p><a class="reference internal" href="#scripts.lge.LGEBaselineDataModule.setup" title="scripts.lge.LGEBaselineDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lightning tries to add the correct sampler for distributed and arbitrary hardware.
+There is no need to set it yourself.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.lge.LGEBaselineDataModule.val_dataloader">
+<span class="sig-name descname"><span class="pre">val_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.lge.LGEBaselineDataModule.val_dataloader" title="Link to this definition"></a></dt>
+<dd><p>An iterable or collection of iterables specifying validation samples.</p>
+<p>For more information about multiple dataloaders, see this <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/data/iterables.html#multiple-dataloaders" title="(in PyTorch Lightning v2.5.0.post0)"><span class="xref std std-ref">section</span></a>.</p>
+<p>The dataloader you return will not be reloaded unless you set
+<a href="#id13"><span class="problematic" id="id14">:paramref:`~lightning.pytorch.trainer.trainer.Trainer.reload_dataloaders_every_n_epochs`</span></a> to
+a positive integer.</p>
+<p>It’s recommended that all data downloads and preparation happen in <code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code>.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.fit" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a></p></li>
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.validate" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">validate()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p><a class="reference internal" href="#scripts.lge.LGEBaselineDataModule.setup" title="scripts.lge.LGEBaselineDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lightning tries to add the correct sampler for distributed and arbitrary hardware
+There is no need to set it yourself.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you don’t need a validation dataset and a <code class="xref py py-meth docutils literal notranslate"><span class="pre">validation_step()</span></code>, you don’t need to
+implement this method.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.lge.LGEBaselineDataModule.test_dataloader">
+<span class="sig-name descname"><span class="pre">test_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.lge.LGEBaselineDataModule.test_dataloader" title="Link to this definition"></a></dt>
+<dd><p>An iterable or collection of iterables specifying test samples.</p>
+<p>For more information about multiple dataloaders, see this <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/data/iterables.html#multiple-dataloaders" title="(in PyTorch Lightning v2.5.0.post0)"><span class="xref std std-ref">section</span></a>.</p>
+<p>For data processing use the following pattern:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>download in <code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p>process and split in <a class="reference internal" href="#scripts.lge.LGEBaselineDataModule.setup" title="scripts.lge.LGEBaselineDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+</div></blockquote>
+<p>However, the above are only necessary for distributed processing.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>do not assign state in prepare_data</p>
+</div>
+<ul class="simple">
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.test" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">test()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p><a class="reference internal" href="#scripts.lge.LGEBaselineDataModule.setup" title="scripts.lge.LGEBaselineDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lightning tries to add the correct sampler for distributed and arbitrary hardware.
+There is no need to set it yourself.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you don’t need a test dataset and a <code class="xref py py-meth docutils literal notranslate"><span class="pre">test_step()</span></code>, you don’t need to implement
+this method.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.lge.LGEBaselineDataModule.predict_dataloader">
+<span class="sig-name descname"><span class="pre">predict_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.lge.LGEBaselineDataModule.predict_dataloader" title="Link to this definition"></a></dt>
+<dd><p>An iterable or collection of iterables specifying prediction samples.</p>
+<p>For more information about multiple dataloaders, see this <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/data/iterables.html#multiple-dataloaders" title="(in PyTorch Lightning v2.5.0.post0)"><span class="xref std std-ref">section</span></a>.</p>
+<p>It’s recommended that all data downloads and preparation happen in <code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code>.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.predict" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">predict()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p><a class="reference internal" href="#scripts.lge.LGEBaselineDataModule.setup" title="scripts.lge.LGEBaselineDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lightning tries to add the correct sampler for distributed and arbitrary hardware
+There is no need to set it yourself.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A <a class="reference external" href="https://docs.pytorch.org/docs/2.6/data.html#torch.utils.data.DataLoader" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.utils.data.DataLoader</span></code></a> or a sequence of them specifying prediction samples.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="scripts.lge.LGECLI">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scripts.lge.</span></span><span class="sig-name descname"><span class="pre">LGECLI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.lge.LGECLI" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="cli.html#cli.common.I2RInternshipCommonCLI" title="cli.common.I2RInternshipCommonCLI"><code class="xref py py-class docutils literal notranslate"><span class="pre">I2RInternshipCommonCLI</span></code></a></p>
+<p>CLI for LGE MRI model training.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="scripts.lge.LGECLI.multi_frame">
+<span class="sig-name descname"><span class="pre">multi_frame</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#scripts.lge.LGECLI.multi_frame" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.lge.LGECLI.add_arguments_to_parser">
+<span class="sig-name descname"><span class="pre">add_arguments_to_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.cli.LightningArgumentParser.html#lightning.pytorch.cli.LightningArgumentParser" title="(in PyTorch Lightning v2.5.0.post0)"><span class="pre">LightningArgumentParser</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.12/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#scripts.lge.LGECLI.add_arguments_to_parser" title="Link to this definition"></a></dt>
+<dd><p>Set the default arguments and add the arguments to the parser.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-scripts.three_stream">
+<span id="scripts-three-stream-module"></span><h2>scripts.three_stream module<a class="headerlink" href="#module-scripts.three_stream" title="Link to this heading"></a></h2>
+<p>Three stream feature fusion attention-based U-Net on residual frame information.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="scripts.three_stream.ThreeStreamDataModule">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scripts.three_stream.</span></span><span class="sig-name descname"><span class="pre">ThreeStreamDataModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'data/train_val'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'data/test'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indices_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'data/indices'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frames</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Tuple" title="(in Python v3.12)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(224,</span> <span class="pre">224)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">select_frame_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Literal" title="(in Python v3.12)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'consecutive'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'specific'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'specific'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classification_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="utils.html#utils.types.ClassificationMode" title="utils.types.ClassificationMode"><span class="pre">ClassificationMode</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ClassificationMode.BINARY_CLASS_3_MODE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">residual_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="utils.html#utils.types.ResidualMode" title="utils.types.ResidualMode"><span class="pre">ResidualMode</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ResidualMode.SUBTRACT_NEXT_FRAME</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loading_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="utils.html#utils.types.LoadingMode" title="utils.types.LoadingMode"><span class="pre">LoadingMode</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">LoadingMode.GREYSCALE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">combine_train_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">augment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dummy_predict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="utils.html#utils.types.DummyPredictMode" title="utils.types.DummyPredictMode"><span class="pre">DummyPredictMode</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DummyPredictMode.NONE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dummy_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.three_stream.ThreeStreamDataModule" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.core.LightningDataModule.html#lightning.pytorch.core.LightningDataModule" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">LightningDataModule</span></code></a></p>
+<p>Lightning datamodule for the three stream task.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.three_stream.ThreeStreamDataModule.setup">
+<span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stage</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.three_stream.ThreeStreamDataModule.setup" title="Link to this definition"></a></dt>
+<dd><p>Called at the beginning of fit (train + validate), validate, test, or predict. This is a good hook when you
+need to build models dynamically or adjust something about them. This hook is called on every process when
+using DDP.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>stage</strong> – either <code class="docutils literal notranslate"><span class="pre">'fit'</span></code>, <code class="docutils literal notranslate"><span class="pre">'validate'</span></code>, <code class="docutils literal notranslate"><span class="pre">'test'</span></code>, or <code class="docutils literal notranslate"><span class="pre">'predict'</span></code></p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">LitModel</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l1</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">prepare_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">download_data</span><span class="p">()</span>
+        <span class="n">tokenize</span><span class="p">()</span>
+
+        <span class="c1"># don&#39;t do this</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">something</span> <span class="o">=</span> <span class="k">else</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.three_stream.ThreeStreamDataModule.train_dataloader">
+<span class="sig-name descname"><span class="pre">train_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.three_stream.ThreeStreamDataModule.train_dataloader" title="Link to this definition"></a></dt>
+<dd><p>An iterable or collection of iterables specifying training samples.</p>
+<p>For more information about multiple dataloaders, see this <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/data/iterables.html#multiple-dataloaders" title="(in PyTorch Lightning v2.5.0.post0)"><span class="xref std std-ref">section</span></a>.</p>
+<p>The dataloader you return will not be reloaded unless you set
+<a href="#id15"><span class="problematic" id="id16">:paramref:`~lightning.pytorch.trainer.trainer.Trainer.reload_dataloaders_every_n_epochs`</span></a> to
+a positive integer.</p>
+<p>For data processing use the following pattern:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>download in <code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p>process and split in <a class="reference internal" href="#scripts.three_stream.ThreeStreamDataModule.setup" title="scripts.three_stream.ThreeStreamDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+</div></blockquote>
+<p>However, the above are only necessary for distributed processing.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>do not assign state in prepare_data</p>
+</div>
+<ul class="simple">
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.fit" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p><a class="reference internal" href="#scripts.three_stream.ThreeStreamDataModule.setup" title="scripts.three_stream.ThreeStreamDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lightning tries to add the correct sampler for distributed and arbitrary hardware.
+There is no need to set it yourself.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.three_stream.ThreeStreamDataModule.val_dataloader">
+<span class="sig-name descname"><span class="pre">val_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.three_stream.ThreeStreamDataModule.val_dataloader" title="Link to this definition"></a></dt>
+<dd><p>An iterable or collection of iterables specifying validation samples.</p>
+<p>For more information about multiple dataloaders, see this <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/data/iterables.html#multiple-dataloaders" title="(in PyTorch Lightning v2.5.0.post0)"><span class="xref std std-ref">section</span></a>.</p>
+<p>The dataloader you return will not be reloaded unless you set
+<a href="#id17"><span class="problematic" id="id18">:paramref:`~lightning.pytorch.trainer.trainer.Trainer.reload_dataloaders_every_n_epochs`</span></a> to
+a positive integer.</p>
+<p>It’s recommended that all data downloads and preparation happen in <code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code>.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.fit" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a></p></li>
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.validate" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">validate()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p><a class="reference internal" href="#scripts.three_stream.ThreeStreamDataModule.setup" title="scripts.three_stream.ThreeStreamDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lightning tries to add the correct sampler for distributed and arbitrary hardware
+There is no need to set it yourself.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you don’t need a validation dataset and a <code class="xref py py-meth docutils literal notranslate"><span class="pre">validation_step()</span></code>, you don’t need to
+implement this method.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.three_stream.ThreeStreamDataModule.test_dataloader">
+<span class="sig-name descname"><span class="pre">test_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.three_stream.ThreeStreamDataModule.test_dataloader" title="Link to this definition"></a></dt>
+<dd><p>An iterable or collection of iterables specifying test samples.</p>
+<p>For more information about multiple dataloaders, see this <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/data/iterables.html#multiple-dataloaders" title="(in PyTorch Lightning v2.5.0.post0)"><span class="xref std std-ref">section</span></a>.</p>
+<p>For data processing use the following pattern:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>download in <code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p>process and split in <a class="reference internal" href="#scripts.three_stream.ThreeStreamDataModule.setup" title="scripts.three_stream.ThreeStreamDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+</div></blockquote>
+<p>However, the above are only necessary for distributed processing.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>do not assign state in prepare_data</p>
+</div>
+<ul class="simple">
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.test" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">test()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p><a class="reference internal" href="#scripts.three_stream.ThreeStreamDataModule.setup" title="scripts.three_stream.ThreeStreamDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lightning tries to add the correct sampler for distributed and arbitrary hardware.
+There is no need to set it yourself.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you don’t need a test dataset and a <code class="xref py py-meth docutils literal notranslate"><span class="pre">test_step()</span></code>, you don’t need to implement
+this method.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.three_stream.ThreeStreamDataModule.predict_dataloader">
+<span class="sig-name descname"><span class="pre">predict_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.three_stream.ThreeStreamDataModule.predict_dataloader" title="Link to this definition"></a></dt>
+<dd><p>An iterable or collection of iterables specifying prediction samples.</p>
+<p>For more information about multiple dataloaders, see this <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/data/iterables.html#multiple-dataloaders" title="(in PyTorch Lightning v2.5.0.post0)"><span class="xref std std-ref">section</span></a>.</p>
+<p>It’s recommended that all data downloads and preparation happen in <code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code>.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.predict" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">predict()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p><a class="reference internal" href="#scripts.three_stream.ThreeStreamDataModule.setup" title="scripts.three_stream.ThreeStreamDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lightning tries to add the correct sampler for distributed and arbitrary hardware
+There is no need to set it yourself.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A <a class="reference external" href="https://docs.pytorch.org/docs/2.6/data.html#torch.utils.data.DataLoader" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.utils.data.DataLoader</span></code></a> or a sequence of them specifying prediction samples.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="scripts.three_stream.ThreeStreamAttentionCLI">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scripts.three_stream.</span></span><span class="sig-name descname"><span class="pre">ThreeStreamAttentionCLI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.three_stream.ThreeStreamAttentionCLI" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="cli.html#cli.common.I2RInternshipCommonCLI" title="cli.common.I2RInternshipCommonCLI"><code class="xref py py-class docutils literal notranslate"><span class="pre">I2RInternshipCommonCLI</span></code></a></p>
+<p>CLI class for 4-stream task.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.three_stream.ThreeStreamAttentionCLI.before_instantiate_classes">
+<span class="sig-name descname"><span class="pre">before_instantiate_classes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.12/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#scripts.three_stream.ThreeStreamAttentionCLI.before_instantiate_classes" title="Link to this definition"></a></dt>
+<dd><p>Set the last checkpoint name.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.three_stream.ThreeStreamAttentionCLI.add_arguments_to_parser">
+<span class="sig-name descname"><span class="pre">add_arguments_to_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.cli.LightningArgumentParser.html#lightning.pytorch.cli.LightningArgumentParser" title="(in PyTorch Lightning v2.5.0.post0)"><span class="pre">LightningArgumentParser</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.three_stream.ThreeStreamAttentionCLI.add_arguments_to_parser" title="Link to this definition"></a></dt>
+<dd><p>Add extra arguments to CLI parser.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-scripts.tscsenet">
+<span id="scripts-tscsenet-module"></span><h2>scripts.tscsenet module<a class="headerlink" href="#module-scripts.tscsenet" title="Link to this heading"></a></h2>
+<p>Temporal, Spatial Squeeze, and Excitation model.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="scripts.tscsenet.TSCSECLI">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scripts.tscsenet.</span></span><span class="sig-name descname"><span class="pre">TSCSECLI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.tscsenet.TSCSECLI" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="cli.html#cli.common.I2RInternshipCommonCLI" title="cli.common.I2RInternshipCommonCLI"><code class="xref py py-class docutils literal notranslate"><span class="pre">I2RInternshipCommonCLI</span></code></a></p>
+<p>CLI class for cine CMR TSCSE-UNet task.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.tscsenet.TSCSECLI.add_arguments_to_parser">
+<span class="sig-name descname"><span class="pre">add_arguments_to_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.cli.LightningArgumentParser.html#lightning.pytorch.cli.LightningArgumentParser" title="(in PyTorch Lightning v2.5.0.post0)"><span class="pre">LightningArgumentParser</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.tscsenet.TSCSECLI.add_arguments_to_parser" title="Link to this definition"></a></dt>
+<dd><p>Set the default arguments and add the arguments to the parser.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-scripts.two_plus_one">
+<span id="scripts-two-plus-one-module"></span><h2>scripts.two_plus_one module<a class="headerlink" href="#module-scripts.two_plus_one" title="Link to this heading"></a></h2>
+<p>Two-plus-one architecture training script.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="scripts.two_plus_one.TwoPlusOneDataModule">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scripts.two_plus_one.</span></span><span class="sig-name descname"><span class="pre">TwoPlusOneDataModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'data/train_val/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'data/test/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indices_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'data/indices/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frames</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Tuple" title="(in Python v3.12)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(224,</span> <span class="pre">224)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">select_frame_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Literal" title="(in Python v3.12)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'consecutive'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'specific'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'specific'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classification_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="utils.html#utils.types.ClassificationMode" title="utils.types.ClassificationMode"><span class="pre">ClassificationMode</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ClassificationMode.MULTICLASS_MODE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loading_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="utils.html#utils.types.LoadingMode" title="utils.types.LoadingMode"><span class="pre">LoadingMode</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">LoadingMode.RGB</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">combine_train_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">augment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.two_plus_one.TwoPlusOneDataModule" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.core.LightningDataModule.html#lightning.pytorch.core.LightningDataModule" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">LightningDataModule</span></code></a></p>
+<p>Datamodule for the TwoPlusOne dataset for PyTorch Lightning compatibility.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.two_plus_one.TwoPlusOneDataModule.setup">
+<span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stage</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.two_plus_one.TwoPlusOneDataModule.setup" title="Link to this definition"></a></dt>
+<dd><p>Called at the beginning of fit (train + validate), validate, test, or predict. This is a good hook when you
+need to build models dynamically or adjust something about them. This hook is called on every process when
+using DDP.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>stage</strong> – either <code class="docutils literal notranslate"><span class="pre">'fit'</span></code>, <code class="docutils literal notranslate"><span class="pre">'validate'</span></code>, <code class="docutils literal notranslate"><span class="pre">'test'</span></code>, or <code class="docutils literal notranslate"><span class="pre">'predict'</span></code></p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">LitModel</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l1</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">prepare_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">download_data</span><span class="p">()</span>
+        <span class="n">tokenize</span><span class="p">()</span>
+
+        <span class="c1"># don&#39;t do this</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">something</span> <span class="o">=</span> <span class="k">else</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.two_plus_one.TwoPlusOneDataModule.train_dataloader">
+<span class="sig-name descname"><span class="pre">train_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.two_plus_one.TwoPlusOneDataModule.train_dataloader" title="Link to this definition"></a></dt>
+<dd><p>An iterable or collection of iterables specifying training samples.</p>
+<p>For more information about multiple dataloaders, see this <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/data/iterables.html#multiple-dataloaders" title="(in PyTorch Lightning v2.5.0.post0)"><span class="xref std std-ref">section</span></a>.</p>
+<p>The dataloader you return will not be reloaded unless you set
+<a href="#id19"><span class="problematic" id="id20">:paramref:`~lightning.pytorch.trainer.trainer.Trainer.reload_dataloaders_every_n_epochs`</span></a> to
+a positive integer.</p>
+<p>For data processing use the following pattern:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>download in <code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p>process and split in <a class="reference internal" href="#scripts.two_plus_one.TwoPlusOneDataModule.setup" title="scripts.two_plus_one.TwoPlusOneDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+</div></blockquote>
+<p>However, the above are only necessary for distributed processing.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>do not assign state in prepare_data</p>
+</div>
+<ul class="simple">
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.fit" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p><a class="reference internal" href="#scripts.two_plus_one.TwoPlusOneDataModule.setup" title="scripts.two_plus_one.TwoPlusOneDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lightning tries to add the correct sampler for distributed and arbitrary hardware.
+There is no need to set it yourself.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.two_plus_one.TwoPlusOneDataModule.val_dataloader">
+<span class="sig-name descname"><span class="pre">val_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.two_plus_one.TwoPlusOneDataModule.val_dataloader" title="Link to this definition"></a></dt>
+<dd><p>An iterable or collection of iterables specifying validation samples.</p>
+<p>For more information about multiple dataloaders, see this <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/data/iterables.html#multiple-dataloaders" title="(in PyTorch Lightning v2.5.0.post0)"><span class="xref std std-ref">section</span></a>.</p>
+<p>The dataloader you return will not be reloaded unless you set
+<a href="#id21"><span class="problematic" id="id22">:paramref:`~lightning.pytorch.trainer.trainer.Trainer.reload_dataloaders_every_n_epochs`</span></a> to
+a positive integer.</p>
+<p>It’s recommended that all data downloads and preparation happen in <code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code>.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.fit" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a></p></li>
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.validate" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">validate()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p><a class="reference internal" href="#scripts.two_plus_one.TwoPlusOneDataModule.setup" title="scripts.two_plus_one.TwoPlusOneDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lightning tries to add the correct sampler for distributed and arbitrary hardware
+There is no need to set it yourself.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you don’t need a validation dataset and a <code class="xref py py-meth docutils literal notranslate"><span class="pre">validation_step()</span></code>, you don’t need to
+implement this method.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.two_plus_one.TwoPlusOneDataModule.test_dataloader">
+<span class="sig-name descname"><span class="pre">test_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.two_plus_one.TwoPlusOneDataModule.test_dataloader" title="Link to this definition"></a></dt>
+<dd><p>An iterable or collection of iterables specifying test samples.</p>
+<p>For more information about multiple dataloaders, see this <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/data/iterables.html#multiple-dataloaders" title="(in PyTorch Lightning v2.5.0.post0)"><span class="xref std std-ref">section</span></a>.</p>
+<p>For data processing use the following pattern:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>download in <code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p>process and split in <a class="reference internal" href="#scripts.two_plus_one.TwoPlusOneDataModule.setup" title="scripts.two_plus_one.TwoPlusOneDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+</div></blockquote>
+<p>However, the above are only necessary for distributed processing.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>do not assign state in prepare_data</p>
+</div>
+<ul class="simple">
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.test" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">test()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p><a class="reference internal" href="#scripts.two_plus_one.TwoPlusOneDataModule.setup" title="scripts.two_plus_one.TwoPlusOneDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lightning tries to add the correct sampler for distributed and arbitrary hardware.
+There is no need to set it yourself.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you don’t need a test dataset and a <code class="xref py py-meth docutils literal notranslate"><span class="pre">test_step()</span></code>, you don’t need to implement
+this method.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.two_plus_one.TwoPlusOneDataModule.predict_dataloader">
+<span class="sig-name descname"><span class="pre">predict_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scripts.two_plus_one.TwoPlusOneDataModule.predict_dataloader" title="Link to this definition"></a></dt>
+<dd><p>An iterable or collection of iterables specifying prediction samples.</p>
+<p>For more information about multiple dataloaders, see this <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/data/iterables.html#multiple-dataloaders" title="(in PyTorch Lightning v2.5.0.post0)"><span class="xref std std-ref">section</span></a>.</p>
+<p>It’s recommended that all data downloads and preparation happen in <code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code>.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.trainer.trainer.Trainer.html#lightning.pytorch.trainer.trainer.Trainer.predict" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">predict()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">prepare_data()</span></code></p></li>
+<li><p><a class="reference internal" href="#scripts.two_plus_one.TwoPlusOneDataModule.setup" title="scripts.two_plus_one.TwoPlusOneDataModule.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a></p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Lightning tries to add the correct sampler for distributed and arbitrary hardware
+There is no need to set it yourself.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A <a class="reference external" href="https://docs.pytorch.org/docs/2.6/data.html#torch.utils.data.DataLoader" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.utils.data.DataLoader</span></code></a> or a sequence of them specifying prediction samples.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="scripts.two_plus_one.TwoPlusOneCLI">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">scripts.two_plus_one.</span></span><span class="sig-name descname"><span class="pre">TwoPlusOneCLI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.two_plus_one.TwoPlusOneCLI" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="cli.html#cli.common.I2RInternshipCommonCLI" title="cli.common.I2RInternshipCommonCLI"><code class="xref py py-class docutils literal notranslate"><span class="pre">I2RInternshipCommonCLI</span></code></a></p>
+<p>CLI class for cine CMR 2+1 task.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="scripts.two_plus_one.TwoPlusOneCLI.add_arguments_to_parser">
+<span class="sig-name descname"><span class="pre">add_arguments_to_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.cli.LightningArgumentParser.html#lightning.pytorch.cli.LightningArgumentParser" title="(in PyTorch Lightning v2.5.0.post0)"><span class="pre">LightningArgumentParser</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scripts.two_plus_one.TwoPlusOneCLI.add_arguments_to_parser" title="Link to this definition"></a></dt>
+<dd><p>Set the default arguments and add the arguments to the parser.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-scripts.urr_attention_unet">
+<span id="scripts-urr-attention-unet-module"></span><h2>scripts.urr_attention_unet module<a class="headerlink" href="#module-scripts.urr_attention_unet" title="Link to this heading"></a></h2>
+<p>Attention-based U-Net on residual frame information with uncertainty.</p>
+</section>
+<section id="module-scripts">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-scripts" title="Link to this heading"></a></h2>
+<p>Training/Validation/Test scripts for various tasks.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Christopher Kok, Yu Yang.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

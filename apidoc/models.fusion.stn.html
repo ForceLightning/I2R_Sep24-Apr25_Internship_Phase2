@@ -1,0 +1,316 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>models.fusion.stn package &mdash; I2R Sep 2024-Apr 2025 Internship Phase 2 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            I2R Sep 2024-Apr 2025 Internship Phase 2
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">models.fusion.stn package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-models.fusion.stn.model">models.fusion.stn.model module</a><ul>
+<li><a class="reference internal" href="#models.fusion.stn.model.SpatialTransformer"><code class="docutils literal notranslate"><span class="pre">SpatialTransformer</span></code></a><ul>
+<li><a class="reference internal" href="#models.fusion.stn.model.SpatialTransformer.forward"><code class="docutils literal notranslate"><span class="pre">SpatialTransformer.forward()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#models.fusion.stn.model.STN"><code class="docutils literal notranslate"><span class="pre">STN</span></code></a><ul>
+<li><a class="reference internal" href="#models.fusion.stn.model.STN.init_localiser"><code class="docutils literal notranslate"><span class="pre">STN.init_localiser()</span></code></a></li>
+<li><a class="reference internal" href="#models.fusion.stn.model.STN.init_model_weights"><code class="docutils literal notranslate"><span class="pre">STN.init_model_weights()</span></code></a></li>
+<li><a class="reference internal" href="#models.fusion.stn.model.STN.forward"><code class="docutils literal notranslate"><span class="pre">STN.forward()</span></code></a></li>
+<li><a class="reference internal" href="#models.fusion.stn.model.STN.forward_localiser"><code class="docutils literal notranslate"><span class="pre">STN.forward_localiser()</span></code></a></li>
+<li><a class="reference internal" href="#models.fusion.stn.model.STN.compute_theta"><code class="docutils literal notranslate"><span class="pre">STN.compute_theta()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-models.fusion.stn.utils">models.fusion.stn.utils module</a><ul>
+<li><a class="reference internal" href="#models.fusion.stn.utils.init_transformer"><code class="docutils literal notranslate"><span class="pre">init_transformer()</span></code></a></li>
+<li><a class="reference internal" href="#models.fusion.stn.utils.SpatialTransformerType"><code class="docutils literal notranslate"><span class="pre">SpatialTransformerType</span></code></a><ul>
+<li><a class="reference internal" href="#models.fusion.stn.utils.SpatialTransformerType.AFFINE"><code class="docutils literal notranslate"><span class="pre">SpatialTransformerType.AFFINE</span></code></a></li>
+<li><a class="reference internal" href="#models.fusion.stn.utils.SpatialTransformerType.DIFFEOMORPHIC"><code class="docutils literal notranslate"><span class="pre">SpatialTransformerType.DIFFEOMORPHIC</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#models.fusion.stn.utils.AffineTransformer"><code class="docutils literal notranslate"><span class="pre">AffineTransformer</span></code></a><ul>
+<li><a class="reference internal" href="#models.fusion.stn.utils.AffineTransformer.forward"><code class="docutils literal notranslate"><span class="pre">AffineTransformer.forward()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#models.fusion.stn.utils.DiffeomorphicTransformer"><code class="docutils literal notranslate"><span class="pre">DiffeomorphicTransformer</span></code></a><ul>
+<li><a class="reference internal" href="#models.fusion.stn.utils.DiffeomorphicTransformer.forward"><code class="docutils literal notranslate"><span class="pre">DiffeomorphicTransformer.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-models.fusion.stn">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">I2R Sep 2024-Apr 2025 Internship Phase 2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">models.fusion.stn package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/apidoc/models.fusion.stn.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="models-fusion-stn-package">
+<h1>models.fusion.stn package<a class="headerlink" href="#models-fusion-stn-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-models.fusion.stn.model">
+<span id="models-fusion-stn-model-module"></span><h2>models.fusion.stn.model module<a class="headerlink" href="#module-models.fusion.stn.model" title="Link to this heading"></a></h2>
+<p>Spatial transformer pytorch modules.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.fusion.stn.model.SpatialTransformer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">models.fusion.stn.model.</span></span><span class="sig-name descname"><span class="pre">SpatialTransformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_is_3d</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#models.fusion.stn.model.SpatialTransformer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.pytorch.org/docs/2.6/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a></p>
+<p>Spatial transformer module.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.fusion.stn.model.SpatialTransformer.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.pytorch.org/docs/2.6/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.pytorch.org/docs/2.6/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a></span></span><a class="headerlink" href="#models.fusion.stn.model.SpatialTransformer.forward" title="Link to this definition"></a></dt>
+<dd><p>Forward pass for the spatial transformer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> – Image tensor of shape: (N, C, H, W)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Image tensor of shape (N, C, H, W)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.fusion.stn.model.STN">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">models.fusion.stn.model.</span></span><span class="sig-name descname"><span class="pre">STN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transformer_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#models.fusion.stn.utils.SpatialTransformerType" title="models.fusion.stn.utils.SpatialTransformerType"><span class="pre">SpatialTransformerType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">xdim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#models.fusion.stn.model.STN" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.pytorch.org/docs/2.6/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a></p>
+<p>Base class for a Spatial Transformer Network (STN).</p>
+<p>Adapted from: <a class="reference external" href="https://github.com/FrederikWarburg/pSTN-baselines">https://github.com/FrederikWarburg/pSTN-baselines</a>. Implement this for
+specific tasks, which requires the method <cite>init_localiser</cite> to be implemented.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.fusion.stn.model.STN.init_localiser">
+<span class="sig-name descname"><span class="pre">init_localiser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#models.fusion.stn.model.STN.init_localiser" title="Link to this definition"></a></dt>
+<dd><p>Initialise task-specific localiser.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.fusion.stn.model.STN.init_model_weights">
+<span class="sig-name descname"><span class="pre">init_model_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#models.fusion.stn.model.STN.init_model_weights" title="Link to this definition"></a></dt>
+<dd><p>Initialise model weights.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.fusion.stn.model.STN.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.pytorch.org/docs/2.6/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_high_res</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.pytorch.org/docs/2.6/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#models.fusion.stn.model.STN.forward" title="Link to this definition"></a></dt>
+<dd><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.fusion.stn.model.STN.forward_localiser">
+<span class="sig-name descname"><span class="pre">forward_localiser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.pytorch.org/docs/2.6/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_high_res</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.pytorch.org/docs/2.6/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#models.fusion.stn.model.STN.forward_localiser" title="Link to this definition"></a></dt>
+<dd><p>Localisation step for spatial transformer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – Input tensor.</p></li>
+<li><p><strong>x_high_res</strong> – Optional high res version of x to transform on.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.fusion.stn.model.STN.compute_theta">
+<span class="sig-name descname"><span class="pre">compute_theta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.pytorch.org/docs/2.6/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#models.fusion.stn.model.STN.compute_theta" title="Link to this definition"></a></dt>
+<dd><p>Compute theta parameter through the localisation step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> – Input tensor.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-models.fusion.stn.utils">
+<span id="models-fusion-stn-utils-module"></span><h2>models.fusion.stn.utils module<a class="headerlink" href="#module-models.fusion.stn.utils" title="Link to this heading"></a></h2>
+<p>Utilities for the feature fusion modules.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="models.fusion.stn.utils.init_transformer">
+<span class="sig-prename descclassname"><span class="pre">models.fusion.stn.utils.</span></span><span class="sig-name descname"><span class="pre">init_transformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transformer_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#models.fusion.stn.utils.SpatialTransformerType" title="models.fusion.stn.utils.SpatialTransformerType"><span class="pre">SpatialTransformerType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">xdim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#models.fusion.stn.utils.init_transformer" title="Link to this definition"></a></dt>
+<dd><p>Initialise the spatial transformer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>transformer_type</strong> – Type of spatial transformer.</p></li>
+<li><p><strong>N</strong> – Number of parallel tracks.</p></li>
+<li><p><strong>num_param</strong> – If we use an affine (s, r, tx, ty) or crop (0.5, 1, tx, ty) transformation.</p></li>
+<li><p><strong>xdim</strong> – Indicator of time seeries datasets. 1 if timeseries, otherwise 2.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.fusion.stn.utils.SpatialTransformerType">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">models.fusion.stn.utils.</span></span><span class="sig-name descname"><span class="pre">SpatialTransformerType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#models.fusion.stn.utils.SpatialTransformerType" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.12/library/enum.html#enum.Enum" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<p>Enum for spatial transformer type.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.fusion.stn.utils.SpatialTransformerType.AFFINE">
+<span class="sig-name descname"><span class="pre">AFFINE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#models.fusion.stn.utils.SpatialTransformerType.AFFINE" title="Link to this definition"></a></dt>
+<dd><p>Affine transformer.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.fusion.stn.utils.SpatialTransformerType.DIFFEOMORPHIC">
+<span class="sig-name descname"><span class="pre">DIFFEOMORPHIC</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#models.fusion.stn.utils.SpatialTransformerType.DIFFEOMORPHIC" title="Link to this definition"></a></dt>
+<dd><p>Diffeomorphic transformer.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.fusion.stn.utils.AffineTransformer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">models.fusion.stn.utils.</span></span><span class="sig-name descname"><span class="pre">AffineTransformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#models.fusion.stn.utils.AffineTransformer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.pytorch.org/docs/2.6/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a></p>
+<p>Affine spatial transformer.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.fusion.stn.utils.AffineTransformer.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.pytorch.org/docs/2.6/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.pytorch.org/docs/2.6/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">small_image_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Tuple" title="(in Python v3.12)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#models.fusion.stn.utils.AffineTransformer.forward" title="Link to this definition"></a></dt>
+<dd><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.fusion.stn.utils.DiffeomorphicTransformer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">models.fusion.stn.utils.</span></span><span class="sig-name descname"><span class="pre">DiffeomorphicTransformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_param</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">xdim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#models.fusion.stn.utils.DiffeomorphicTransformer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.pytorch.org/docs/2.6/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a></p>
+<p>Diffeomorphic spatial transformer.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.fusion.stn.utils.DiffeomorphicTransformer.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.pytorch.org/docs/2.6/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.pytorch.org/docs/2.6/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#models.fusion.stn.utils.DiffeomorphicTransformer.forward" title="Link to this definition"></a></dt>
+<dd><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-models.fusion.stn">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-models.fusion.stn" title="Link to this heading"></a></h2>
+<p>Spatial Transformer Network implementation for fusion models.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Christopher Kok, Yu Yang.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

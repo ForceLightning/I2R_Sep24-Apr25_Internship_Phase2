@@ -1,0 +1,29 @@
+dataset package
+===============
+
+Submodules
+----------
+
+dataset.dataset module
+----------------------
+
+.. automodule:: dataset.dataset
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+dataset.optical\_flow module
+----------------------------
+
+.. automodule:: dataset.optical_flow
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: dataset
+   :members:
+   :show-inheritance:
+   :undoc-members:

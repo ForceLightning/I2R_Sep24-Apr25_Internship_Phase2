@@ -1,0 +1,29 @@
+models.fusion.stn package
+=========================
+
+Submodules
+----------
+
+models.fusion.stn.model module
+------------------------------
+
+.. automodule:: models.fusion.stn.model
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.fusion.stn.utils module
+------------------------------
+
+.. automodule:: models.fusion.stn.utils
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: models.fusion.stn
+   :members:
+   :show-inheritance:
+   :undoc-members:

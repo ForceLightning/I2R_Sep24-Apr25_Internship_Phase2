@@ -1,0 +1,175 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cli package &mdash; I2R Sep 2024-Apr 2025 Internship Phase 2 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            I2R Sep 2024-Apr 2025 Internship Phase 2
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">cli package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-cli.common">cli.common module</a><ul>
+<li><a class="reference internal" href="#cli.common.CommonCLI"><code class="docutils literal notranslate"><span class="pre">CommonCLI</span></code></a><ul>
+<li><a class="reference internal" href="#cli.common.CommonCLI.default_arguments"><code class="docutils literal notranslate"><span class="pre">CommonCLI.default_arguments</span></code></a></li>
+<li><a class="reference internal" href="#cli.common.CommonCLI.multi_frame"><code class="docutils literal notranslate"><span class="pre">CommonCLI.multi_frame</span></code></a></li>
+<li><a class="reference internal" href="#cli.common.CommonCLI.before_instantiate_classes"><code class="docutils literal notranslate"><span class="pre">CommonCLI.before_instantiate_classes()</span></code></a></li>
+<li><a class="reference internal" href="#cli.common.CommonCLI.add_arguments_to_parser"><code class="docutils literal notranslate"><span class="pre">CommonCLI.add_arguments_to_parser()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#cli.common.I2RInternshipCommonCLI"><code class="docutils literal notranslate"><span class="pre">I2RInternshipCommonCLI</span></code></a><ul>
+<li><a class="reference internal" href="#cli.common.I2RInternshipCommonCLI.add_arguments_to_parser"><code class="docutils literal notranslate"><span class="pre">I2RInternshipCommonCLI.add_arguments_to_parser()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-cli">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">I2R Sep 2024-Apr 2025 Internship Phase 2</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">cli package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/apidoc/cli.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="cli-package">
+<h1>cli package<a class="headerlink" href="#cli-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-cli.common">
+<span id="cli-common-module"></span><h2>cli.common module<a class="headerlink" href="#module-cli.common" title="Link to this heading"></a></h2>
+<p>Common CLI functionality between models.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="cli.common.CommonCLI">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cli.common.</span></span><span class="sig-name descname"><span class="pre">CommonCLI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cli.common.CommonCLI" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.cli.LightningCLI.html#lightning.pytorch.cli.LightningCLI" title="(in PyTorch Lightning v2.5.0.post0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">LightningCLI</span></code></a></p>
+<p>Common CLI functionality between models.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cli.common.CommonCLI.default_arguments">
+<span class="sig-name descname"><span class="pre">default_arguments</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.12/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/typing.html#typing.Any" title="(in Python v3.12)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'model_checkpoint_dice_macro_class_2_3.auto_insert_metric_name':</span> <span class="pre">False,</span> <span class="pre">'model_checkpoint_dice_macro_class_2_3.mode':</span> <span class="pre">'max',</span> <span class="pre">'model_checkpoint_dice_macro_class_2_3.monitor':</span> <span class="pre">'val/dice_macro_class_2_3',</span> <span class="pre">'model_checkpoint_dice_macro_class_2_3.save_last':</span> <span class="pre">False,</span> <span class="pre">'model_checkpoint_dice_macro_class_2_3.save_top_k':</span> <span class="pre">1,</span> <span class="pre">'model_checkpoint_dice_macro_class_2_3.save_weights_only':</span> <span class="pre">True,</span> <span class="pre">'model_checkpoint_dice_weighted.auto_insert_metric_name':</span> <span class="pre">False,</span> <span class="pre">'model_checkpoint_dice_weighted.mode':</span> <span class="pre">'max',</span> <span class="pre">'model_checkpoint_dice_weighted.monitor':</span> <span class="pre">'val/dice_weighted_avg',</span> <span class="pre">'model_checkpoint_dice_weighted.save_last':</span> <span class="pre">False,</span> <span class="pre">'model_checkpoint_dice_weighted.save_top_k':</span> <span class="pre">1,</span> <span class="pre">'model_checkpoint_dice_weighted.save_weights_only':</span> <span class="pre">True,</span> <span class="pre">'model_checkpoint_last.auto_insert_metric_name':</span> <span class="pre">False,</span> <span class="pre">'model_checkpoint_last.enable_version_counter':</span> <span class="pre">False,</span> <span class="pre">'model_checkpoint_last.save_last':</span> <span class="pre">True,</span> <span class="pre">'model_checkpoint_last.save_weights_only':</span> <span class="pre">True,</span> <span class="pre">'model_checkpoint_val_loss.auto_insert_metric_name':</span> <span class="pre">False,</span> <span class="pre">'model_checkpoint_val_loss.monitor':</span> <span class="pre">'loss/val',</span> <span class="pre">'model_checkpoint_val_loss.save_last':</span> <span class="pre">False,</span> <span class="pre">'model_checkpoint_val_loss.save_top_k':</span> <span class="pre">1,</span> <span class="pre">'model_checkpoint_val_loss.save_weights_only':</span> <span class="pre">True,</span> <span class="pre">'trainer.devices':</span> <span class="pre">1}</span></em><a class="headerlink" href="#cli.common.CommonCLI.default_arguments" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cli.common.CommonCLI.multi_frame">
+<span class="sig-name descname"><span class="pre">multi_frame</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#cli.common.CommonCLI.multi_frame" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cli.common.CommonCLI.before_instantiate_classes">
+<span class="sig-name descname"><span class="pre">before_instantiate_classes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.12/library/constants.html#None" title="(in Python v3.12)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#cli.common.CommonCLI.before_instantiate_classes" title="Link to this definition"></a></dt>
+<dd><p>Set the last checkpoint name.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cli.common.CommonCLI.add_arguments_to_parser">
+<span class="sig-name descname"><span class="pre">add_arguments_to_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.cli.LightningArgumentParser.html#lightning.pytorch.cli.LightningArgumentParser" title="(in PyTorch Lightning v2.5.0.post0)"><span class="pre">LightningArgumentParser</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cli.common.CommonCLI.add_arguments_to_parser" title="Link to this definition"></a></dt>
+<dd><p>Set the default arguments and add the arguments to the parser.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cli.common.I2RInternshipCommonCLI">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cli.common.</span></span><span class="sig-name descname"><span class="pre">I2RInternshipCommonCLI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cli.common.I2RInternshipCommonCLI" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#cli.common.CommonCLI" title="cli.common.CommonCLI"><code class="xref py py-class docutils literal notranslate"><span class="pre">CommonCLI</span></code></a></p>
+<p>Internship project common CLI functionality.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="cli.common.I2RInternshipCommonCLI.add_arguments_to_parser">
+<span class="sig-name descname"><span class="pre">add_arguments_to_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://lightning.ai/docs/pytorch/2.5.0.post0/api/lightning.pytorch.cli.LightningArgumentParser.html#lightning.pytorch.cli.LightningArgumentParser" title="(in PyTorch Lightning v2.5.0.post0)"><span class="pre">LightningArgumentParser</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cli.common.I2RInternshipCommonCLI.add_arguments_to_parser" title="Link to this definition"></a></dt>
+<dd><p>Set the default arguments and add the arguments to the parser.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-cli">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-cli" title="Link to this heading"></a></h2>
+<p>Common CLI functionality.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Christopher Kok, Yu Yang.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
