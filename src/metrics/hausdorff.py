@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Hausdorff distance metric."""
 from __future__ import annotations
 
 # Standard Library
@@ -22,6 +23,8 @@ logger = logging.getLogger(__name__)
 
 
 class HausdorffDistanceVariant(HausdorffDistance):
+    """Hausdorff Distance class which ignores +inf values."""
+
     is_differentiable: bool = True
     higher_is_better: bool = False
     full_state_update: bool = False
@@ -41,6 +44,22 @@ class HausdorffDistanceVariant(HausdorffDistance):
         zero_division: float = 1.0,
         **kwargs: Mapping[Any, Any],
     ) -> None:
+        """Instantiate the Hausdorff Distance metric class.
+
+        Args:
+            num_classes: Number of classes.
+            include_classes: Which classes to include in the computation.
+            distance_metric: Type of distance metric to use.
+            spacing: spacing between pixels along each spatial dimension. If not
+                provided the spacing is assumed to be 1.
+            directed: Whether to calculate directed or undirected Hausdorff distance.
+            input_format: What kind of input the function receives. Choose between
+                ``"one-hot"`` for one-hot encoded tensors or ``"index"`` for index
+                tensors.
+            zero_division: Value to replace divide by zero errors by.
+            kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+        """
         super(HausdorffDistance, self).__init__(**kwargs)
         include_background = 0 not in include_classes
         _hausdorff_distance_validate_args(
@@ -93,6 +112,24 @@ def hausdorff_distance_variant(
     directed: bool = False,
     input_format: Literal["one-hot", "index"] = "one-hot",
 ) -> Tensor:
+    """Calculate Hausdorff Distance for semantic segmentation.
+
+    See :py:func:`~torchmetrics.functional.segmentation.hausdorff_distance.hausdorff_distance`
+
+    Args:
+        preds: predicted binarized segmentation map
+        target: target binarized segmentation map
+        num_classes: Number of classes.
+        include_classes: Which classes to include in the computation.
+        distance_metric: Type of distance metric to use.
+        spacing: spacing between pixels along each spatial dimension. If not
+            provided the spacing is assumed to be 1.
+        directed: Whether to calculate directed or undirected Hausdorff distance.
+        input_format: What kind of input the function receives. Choose between
+            ``"one-hot"`` for one-hot encoded tensors or ``"index"`` for index
+            tensors.
+
+    """
     include_background = 0 not in include_classes
     _hausdorff_distance_validate_args(
         num_classes,
@@ -112,7 +149,7 @@ def hausdorff_distance_variant(
 
     distances = torch.zeros(preds.shape[0], preds.shape[1], device=preds.device)
 
-    # TODO: Add support for batched inputs.
+    # NOTE: This implementation is a little slow, based on torchmetrics impl.
     for b in range(preds.shape[0]):  # For mask in batch
         for c in range(preds.shape[1]):  # For class in mask
             dist = edge_surface_distance(

@@ -64,13 +64,13 @@ autodoc_mock_imports = ["thirdparty"]
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3.12/", None),
-    "torch": ("https://pytorch.org/docs/2.5/", None),
-    "torchvision": ("https://pytorch.org/vision/0.20/", None),
-    "numpy": ("https://numpy.org/doc/1.26/", None),
-    "lightning": ("https://lightning.ai/docs/pytorch/2.4.0/", None),
-    "torchmetrics": ("https://lightning.ai/docs/torchmetrics/v1.5.1/", None),
-    "matplotlib": ("https://matplotlib.org/3.9.2/", None),
-    "segmentation_models_pytorch": ("https://smp.readthedocs.io/en/v0.3.4/", None),
+    "torch": ("https://pytorch.org/docs/2.6/", None),
+    "torchvision": ("https://pytorch.org/vision/0.21/", None),
+    "numpy": ("https://numpy.org/doc/2.2/", None),
+    "lightning": ("https://lightning.ai/docs/pytorch/2.5.0.post0/", None),
+    "torchmetrics": ("https://lightning.ai/docs/torchmetrics/v1.6.1/", None),
+    "matplotlib": ("https://matplotlib.org/3.10.0/", None),
+    "segmentation_models_pytorch": ("https://smp.readthedocs.io/en/v0.4.0/", None),
 }
 
 sys.path.insert(0, os.path.abspath("../../"))
